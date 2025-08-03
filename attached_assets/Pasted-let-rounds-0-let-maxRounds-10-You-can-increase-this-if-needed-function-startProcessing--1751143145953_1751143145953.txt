@@ -1,0 +1,67 @@
+let rounds = 0;
+let maxRounds = 10; // You can increase this if needed
+
+function startProcessing() {
+  document.getElementById("start-section").classList.add("hidden");
+  runBLS();
+}
+
+function runBLS() {
+  document.getElementById("bls-section").classList.remove("hidden");
+  document.getElementById("bls-box").innerText = "🟢⬅️ ➡️🟢";
+  setTimeout(() => {
+    document.getElementById("bls-section").classList.add("hidden");
+    document.getElementById("notice-section").classList.remove("hidden");
+  }, 3000); // BLS duration (in ms)
+}
+
+function submitNotice() {
+  const userResponse = document.getElementById("user-response").value;
+  if (userResponse.trim() === "") return;
+  document.getElementById("notice-section").classList.add("hidden");
+  document.getElementById("just-notice-section").classList.remove("hidden");
+}
+
+function nextBLS() {
+  document.getElementById("user-response").value = "";
+  document.getElementById("just-notice-section").classList.add("hidden");
+  rounds++;
+  if (rounds >= maxRounds) {
+    document.getElementById("suds-section").classList.remove("hidden");
+  } else {
+    runBLS();
+  }
+}
+
+function submitSUDS() {
+  const suds = parseInt(document.getElementById("suds-input").value);
+  document.getElementById("suds-section").classList.add("hidden");
+  if (suds === 0) {
+    document.getElementById("installation-section").classList.remove("hidden");
+  } else {
+    rounds = 0;
+    runBLS();
+  }
+}
+
+function installBelief() {
+  const belief = document.getElementById("positive-belief").value.trim();
+  if (belief === "") return;
+  document.getElementById("installation-section").classList.add("hidden");
+  runBLS(); // Do one BLS for installation
+  setTimeout(() => {
+    document.getElementById("body-scan-section").classList.remove("hidden");
+  }, 3000);
+}
+
+function bodyScanResult(hasTension) {
+  document.getElementById("body-scan-section").classList.add("hidden");
+  if (hasTension) {
+    runBLS(); // Further BLS until clear
+    setTimeout(() => {
+      document.getElementById("body-scan-section").classList.remove("hidden");
+    }, 3000);
+  } else {
+    document.getElementById("end-section").classList.remove("hidden");
+  }
+}

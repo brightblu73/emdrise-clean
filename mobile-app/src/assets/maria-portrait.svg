@@ -1,0 +1,53 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f4c2a1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e8a87c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="hairGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b4513;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="clothingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="60" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <!-- Hair -->
+  <path d="M30 45 Q35 25, 60 30 Q85 25, 90 45 Q88 55, 85 60 L75 55 Q70 50, 60 52 Q50 50, 45 55 L35 60 Q32 55, 30 45" fill="url(#hairGradient)"/>
+  
+  <!-- Face -->
+  <ellipse cx="60" cy="55" rx="25" ry="28" fill="url(#skinGradient)"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="52" cy="50" rx="4" ry="5" fill="#ffffff"/>
+  <ellipse cx="68" cy="50" rx="4" ry="5" fill="#ffffff"/>
+  <circle cx="52" cy="50" r="2" fill="#4a5568"/>
+  <circle cx="68" cy="50" r="2" fill="#4a5568"/>
+  <circle cx="52.5" cy="49.5" r="0.5" fill="#ffffff"/>
+  <circle cx="68.5" cy="49.5" r="0.5" fill="#ffffff"/>
+  
+  <!-- Eyebrows -->
+  <path d="M48 45 Q52 43, 56 45" stroke="#654321" stroke-width="1.5" fill="none"/>
+  <path d="M64 45 Q68 43, 72 45" stroke="#654321" stroke-width="1.5" fill="none"/>
+  
+  <!-- Nose -->
+  <path d="M60 52 Q58 58, 60 60 Q62 58, 60 52" fill="#e8a87c"/>
+  
+  <!-- Mouth -->
+  <path d="M56 65 Q60 68, 64 65" stroke="#d69e2e" stroke-width="1.5" fill="none"/>
+  
+  <!-- Clothing -->
+  <path d="M35 85 Q40 82, 60 85 Q80 82, 85 85 L85 120 L35 120 Z" fill="url(#clothingGradient)"/>
+  
+  <!-- Collar -->
+  <path d="M45 85 Q50 82, 60 85 Q70 82, 75 85 Q72 88, 60 90 Q48 88, 45 85" fill="#1e40af"/>
+  
+  <!-- Professional touch - subtle jewelry -->
+  <circle cx="52" cy="75" r="1.5" fill="#ffd700" opacity="0.8"/>
+  <circle cx="68" cy="75" r="1.5" fill="#ffd700" opacity="0.8"/>
+</svg>

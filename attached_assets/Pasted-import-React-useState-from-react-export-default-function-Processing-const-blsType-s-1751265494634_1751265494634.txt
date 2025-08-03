@@ -1,0 +1,79 @@
+import React, { useState } from "react";
+
+export default function Processing() {
+  const [blsType, setBlsType] = useState("visual");
+  const [phase, setPhase] = useState("assessment"); // options: bls, notice, install, bodyscan, closure
+  const [userNote, setUserNote] = useState("");
+
+  return (
+    <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
+      <h2>Processing Space</h2>
+
+      <div>
+        <label>Select BLS Mode:</label>
+        <select value={blsType} onChange={e => setBlsType(e.target.value)}>
+          <option value="visual">Visual (eye movement)</option>
+          <option value="audio">Auditory (beeps)</option>
+          <option value="tapping">Tapping (self-guided)</option>
+        </select>
+      </div>
+
+      {blsType === "visual" && (
+        <div style={{ marginTop: "2rem" }}>
+          <p>🟡 Visual BLS animation placeholder</p>
+        </div>
+      )}
+
+      {blsType === "audio" && (
+        <div style={{ marginTop: "2rem" }}>
+          <p>🔊 Audio BLS stereo tones (placeholder)</p>
+        </div>
+      )}
+
+      {blsType === "tapping" && (
+        <div style={{ marginTop: "2rem" }}>
+          <p>👋 Follow tapping instructions or use butterfly taps</p>
+        </div>
+      )}
+
+      <div style={{ marginTop: "2rem" }}>
+        <button onClick={() => setPhase("notice")}>Stop BLS / What do you notice?</button>
+      </div>
+
+      {phase === "notice" && (
+        <div style={{ marginTop: "2rem" }}>
+          <textarea
+            placeholder="Client: What are you noticing now?"
+            rows={4}
+            value={userNote}
+            onChange={(e) => setUserNote(e.target.value)}
+            style={{ width: "100%", padding: "1rem" }}
+          />
+          <div style={{ marginTop: "1rem" }}>
+            <button
+              onClick={() => {
+                setUserNote("");
+                setPhase("bls");
+              }}
+            >
+              Go With That (start next round)
+            </button>
+
+            <button
+              onClick={() => setPhase("closure")}
+              style={{ marginLeft: "1rem" }}
+            >
+              Pause / Close Session
+            </button>
+          </div>
+        </div>
+      )}
+
+      {phase === "closure" && (
+        <div style={{ marginTop: "2rem" }}>
+          <p>Session ended. Please return to your calm place or visualise safety.</p>
+        </div>
+      )}
+    </div>
+  );
+}

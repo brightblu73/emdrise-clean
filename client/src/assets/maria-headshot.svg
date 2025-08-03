@@ -1,0 +1,126 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="mariaClip">
+      <circle cx="60" cy="60" r="58"/>
+    </clipPath>
+    
+    <!-- Realistic skin gradients -->
+    <radialGradient id="skinGrad" cx="0.3" cy="0.3" r="0.8">
+      <stop offset="0%" style="stop-color:#ffeaa7;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#fdcb6e;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#e17055;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d63031;stop-opacity:0.3" />
+    </radialGradient>
+    
+    <!-- Hair texture -->
+    <radialGradient id="hairGrad" cx="0.5" cy="0.2" r="0.9">
+      <stop offset="0%" style="stop-color:#8b4513;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#a0522d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Professional clothing -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Eye detail -->
+    <radialGradient id="eyeGrad" cx="0.3" cy="0.3" r="0.7">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#f8f9fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e9ecef;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Photo-realistic shadows -->
+    <filter id="softShadow">
+      <feGaussianBlur stdDeviation="2"/>
+      <feOffset dx="1" dy="2"/>
+      <feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
+    </filter>
+  </defs>
+  
+  <!-- Background with photo studio lighting -->
+  <circle cx="60" cy="60" r="60" fill="url(#skinGrad)" opacity="0.1"/>
+  
+  <!-- Professional background -->
+  <circle cx="60" cy="60" r="58" fill="#f8f9fa"/>
+  
+  <!-- Content within circle -->
+  <g clip-path="url(#mariaClip)">
+    <!-- Studio background -->
+    <rect x="0" y="0" width="120" height="120" fill="linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)"/>
+    
+    <!-- Professional attire with realistic shadows -->
+    <path d="M20 85 Q60 80 100 85 L100 120 L20 120 Z" fill="url(#blueGrad)" filter="url(#softShadow)"/>
+    <path d="M45 85 Q60 82 75 85 L75 105 L45 105 Z" fill="#ffffff" opacity="0.95"/>
+    
+    <!-- Realistic hair with texture -->
+    <path d="M25 30 Q35 15 60 18 Q85 15 95 30 Q90 45 85 50 Q75 40 60 42 Q45 40 35 50 Q30 45 25 30" fill="url(#hairGrad)" filter="url(#softShadow)"/>
+    
+    <!-- Hair strands for realism -->
+    <path d="M30 35 Q40 25 50 35" stroke="#654321" stroke-width="0.5" fill="none" opacity="0.6"/>
+    <path d="M70 35 Q80 25 90 35" stroke="#654321" stroke-width="0.5" fill="none" opacity="0.6"/>
+    <path d="M35 40 Q45 30 55 40" stroke="#654321" stroke-width="0.5" fill="none" opacity="0.4"/>
+    <path d="M65 40 Q75 30 85 40" stroke="#654321" stroke-width="0.5" fill="none" opacity="0.4"/>
+    
+    <!-- Realistic face with lighting -->
+    <ellipse cx="60" cy="55" rx="22" ry="28" fill="url(#skinGrad)" filter="url(#softShadow)"/>
+    
+    <!-- Facial contours -->
+    <ellipse cx="58" cy="52" rx="20" ry="25" fill="#ffeaa7" opacity="0.3"/>
+    <ellipse cx="62" cy="58" rx="18" ry="22" fill="#fdcb6e" opacity="0.2"/>
+    
+    <!-- Realistic eyes with depth -->
+    <ellipse cx="52" cy="48" rx="4" ry="5" fill="url(#eyeGrad)" filter="url(#softShadow)"/>
+    <ellipse cx="68" cy="48" rx="4" ry="5" fill="url(#eyeGrad)" filter="url(#softShadow)"/>
+    
+    <!-- Iris detail -->
+    <circle cx="52" cy="48" r="2.5" fill="#2d3748"/>
+    <circle cx="68" cy="48" r="2.5" fill="#2d3748"/>
+    <circle cx="52" cy="47.5" r="2" fill="#495057" opacity="0.8"/>
+    <circle cx="68" cy="47.5" r="2" fill="#495057" opacity="0.8"/>
+    
+    <!-- Eye highlights -->
+    <circle cx="52.5" cy="47" r="0.8" fill="#ffffff" opacity="0.9"/>
+    <circle cx="68.5" cy="47" r="0.8" fill="#ffffff" opacity="0.9"/>
+    <circle cx="51.8" cy="48.2" r="0.3" fill="#ffffff" opacity="0.7"/>
+    <circle cx="67.8" cy="48.2" r="0.3" fill="#ffffff" opacity="0.7"/>
+    
+    <!-- Realistic eyebrows -->
+    <path d="M46 42 Q52 40 58 42" stroke="#654321" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M62 42 Q68 40 74 42" stroke="#654321" stroke-width="1.5" fill="none" opacity="0.8"/>
+    
+    <!-- Eyebrow hairs -->
+    <path d="M47 42.5 L49 41.5" stroke="#654321" stroke-width="0.3" opacity="0.6"/>
+    <path d="M50 41.8 L52 40.8" stroke="#654321" stroke-width="0.3" opacity="0.6"/>
+    <path d="M53 40.8 L55 41.8" stroke="#654321" stroke-width="0.3" opacity="0.6"/>
+    <path d="M65 41.8 L67 40.8" stroke="#654321" stroke-width="0.3" opacity="0.6"/>
+    <path d="M68 40.8 L70 41.8" stroke="#654321" stroke-width="0.3" opacity="0.6"/>
+    <path d="M71 41.8 L73 42.5" stroke="#654321" stroke-width="0.3" opacity="0.6"/>
+    
+    <!-- Realistic nose with shadows -->
+    <path d="M60 52 Q58.5 58 60 60 Q61.5 58 60 52" fill="#e17055" opacity="0.3"/>
+    <ellipse cx="60" cy="58" rx="1" ry="2" fill="#d63031" opacity="0.2"/>
+    
+    <!-- Nostril detail -->
+    <ellipse cx="59" cy="59" rx="0.5" ry="1" fill="#6c757d" opacity="0.3"/>
+    <ellipse cx="61" cy="59" rx="0.5" ry="1" fill="#6c757d" opacity="0.3"/>
+    
+    <!-- Realistic mouth -->
+    <path d="M54 65 Q60 68 66 65" stroke="#d63031" stroke-width="1.8" fill="none" opacity="0.8"/>
+    <path d="M55 66 Q60 67.5 65 66" stroke="#e17055" stroke-width="1" fill="none" opacity="0.6"/>
+    
+    <!-- Lip detail -->
+    <ellipse cx="60" cy="66.5" rx="5" ry="1.5" fill="#e17055" opacity="0.3"/>
+    
+    <!-- Facial shadows for depth -->
+    <ellipse cx="55" cy="55" rx="3" ry="8" fill="#d63031" opacity="0.1" transform="rotate(-10 55 55)"/>
+    <ellipse cx="65" cy="55" rx="3" ry="8" fill="#d63031" opacity="0.1" transform="rotate(10 65 55)"/>
+    <ellipse cx="60" cy="70" rx="8" ry="3" fill="#d63031" opacity="0.1"/>
+  </g>
+  
+  <!-- Professional circular frame -->
+  <circle cx="60" cy="60" r="58" fill="none" stroke="#dee2e6" stroke-width="3"/>
+  <circle cx="60" cy="60" r="58" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+</svg>

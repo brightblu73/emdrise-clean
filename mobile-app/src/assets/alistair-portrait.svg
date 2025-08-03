@@ -1,0 +1,55 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f7d794;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e8c078;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="hairGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a5568;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2d3748;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="clothingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="60" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <!-- Hair -->
+  <path d="M32 45 Q38 28, 60 32 Q82 28, 88 45 Q85 50, 82 52 L78 50 Q75 48, 70 50 Q65 45, 60 46 Q55 45, 50 50 Q45 48, 42 50 L38 52 Q35 50, 32 45" fill="url(#hairGradient)"/>
+  
+  <!-- Face -->
+  <ellipse cx="60" cy="57" rx="26" ry="30" fill="url(#skinGradient)"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="52" cy="52" rx="4" ry="5" fill="#ffffff"/>
+  <ellipse cx="68" cy="52" rx="4" ry="5" fill="#ffffff"/>
+  <circle cx="52" cy="52" r="2.5" fill="#2d3748"/>
+  <circle cx="68" cy="52" r="2.5" fill="#2d3748"/>
+  <circle cx="52.5" cy="51.5" r="0.5" fill="#ffffff"/>
+  <circle cx="68.5" cy="51.5" r="0.5" fill="#ffffff"/>
+  
+  <!-- Eyebrows -->
+  <path d="M47 47 Q52 45, 57 47" stroke="#2d3748" stroke-width="2" fill="none"/>
+  <path d="M63 47 Q68 45, 73 47" stroke="#2d3748" stroke-width="2" fill="none"/>
+  
+  <!-- Nose -->
+  <path d="M60 54 Q58 60, 60 62 Q62 60, 60 54" fill="#e8c078"/>
+  
+  <!-- Mouth -->
+  <path d="M56 68 Q60 71, 64 68" stroke="#a78bfa" stroke-width="1.5" fill="none"/>
+  
+  <!-- Subtle beard/facial hair -->
+  <path d="M50 72 Q60 75, 70 72 Q68 78, 60 80 Q52 78, 50 72" fill="#4a5568" opacity="0.3"/>
+  
+  <!-- Clothing -->
+  <path d="M35 85 Q40 82, 60 85 Q80 82, 85 85 L85 120 L35 120 Z" fill="url(#clothingGradient)"/>
+  
+  <!-- Collar -->
+  <path d="M45 85 Q50 82, 60 85 Q70 82, 75 85 Q72 88, 60 90 Q48 88, 45 85" fill="#047857"/>
+  
+  <!-- Professional touch - tie -->
+  <path d="M58 88 Q60 90, 62 88 L64 110 Q60 112, 56 110 Z" fill="#1e40af"/>
+</svg>

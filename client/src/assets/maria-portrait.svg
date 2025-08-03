@@ -1,0 +1,65 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Perfect circular clipping mask -->
+    <clipPath id="circleClip">
+      <circle cx="60" cy="60" r="58"/>
+    </clipPath>
+    
+    <linearGradient id="skinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f4c2a1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e8a87c;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="hairGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b4513;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#654321;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="clothingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle with button-like styling -->
+  <circle cx="60" cy="60" r="60" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <!-- Content clipped to perfect circle -->
+  <g clip-path="url(#circleClip)">
+    <!-- Professional background -->
+    <rect x="0" y="0" width="120" height="120" fill="#f1f5f9"/>
+    
+    <!-- Clothing/Professional attire -->
+    <path d="M20 90 Q30 85, 60 90 Q90 85, 100 90 L100 120 L20 120 Z" fill="url(#clothingGradient)"/>
+    <!-- Professional collar -->
+    <path d="M45 90 Q52 87, 60 90 Q68 87, 75 90 L75 105 L45 105 Z" fill="#ffffff"/>
+    
+    <!-- Hair (fuller, more professional) -->
+    <path d="M25 35 Q30 15, 60 20 Q90 15, 95 35 Q93 45, 90 50 Q85 45, 80 48 Q75 40, 70 42 Q65 35, 60 37 Q55 35, 50 42 Q45 40, 40 48 Q35 45, 30 50 Q27 45, 25 35" fill="url(#hairGradient)"/>
+    
+    <!-- Face (centered headshot) -->
+    <ellipse cx="60" cy="50" rx="28" ry="32" fill="url(#skinGradient)"/>
+    
+    <!-- Eyes (more detailed) -->
+    <ellipse cx="50" cy="45" rx="5" ry="6" fill="#ffffff"/>
+    <ellipse cx="70" cy="45" rx="5" ry="6" fill="#ffffff"/>
+    <circle cx="50" cy="45" r="3" fill="#4a5568"/>
+    <circle cx="70" cy="45" r="3" fill="#4a5568"/>
+    <circle cx="50.5" cy="44" r="1" fill="#ffffff"/>
+    <circle cx="70.5" cy="44" r="1" fill="#ffffff"/>
+    
+    <!-- Eyebrows -->
+    <path d="M44 38 Q50 36, 56 38" stroke="#654321" stroke-width="2" fill="none"/>
+    <path d="M64 38 Q70 36, 76 38" stroke="#654321" stroke-width="2" fill="none"/>
+    
+    <!-- Nose -->
+    <path d="M60 50 L58 58 L60 59 L62 58 Z" fill="#e8a87c"/>
+    
+    <!-- Mouth (professional smile) -->
+    <path d="M53 65 Q60 70, 67 65" stroke="#d97706" stroke-width="2" fill="none"/>
+    
+    <!-- Subtle shadow for depth -->
+    <ellipse cx="60" cy="52" rx="26" ry="30" fill="none" stroke="#00000008" stroke-width="1"/>
+  </g>
+  
+  <!-- Perfect circular border -->
+  <circle cx="60" cy="60" r="58" fill="none" stroke="#e2e8f0" stroke-width="4"/>
+</svg>

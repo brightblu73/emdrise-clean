@@ -1,0 +1,126 @@
+[33m0f5193e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Add detailed instructions for backing up and restoring the EMDRise project
+[33m7aeb2eb[m Introduce project details, exclude unnecessary files, and add key documentation
+[33m762bcb0[m Include a reference image for demonstration and setup instructions
+[33ma8c5047[m Improve the appearance of therapist portraits on the main welcome screen
+[33m87115ad[m Update therapist portraits to use cropped headshots for better visuals
+[33mb6de3e6[m Replace cartoon avatars with actual photos for a more realistic feel
+[33m816440e[m Update the appearance of therapists with professional headshots
+[33meeedd05[m Update the look and feel of therapist selection on the homepage
+[33m3501f4d[m Show professional headshots of therapists as circular selection buttons
+[33mcc73522[m Show actual therapist portraits when selecting a preferred guide
+[33m7cfcbf9[m Show therapist pictures on selection screen for a more personal feel
+[33m17283b9[m Integrate gentle touch sensations to enhance the bilateral stimulation
+[33m0bbf83e[m Implement a fully functional mobile app for EMDR therapy sessions
+[33m18777e8[m Improve video display and ensure proper rendering on mobile devices
+[33m7c82659[m Adjust video display to properly show avatars with unique dimensions
+[33m7fab24b[m Adjust video player to improve visibility and resolve display issues
+[33m931e5be[m Adjust video display so therapists' faces are fully visible
+[33m8b243f5[m Improve video display and ensure content fills the screen correctly
+[33m78f21d2[m Improve video display by focusing on the therapist and screen size
+[33m9a8d456[m Adjust video display and reduce container size on the EMDR therapy page
+[33mb616869[m Improve video appearance so speakers are clear and screen is fully used
+[33mc68a0f9[m Include video guide that welcomes users and describes therapy process
+[33m783a7df[m Ensure users are logged in before starting therapy sessions for better experience
+[33m3962576[m Add introductory videos to guide new users through the EMDR therapy process
+[33mfece4c1[m Update therapist names throughout the application for consistency
+[33m73c9bbe[m Move the initial setup and add navigation buttons to first therapy script
+[33m0ee2e13[m Improve user experience by streamlining session setup and login process
+[33m68c3cfe[m Improve EMDR session start and loading process; add helpful messages
+[33m74f7b6d[m Improve user experience and fix issues with EMDR session flow and display
+[33m0bf7342[m Improve user experience by moving features and adding headphone advice
+[33mdfd79c1[m Guide users to choose therapist and integrate BLS testing into welcome
+[33m909ea92[m Restore therapist selection to ensure users select the correct script
+[33m0acc3d6[m Improve the initial user experience and fix login functionality
+[33mbb2a451[m Guide users to choose a therapist before starting EMDR session
+[33m4d4a1fa[m Reorder EMDR therapy scripts to prioritize calm place setup earlier
+[33m5a110d9[m Improve free trial flow and correct EMDR script order for new users
+[33m29b07e7[m Enable users to select a therapist for a personalized EMDR experience
+[33mcb19125[m Ensure users always move forward in their personalized healing journey
+[33m3065ddf[m Remove unnecessary session notes and address other feedback on therapy flow
+[33m612fe55[m Improve login process by updating authentication dependencies
+[33md325d7a[m Improve EMDR therapy experience with speed adjustments and video control
+[33m2b274e1[m Update therapist references by removing the "Dr." title from all names
+[33mbc61645[m Refine EMDR session flow and content based on therapy feedback
+[33ma9d0241[m Enhance EMDR therapy experience with adjusted settings and visual guidance
+[33mb0b99cc[m Enable users to personalize EMDR therapy sessions with setup options
+[33m7ca07fb[m Add crash reporting resources to improve app stability and reliability
+[33m0a77c25[m Restore prior EMDR processing workflow with direct user interaction
+[33md333ff9[m Enhance EMDR session flow with guided processing and remove toast alerts
+[33m1c75a13[m Improve user flow and session handling for a smoother therapy experience
+[33m9b6fa28[m Offer streamlined user experience by removing distracting progress messages
+[33m64ebec4[m Ensure that the EMDR therapy session correctly completes and advances phases
+[33m9b08499[m Fix the test user login so testers can quickly and easily access the app
+[33mc460cc1[m Update test user credentials for improved debugging and testing
+[33m608b87f[m Improve user login reliability and fix authentication error messages
+[33m12ca6ce[m Improve user login process with error handling and updated tapping sets
+[33m2f2eb88[m Improve EMDR session flow with automatic script progression and set tracking
+[33m18c283c[m Enable free trial signup by directing new users to the login page first
+[33m6de1b5f[m Streamline the sign-up process and enhance the command menu accessibility
+[33mc496c97[m Streamline EMDR session flow and improve therapeutic guidance for users
+[33m8959c46[m Incorporate legal pages and add essential links to website footer
+[33m4b4e335[m Enable users to move past processing phase if session gets stuck
+[33mc7d44e3[m Introduce sign-up/login, improve BLS modes, and fix navigation issues
+[33m3fcff6d[m Implement bilateral stimulation that aligns with standard EMDR protocols
+[33ma103fdf[m Improve target setup page and reorder VOC and SUDS ratings display
+[33mc257f25[m Restore introductory content for EMDR sessions and fix data transmission
+[33m61768ef[m Improve communication with the server to properly record therapy progress
+[33m43405c7[m Improve EMDR session flow and remove unnecessary session notes during introduction
+[33mf0bc993[m Guide unauthenticated users to sign in before starting EMDR sessions
+[33mf63bfac[m Improve resource section navigation for smoother browsing of articles
+[33m810d166[m Transition users to the new video-guided therapy sessions within the application
+[33m44d7276[m Update the app logo and title displayed in the mobile navigation
+[33m6de013c[m Add quick sign-in for easier testing and remove forced details for trial
+[33m52a0fe1[m Update the starting point of the EMDR session with introductory script
+[33m1244beb[m Provide users with articles and resources for reprocessing and support
+[33m6f35148[m Integrate various BLS methods into EMDR phases for personalized therapy
+[33mcf4977e[m Add initial EMDR session workflow with video-guided therapy
+[33m5943d93[m Add feature to create and manage personalized relaxation playlists
+[33mb3854c0[m Implement video-guided EMDR therapy sessions for a more seamless experience
+[33m12e58e4[m Add interactive therapy options and introductory video for new users
+[33mc082780[m Enable users to record notes and save progress during EMDR sessions
+[33m5b45c27[m Introduce EMDR processing page with BLS and positive cognition features
+[33mbba387f[m Enable auditory bilateral stimulation with start and stop controls
+[33m537b277[m Implement initial version of the EMDR bilateral stimulation processing
+[33m21b9eb0[m Enhance the processing page with updated BLS feedback and session controls
+[33m024dfaf[m Refactor the processing page to streamline the EMDR therapy workflow
+[33m2576aaf[m Enable video streaming from the application in development environments
+[33mbdfde1e[m Enable users to meet their therapist and begin EMDR therapy sessions
+[33md67b85a[m Include an introductory video to familiarize users with their therapist
+[33m5c880e0[m Enhance EMDR modalities with session stats, pause/resume, and set tracking
+[33m774301e[m Show users introductory video before starting therapy session
+[33m5318bac[m Show a video explaining EMDR therapy instead of text and image
+[33m9b751d2[m Provide guidance to new users on selecting a suitable BLS method
+[33md943620[m Remember user's preferred settings for a more personalized experience
+[33m5be9b45[m Enable users to select their preferred method of bilateral stimulation
+[33ma57c0b3[m Give users control over auditory stimulation with speed and volume settings
+[33m63d2c0d[m Give users control over the visual stimulation speed within the modal
+[33m47aab5d[m Enable users to engage in tactile bilateral stimulation for therapy
+[33m1b904eb[m Enable auditory bilateral stimulation with alternating left and right tones
+[33mb41b25e[m Enable users to start visual bilateral stimulation within the application
+[33m36d309a[m Add a full-screen moving ball visual test to the preparation screen
+[33m384fd67[m Improve visual stimulation test to accurately simulate the therapy pattern
+[33m1e8e2af[m Enable users to test the bilateral stimulation feature of the application
+[33m041043d[m Implement multiple rounds of BLS processing and improve user guidance
+[33ma84af56[m Guide users through each step of the EMDR therapy processing session
+[33m517062b[m Enable therapists to test different Bilateral Stimulation modalities
+[33m32cfde0[m Enhance preparation guidance with audio, BLS, and customizable environment
+[33mc1b9266[m Grant immediate access for users during the trial period
+[33mff9df86[m Grant immediate access for trial users and streamline subscription process
+[33m13ba8a4[m Guide users to sign-in page and track cookies for free trial access
+[33m302ea0f[m Add tool to remove test accounts to help with development and debugging
+[33m58d334d[m Enable free trial period for new users and enhance login functionality
+[33m654ca6d[m Encourage new users to subscribe with a clear call to action button
+[33m5819b42[m Streamline home page by removing EMDR explanation sections
+[33mc441d72[m Update subscription cost to provide users a more affordable monthly rate
+[33mfa660a7[m Replace branded guidance with professional therapist for a personalized experience
+[33mc5dcabe[m Remove specific therapist mentions and incorporate professional guidance
+[33m6dc70b4[m Provide more compassionate guidance and visual support during therapy sessions
+[33m1859ec1[m Show Dr. Carey and allow users to hear her introductory script
+[33m5b1c0a7[m Replace photo of Dr. Carey with her actual image across the application
+[33mbabdbef[m Ensure consistent look and feel for Dr. Rebecca and improve logo visibility
+[33mea89e54[m Update Dr. Carey's appearance and explanation of the EMDR process
+[33m9a90044[m Update branding to reflect a more mature and knowledgeable image
+[33mf0d49eb[m Update the app's appearance to reflect new branding and a mature feel
+[33m78d5a1b[m Enhance user experience and system functionality across the application
+[33md292e40[m Saved your changes before starting work
+[33me24422a[m Initial commit

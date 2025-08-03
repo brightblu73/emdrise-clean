@@ -1,0 +1,35 @@
+Great — here’s a clear, plain English version of the instructions for building this therapist selection and free trial flow into your app on Replit. You can copy and paste this straight into the Chat to Agent area if you’re using Replit AI, or pass it to a developer helping with the build.
+
+⸻
+
+Therapist Selection and Free Trial Flow – Plain English Instructions
+	1.	Therapist Selection Screen
+      •   On the home screen of the app, show two therapists: Rebecca and Alistair.
+      •   Each should be shown as a clickable image or card.
+      •   Below the therapist cards, include a Start Free Trial button.
+      •   This button should be disabled (unclickable) until the user selects a therapist.
+	2.	Therapist Selection Logic
+      •   When the user clicks on a therapist card, highlight it to show it’s selected.
+      •   Save the name of the selected therapist in the browser’s memory using something like localStorage. This is so the app remembers their choice even after they move to another page.
+	3.	Start Free Trial Button Behaviour
+      •   Once a therapist is selected, the Start Free Trial button becomes active (clickable).
+      •   If the user clicks the button without selecting a therapist, show a small popup or alert that says:
+“Please select a therapist to continue. You’ll be guided through the EMDR journey with your chosen therapist.”
+	4.	Where the Button Takes Them
+      •   When the user clicks Start Free Trial, take them directly to the Welcome and Introduction to EMDR page (Script 1).
+      •   Do not take them to the Calm Place setup — that will come later.
+      •   Use the stored therapist choice to load the correct video (e.g. Rebecca or Alistair’s intro video) on the Welcome screen.
+	5.	Video Logic
+      •   On the Welcome screen, check which therapist the user selected.
+      •   Based on this, show the right video:
+If they picked Rebecca, show Rebecca’s video.
+If they picked Alistair, show Alistair’s video.
+	6.	Summary
+      •   Nothing else in the app should happen until a therapist is selected.
+      •   The free trial button stays disabled until then.
+      •   After selecting a therapist and starting the trial, the user should always begin at the Welcome video (Script 1).
+      •   From there, they move into the other phases of EMDR in the correct order.
+
+⸻
+
+Let me know if you want me to write the actual code to power this behind the scenes.

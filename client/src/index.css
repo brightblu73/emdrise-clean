@@ -1,0 +1,227 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hide scrollbar for webkit browsers */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+/* Video player styles - optimized for both web and mobile */
+.emdr-video-portrait {
+  width: 100%;
+  max-width: 400px; /* Prevent oversized on web */
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  margin: 0 auto; /* Center the video */
+}
+
+/* Swiper pagination custom styles */
+.swiper-pagination {
+  position: relative !important;
+  bottom: 0 !important;
+  margin-top: 1rem !important;
+}
+
+.swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.5) !important;
+  opacity: 1 !important;
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: white !important;
+}
+
+:root {
+  --background: hsl(210, 40%, 98%);
+  --foreground: hsl(222, 47%, 11%);
+  --muted: hsl(210, 30%, 96%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --popover: hsl(210, 35%, 97%);
+  --popover-foreground: hsl(222, 47%, 11%);
+  --card: hsl(210, 35%, 97%);
+  --card-foreground: hsl(222, 47%, 11%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222, 47%, 11%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(222, 47%, 11%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(215, 20%, 65%);
+  --radius: 0.5rem;
+  
+  /* EMDR App Specific Colors */
+  --primary-blue: hsl(217, 88%, 58%);
+  --secondary-blue: hsl(212, 92%, 66%);
+  --primary-green: hsl(158, 92%, 40%);
+  --secondary-green: hsl(162, 83%, 58%);
+  --warm-accent: hsl(41, 96%, 48%);
+  --therapeutic-bg: hsl(210, 40%, 98%);
+  --safe-space: hsl(158, 30%, 95%);
+}
+
+.dark {
+  --background: hsl(224, 71%, 4%);
+  --foreground: hsl(213, 31%, 91%);
+  --muted: hsl(223, 47%, 11%);
+  --muted-foreground: hsl(215, 16%, 57%);
+  --popover: hsl(224, 71%, 4%);
+  --popover-foreground: hsl(213, 31%, 91%);
+  --card: hsl(224, 71%, 4%);
+  --card-foreground: hsl(213, 31%, 91%);
+  --border: hsl(216, 34%, 17%);
+  --input: hsl(216, 34%, 17%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(222, 47%, 11%);
+  --secondary-foreground: hsl(213, 31%, 91%);
+  --accent: hsl(216, 34%, 17%);
+  --accent-foreground: hsl(213, 31%, 91%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(213, 31%, 91%);
+  --ring: hsl(216, 34%, 17%);
+  
+  /* Dark mode EMDR colors */
+  --primary-blue: hsl(217, 88%, 58%);
+  --secondary-blue: hsl(212, 92%, 66%);
+  --primary-green: hsl(158, 92%, 40%);
+  --secondary-green: hsl(162, 83%, 58%);
+  --warm-accent: hsl(41, 96%, 48%);
+  --therapeutic-bg: hsl(223, 47%, 11%);
+  --safe-space: hsl(158, 30%, 8%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .emdr-gradient {
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+  }
+  
+  .therapeutic-card {
+    @apply bg-card dark:bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow;
+  }
+  
+  .safe-space-bg {
+    background-color: var(--safe-space);
+  }
+  
+  .dr-carey-voice {
+    @apply text-sm text-muted-foreground italic border-l-4 border-primary-green pl-4 py-2;
+  }
+  
+  .suds-scale {
+    @apply w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer;
+  }
+  
+  .suds-scale::-webkit-slider-thumb {
+    @apply appearance-none w-5 h-5 bg-primary rounded-full cursor-pointer;
+  }
+  
+  .bilateral-indicator {
+    @apply w-4 h-4 rounded-full animate-pulse;
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-green));
+  }
+
+  /* EMDRise Logo Styling */
+  .logo-container {
+    display: flex;
+    align-items: center;
+    padding-left: 16px;
+    height: 60px;
+  }
+
+  .logo-image {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /* Responsive scaling for mobile */
+  @media (max-width: 480px) {
+    .logo-container {
+      padding-left: 12px;
+      height: 50px;
+    }
+
+    .logo-image {
+      height: 48px;
+    }
+  }
+
+  /* Fix narrow field layout issues */
+  .emdr-form-field {
+    @apply w-full min-w-0;
+  }
+
+  .emdr-form-field input,
+  .emdr-form-field textarea {
+    @apply w-full min-w-0;
+  }
+}
+
+/* New York aesthetic typography */
+.ny-heading {
+  @apply text-4xl md:text-5xl font-bold leading-tight tracking-tight;
+}
+
+.ny-subheading {
+  @apply text-2xl md:text-3xl font-semibold leading-snug;
+}
+
+/* Professional EMDR styling */
+.emdr-phase-indicator {
+  @apply inline-flex items-center justify-center w-8 h-8 rounded-full text-white font-bold text-sm;
+}
+
+.emdr-phase-1-2 {
+  background-color: var(--primary-blue);
+}
+
+.emdr-phase-3 {
+  background-color: var(--primary-green);
+}
+
+.emdr-phase-4 {
+  background-color: var(--secondary-blue);
+}
+
+.emdr-phase-5-7 {
+  background-color: var(--warm-accent);
+}
+
+/* Therapeutic animations */
+@keyframes therapeutic-pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.therapeutic-pulse {
+  animation: therapeutic-pulse 2s ease-in-out infinite;
+}
+
+/* Courage through adversity styling */
+.courage-gradient {
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 25%, var(--primary-green) 75%, var(--secondary-green) 100%);
+}
+

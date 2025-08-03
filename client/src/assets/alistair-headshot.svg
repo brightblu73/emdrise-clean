@@ -1,0 +1,136 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="alistairClip">
+      <circle cx="60" cy="60" r="58"/>
+    </clipPath>
+    
+    <!-- Realistic skin gradients for masculine features -->
+    <radialGradient id="skinGradMale" cx="0.3" cy="0.3" r="0.8">
+      <stop offset="0%" style="stop-color:#ffd7a8;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#f4c2a1;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#e17055;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d63031;stop-opacity:0.3" />
+    </radialGradient>
+    
+    <!-- Dark hair texture -->
+    <radialGradient id="darkHairGrad" cx="0.5" cy="0.2" r="0.9">
+      <stop offset="0%" style="stop-color:#4a5568;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2d3748;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a202c;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Professional green clothing -->
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Beard texture -->
+    <radialGradient id="beardGrad" cx="0.5" cy="0.3" r="0.8">
+      <stop offset="0%" style="stop-color:#2d3748;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#1a202c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.8" />
+    </radialGradient>
+    
+    <!-- Photo-realistic shadows -->
+    <filter id="softShadowMale">
+      <feGaussianBlur stdDeviation="2"/>
+      <feOffset dx="1" dy="2"/>
+      <feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
+    </filter>
+  </defs>
+  
+  <!-- Background with photo studio lighting -->
+  <circle cx="60" cy="60" r="60" fill="url(#skinGradMale)" opacity="0.1"/>
+  
+  <!-- Professional background -->
+  <circle cx="60" cy="60" r="58" fill="#f8f9fa"/>
+  
+  <!-- Content within circle -->
+  <g clip-path="url(#alistairClip)">
+    <!-- Studio background -->
+    <rect x="0" y="0" width="120" height="120" fill="linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)"/>
+    
+    <!-- Professional attire with realistic shadows -->
+    <path d="M20 82 Q60 77 100 82 L100 120 L20 120 Z" fill="url(#greenGrad)" filter="url(#softShadowMale)"/>
+    <path d="M42 82 Q60 79 78 82 L78 108 L42 108 Z" fill="#ffffff" opacity="0.95"/>
+    <!-- Professional tie -->
+    <path d="M58 82 L62 82 L61.5 110 L58.5 110 Z" fill="#8b4513" opacity="0.9"/>
+    <path d="M58.5 82 L61.5 82 L61 95 L59 95 Z" fill="#a0522d" opacity="0.7"/>
+    
+    <!-- Realistic hair with texture -->
+    <path d="M28 28 Q38 12 60 16 Q82 12 92 28 Q87 42 82 48 Q72 38 60 40 Q48 38 38 48 Q33 42 28 28" fill="url(#darkHairGrad)" filter="url(#softShadowMale)"/>
+    
+    <!-- Hair strands for realism -->
+    <path d="M32 32 Q42 22 52 32" stroke="#1a202c" stroke-width="0.5" fill="none" opacity="0.6"/>
+    <path d="M68 32 Q78 22 88 32" stroke="#1a202c" stroke-width="0.5" fill="none" opacity="0.6"/>
+    <path d="M35 38 Q45 28 55 38" stroke="#1a202c" stroke-width="0.5" fill="none" opacity="0.4"/>
+    <path d="M65 38 Q75 28 85 38" stroke="#1a202c" stroke-width="0.5" fill="none" opacity="0.4"/>
+    
+    <!-- Realistic face with masculine features -->
+    <ellipse cx="60" cy="56" rx="24" ry="30" fill="url(#skinGradMale)" filter="url(#softShadowMale)"/>
+    
+    <!-- Facial contours - more angular for masculine look -->
+    <ellipse cx="58" cy="53" rx="22" ry="27" fill="#ffd7a8" opacity="0.3"/>
+    <ellipse cx="62" cy="59" rx="20" ry="24" fill="#f4c2a1" opacity="0.2"/>
+    
+    <!-- Realistic eyes with depth -->
+    <ellipse cx="51" cy="49" rx="4" ry="5" fill="#ffffff" filter="url(#softShadowMale)"/>
+    <ellipse cx="69" cy="49" rx="4" ry="5" fill="#ffffff" filter="url(#softShadowMale)"/>
+    
+    <!-- Iris detail -->
+    <circle cx="51" cy="49" r="2.8" fill="#2d3748"/>
+    <circle cx="69" cy="49" r="2.8" fill="#2d3748"/>
+    <circle cx="51" cy="48.5" r="2.2" fill="#1a202c" opacity="0.8"/>
+    <circle cx="69" cy="48.5" r="2.2" fill="#1a202c" opacity="0.8"/>
+    
+    <!-- Eye highlights -->
+    <circle cx="51.5" cy="48" r="0.8" fill="#ffffff" opacity="0.9"/>
+    <circle cx="69.5" cy="48" r="0.8" fill="#ffffff" opacity="0.9"/>
+    <circle cx="50.8" cy="49.2" r="0.3" fill="#ffffff" opacity="0.7"/>
+    <circle cx="68.8" cy="49.2" r="0.3" fill="#ffffff" opacity="0.7"/>
+    
+    <!-- Realistic eyebrows - thicker for masculine look -->
+    <path d="M44 43 Q51 41 58 43" stroke="#1a202c" stroke-width="2" fill="none" opacity="0.8"/>
+    <path d="M62 43 Q69 41 76 43" stroke="#1a202c" stroke-width="2" fill="none" opacity="0.8"/>
+    
+    <!-- Eyebrow hairs -->
+    <path d="M45 43.5 L47 42.5" stroke="#1a202c" stroke-width="0.4" opacity="0.6"/>
+    <path d="M48 42.8 L50 41.8" stroke="#1a202c" stroke-width="0.4" opacity="0.6"/>
+    <path d="M51 41.8 L53 42.8" stroke="#1a202c" stroke-width="0.4" opacity="0.6"/>
+    <path d="M67 42.8 L69 41.8" stroke="#1a202c" stroke-width="0.4" opacity="0.6"/>
+    <path d="M70 41.8 L72 42.8" stroke="#1a202c" stroke-width="0.4" opacity="0.6"/>
+    <path d="M73 42.8 L75 43.5" stroke="#1a202c" stroke-width="0.4" opacity="0.6"/>
+    
+    <!-- Realistic nose with shadows -->
+    <path d="M60 53 Q58.5 59 60 61 Q61.5 59 60 53" fill="#e17055" opacity="0.3"/>
+    <ellipse cx="60" cy="59" rx="1.2" ry="2.5" fill="#d63031" opacity="0.2"/>
+    
+    <!-- Nostril detail -->
+    <ellipse cx="58.8" cy="60" rx="0.6" ry="1.2" fill="#6c757d" opacity="0.3"/>
+    <ellipse cx="61.2" cy="60" rx="0.6" ry="1.2" fill="#6c757d" opacity="0.3"/>
+    
+    <!-- Professional beard with realistic texture -->
+    <ellipse cx="60" cy="71" rx="16" ry="9" fill="url(#beardGrad)" filter="url(#softShadowMale)"/>
+    <!-- Beard texture lines -->
+    <path d="M48 68 Q54 71 60 68" stroke="#000000" stroke-width="0.3" opacity="0.4"/>
+    <path d="M60 68 Q66 71 72 68" stroke="#000000" stroke-width="0.3" opacity="0.4"/>
+    <path d="M45 72 Q52 75 60 72" stroke="#000000" stroke-width="0.3" opacity="0.4"/>
+    <path d="M60 72 Q68 75 75 72" stroke="#000000" stroke-width="0.3" opacity="0.4"/>
+    <path d="M50 76 Q57 78 60 76" stroke="#000000" stroke-width="0.3" opacity="0.4"/>
+    <path d="M60 76 Q63 78 70 76" stroke="#000000" stroke-width="0.3" opacity="0.4"/>
+    
+    <!-- Realistic mouth -->
+    <path d="M54 66 Q60 69 66 66" stroke="#d63031" stroke-width="1.8" fill="none" opacity="0.8"/>
+    <path d="M55 67 Q60 68.5 65 67" stroke="#e17055" stroke-width="1" fill="none" opacity="0.6"/>
+    
+    <!-- Facial shadows for depth - more pronounced for masculine features -->
+    <ellipse cx="53" cy="56" rx="4" ry="10" fill="#d63031" opacity="0.15" transform="rotate(-15 53 56)"/>
+    <ellipse cx="67" cy="56" rx="4" ry="10" fill="#d63031" opacity="0.15" transform="rotate(15 67 56)"/>
+    <ellipse cx="60" cy="72" rx="12" ry="4" fill="#d63031" opacity="0.1"/>
+  </g>
+  
+  <!-- Professional circular frame -->
+  <circle cx="60" cy="60" r="58" fill="none" stroke="#dee2e6" stroke-width="3"/>
+  <circle cx="60" cy="60" r="58" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+</svg>

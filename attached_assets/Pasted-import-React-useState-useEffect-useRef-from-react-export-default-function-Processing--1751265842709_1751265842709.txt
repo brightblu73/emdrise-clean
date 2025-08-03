@@ -1,0 +1,145 @@
+import React, { useState, useEffect, useRef } from "react";
+
+export default function Processing() {
+  const [blsType, setBlsType] = useState("visual");
+  const [phase, setPhase] = useState("bls");
+  const [userNote, setUserNote] = useState("");
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const intervalRef = useRef<number | null>(null);
+  const panRef = useRef<number>(-1);
+
+  const playBeep = (panValue: number) => {
+    const ctx = audioContextRef.current || new AudioContext();
+    audioContextRef.current = ctx;
+
+    const oscillator = ctx.createOscillator();
+    const panNode = new StereoPannerNode(ctx, { pan: panValue });
+    const gainNode = ctx.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+
+    oscillator.connect(panNode).connect(gainNode).connect(ctx.destination);
+    oscillator.start();
+    oscillator.stop(ctx.currentTime + 0.1); // short beep
+  };
+
+  useEffect(() => {
+    if (isAudioPlaying) {
+      intervalRef.current = window.setInterval(() => {
+        panRef.current = -panRef.current; // alternate pan
+        playBeep(panRef.current);
+      }, 400); // every 400ms
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      };
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    }
+  }, [isAudioPlaying]);
+
+  return (
+    <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
+      <h2>EMDR Reprocessing</h2>
+
+      <div>
+        <label>Select BLS Mode:</label>
+        <select value={blsType} onChange={e => setBlsType(e.target.value)}>
+          <option value="visual">Visual (eye movement)</option>
+          <option value="audio">Auditory (beeps)</option>
+          <option value="tapping">Tapping (self-guided)</option>
+        </select>
+      </div>
+
+      {blsType === "visual" && phase === "bls" && (
+        <div style={{ marginTop: "2rem", height: "60px", overflow: "hidden", position: "relative" }}>
+          <div
+            style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              backgroundColor: "blue",
+              position: "absolute",
+              animation: "blsBall 2s linear infinite",
+            }}
+          />
+          <style>{`
+            @keyframes blsBall {
+              0% { left: 0; }
+              50% { left: calc(100% - 30px); }
+              100% { left: 0; }
+            }
+          `}</style>
+        </div>
+      )}
+
+      {blsType === "audio" && phase === "bls" && (
+        <div style={{ marginTop: "2rem" }}>
+          <p>🔊 Auditory BLS</p>
+          <button onClick={() => setIsAudioPlaying(true)}>Start Beeps</button>
+          <button onClick={() => setIsAudioPlaying(false)} style={{ marginLeft: "1rem" }}>Stop Beeps</button>
+        </div>
+      )}
+
+      {blsType === "tapping" && phase === "bls" && (
+        <div style={{ marginTop: "2rem" }}>
+          <p>👋 Use butterfly taps or tap thighs as guided. (Manual)</p>
+        </div>
+      )}
+
+      <div style={{ marginTop: "2rem" }}>
+        <button onClick={() => {
+          setIsAudioPlaying(false);
+          setPhase("notice");
+        }}>
+          Stop BLS / What do you notice?
+        </button>
+      </div>
+
+      {phase === "notice" && (
+        <div style={{ marginTop: "2rem" }}>
+          <textarea
+            placeholder="Client: What are you noticing now?"
+            rows={4}
+            value={userNote}
+            onChange={(e) => setUserNote(e.target.value)}
+            style={{ width: "100%", padding: "1rem" }}
+          />
+          <div style={{ marginTop: "1rem" }}>
+            <button
+              onClick={() => {
+                setUserNote("");
+                setPhase("bls");
+              }}
+            >
+              Go With That (start next round)
+            </button>
+            <button
+              onClick={() => {
+                setIsAudioPlaying(false);
+                setPhase("closure");
+              }}
+              style={{ marginLeft: "1rem" }}
+            >
+              Pause / Close Session
+            </button>
+          </div>
+        </div>
+      )}
+
+      {phase === "closure" && (
+        <div style={{ marginTop: "2rem" }}>
+          <p>Session ended. Return to calm place or visualise safety.</p>
+        </div>
+      )}
+    </div>
+  );
+}

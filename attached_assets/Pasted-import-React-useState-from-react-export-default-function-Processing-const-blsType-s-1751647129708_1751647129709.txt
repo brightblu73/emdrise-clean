@@ -1,0 +1,116 @@
+import React, { useState } from "react";
+
+export default function Processing() {
+  const [blsType, setBlsType] = useState("visual");
+  const [phase, setPhase] = useState("setup");
+  const [userNote, setUserNote] = useState("");
+  const [voc, setVoc] = useState(1);
+  const [suds, setSuds] = useState(8);
+  const [loopCount, setLoopCount] = useState(0);
+
+  const handleNextRound = () => {
+    setLoopCount(loopCount + 1);
+    setPhase("bls");
+  };
+
+  return (
+    <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
+      <h2>EMDR Processing</h2>
+
+      {phase === "setup" && (
+        <>
+          <p>Please select your preferred type of Bilateral Stimulation:</p>
+          <select value={blsType} onChange={e => setBlsType(e.target.value)}>
+            <option value="visual">Visual (eye movement)</option>
+            <option value="audio">Auditory (beeps)</option>
+            <option value="tapping">Tapping (self-guided)</option>
+          </select>
+          <button onClick={() => setPhase("bls")} style={{ marginTop: "1rem" }}>
+            Start Desensitisation
+          </button>
+        </>
+      )}
+
+      {phase === "bls" && (
+        <>
+          <p>
+            {blsType === "visual" && "Follow the visual ball across the screen..."}
+            {blsType === "audio" && "Listen to the alternating beeps..."}
+            {blsType === "tapping" && "Begin self-tapping now guided by the therapist..."}
+          </p>
+          <button onClick={() => setPhase("notice")}>What do you notice now?</button>
+        </>
+      )}
+
+      {phase === "notice" && (
+        <>
+          <textarea
+            placeholder="What do you notice now?"
+            rows={4}
+            value={userNote}
+            onChange={(e) => setUserNote(e.target.value)}
+            style={{ width: "100%", marginTop: "1rem" }}
+          />
+          <div style={{ marginTop: "1rem" }}>
+            <button onClick={handleNextRound}>Just notice that. Continue.</button>
+            <button onClick={() => setPhase("installation")}>Move to Installation</button>
+          </div>
+        </>
+      )}
+
+      {phase === "installation" && (
+        <>
+          <p>Hold the memory and positive belief together. Begin BLS.</p>
+          <input
+            type="text"
+            placeholder="Positive cognition (e.g. I am safe)"
+            style={{ width: "100%", marginBottom: "1rem" }}
+          />
+          <div>
+            <label>VOC (1–7): </label>
+            <input
+              type="number"
+              min={1}
+              max={7}
+              value={voc}
+              onChange={(e) => setVoc(Number(e.target.value))}
+            />
+          </div>
+          <button onClick={() => {
+            if (voc >= 7) setPhase("bodyscan");
+            else alert("Let’s repeat installation until VOC is 7.");
+          }}>
+            Check VOC and continue
+          </button>
+        </>
+      )}
+
+      {phase === "bodyscan" && (
+        <>
+          <p>Scan your body from head to toe. Do you notice any disturbance?</p>
+          <button onClick={() => setPhase("calmplace")}>
+            No – proceed to Calm Place
+          </button>
+          <button onClick={() => setPhase("bls")}>
+            Yes – repeat BLS
+          </button>
+        </>
+      )}
+
+      {phase === "calmplace" && (
+        <>
+          <p>Let’s go to your Calm Place now. Follow the BLS to ground and soothe.</p>
+          <button onClick={() => {
+            setPhase("setup");
+            setLoopCount(0);
+            setUserNote("");
+            setVoc(1);
+            setSuds(8);
+          }}>
+            Finish Session
+          </button>
+        </>
+      )}
+    </div>
+  );
+}

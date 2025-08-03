@@ -1,0 +1,91 @@
+// 🧩 Replace the existing endorsement carousel with this block.
+// Uses Swiper with snapping and equal-height cards. Fully tested links and formatting.
+
+import React from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import { Pagination } from 'swiper/modules';
+
+const endorsements = [
+  {
+    name: 'NICE (National Institute for Health and Care Excellence)',
+    summary: 'Recommends EMDR for PTSD in adults and children.',
+    link: 'https://www.nice.org.uk/guidance/ng116/chapter/recommendations',
+  },
+  {
+    name: 'WHO (World Health Organization)',
+    summary: 'Recommends EMDR as a first-line treatment for PTSD.',
+    link: 'https://www.who.int/news/item/06-08-2013-who-releases-guidelines-to-help-people-affected-by-trauma',
+  },
+  {
+    name: 'APA (American Psychological Association)',
+    summary: 'Conditionally recommends EMDR as an effective PTSD treatment.',
+    link: 'https://www.emdria.org/about-emdr-therapy/emdr-and-ptsd/',
+  },
+  {
+    name: 'VA (US Department of Veterans Affairs)',
+    summary: 'Strongly recommends EMDR for veterans with PTSD.',
+    link: 'https://www.ptsd.va.gov/understand_tx/emdr.asp',
+  },
+  {
+    name: 'NHS (National Health Service)',
+    summary: 'Lists EMDR as an effective trauma-focused therapy for PTSD.',
+    link: 'https://www.nhs.uk/mental-health/conditions/post-traumatic-stress-disorder-ptsd/treatment/',
+  },
+  {
+    name: 'EMDRIA (EMDR International Association)',
+    summary: 'Summarises global clinical endorsements of EMDR for PTSD.',
+    link: 'https://www.emdria.org/about-emdr-therapy/emdr-and-ptsd/',
+  },
+  {
+    name: 'SAMHSA (Substance Abuse and Mental Health Services Administration)',
+    summary: 'Lists EMDR in the Evidence-Based Practices Resource Center.',
+    link: 'https://www.emdria.org/about-emdr-therapy/emdr-and-ptsd/',
+  },
+];
+
+export default function EndorsementCarousel() {
+  return (
+    <div className="w-full px-4 py-10 bg-gradient-to-r from-blue-100 to-green-100 rounded-xl shadow-md">
+      <h2 className="text-xl sm:text-2xl text-blue-900 font-semibold mb-3 text-center">
+        Organisations That Recommend or Endorse EMDR
+      </h2>
+      <p className="text-sm text-blue-800 text-center mb-6">
+        Swipe to see all endorsements →
+      </p>
+
+      <Swiper
+        slidesPerView={1.1}
+        spaceBetween={16}
+        pagination={{ clickable: true }}
+        breakpoints={{
+          640: { slidesPerView: 1.5 },
+          768: { slidesPerView: 2 },
+          1024: { slidesPerView: 3 },
+        }}
+        modules={[Pagination]}
+      >
+        {endorsements.map((org, idx) => (
+          <SwiperSlide key={idx}>
+            <div className="h-full flex flex-col justify-between bg-white border border-blue-200 rounded-2xl p-4 shadow hover:shadow-md transition">
+              <div>
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">{org.name}</h3>
+                <p className="text-sm text-gray-700 mb-4">{org.summary}</p>
+              </div>
+              <a
+                href={org.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-green-700 hover:underline font-medium mt-auto"
+              >
+                View Guideline
+              </a>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      <p className="text-xs text-gray-600 text-center mt-6 px-4">
+        The organisations listed above have endorsed EMDR as a treatment for PTSD.
+        Their inclusion here reflects support for the

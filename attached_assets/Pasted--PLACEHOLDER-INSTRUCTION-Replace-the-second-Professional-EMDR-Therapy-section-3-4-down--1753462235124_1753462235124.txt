@@ -1,0 +1,103 @@
+// 🧩 PLACEHOLDER INSTRUCTION:
+// Replace the second "Professional EMDR Therapy" section (3/4 down the homepage),
+// which includes the text:
+// "Experience therapist-designed video guidance through each phase of the EMDR protocol…"
+// This new block maintains the blue-to-green gradient style and integrates seamlessly into your EMDRise layout.
+
+import React from 'react';
+
+const endorsements = [
+  {
+    name: 'NICE',
+    region: 'United Kingdom 🇬🇧',
+    summary: 'Recommends EMDR for PTSD in adults and children.',
+    link: 'https://www.nice.org.uk/guidance/ng116/chapter/recommendations',
+  },
+  {
+    name: 'WHO',
+    region: 'International 🌍',
+    summary: 'Recommends EMDR as a first-line PTSD treatment.',
+    link: 'https://www.who.int/publications/i/item/9789241505932',
+  },
+  {
+    name: 'VA/DoD',
+    region: 'United States 🇺🇸',
+    summary: 'Strongly recommends EMDR for veterans with PTSD.',
+    link: 'https://www.ptsd.va.gov/professional/treat/txessentials/emdr_pro.asp',
+  },
+  {
+    name: 'APA',
+    region: 'United States 🇺🇸',
+    summary: 'Includes EMDR as a conditionally recommended PTSD treatment.',
+    link: 'https://www.apa.org/ptsd-guideline/treatments/emdr',
+  },
+  {
+    name: 'ISTSS',
+    region: 'International 🌍',
+    summary: 'Supports EMDR as an effective trauma intervention.',
+    link: 'https://www.emdria.org/about-emdr-therapy/emdr-and-ptsd/',
+  },
+  {
+    name: 'NHMRC',
+    region: 'Australia 🇦🇺',
+    summary: 'Recognises EMDR as a core treatment for PTSD.',
+    link: 'https://www.nhmrc.gov.au/about-us/publications/evidence-practice-ptsd',
+  },
+  {
+    name: 'UNHCR',
+    region: 'International 🌍',
+    summary: 'Endorses EMDR for refugee trauma and displacement.',
+    link: 'https://www.unhcr.org/protection/health/5c594f5f4/mental-health-psychosocial-response-refugee-crisis.html',
+  },
+  {
+    name: 'SAMHSA',
+    region: 'United States 🇺🇸',
+    summary: 'Lists EMDR as an evidence-based trauma therapy.',
+    link: 'https://www.samhsa.gov/ebp-resource-center',
+  },
+  {
+    name: 'Dutch Health Committee',
+    region: 'Netherlands 🇳🇱',
+    summary: 'Recommends EMDR in national trauma guidelines.',
+    link: 'https://www.emdria.org/about-emdr-therapy/emdr-and-ptsd/',
+  },
+  {
+    name: 'HAS',
+    region: 'France 🇫🇷',
+    summary: 'Formally recommends EMDR for PTSD treatment.',
+    link: 'https://www.has-sante.fr/',
+  },
+];
+
+export default function EndorsementCarousel() {
+  return (
+    <div className="w-full px-4 py-10 bg-gradient-to-r from-blue-100 to-green-100 rounded-xl shadow-md">
+      <h2 className="text-xl sm:text-2xl text-blue-900 font-semibold mb-4 text-center">
+        Organisations That Recommend or Endorse EMDR
+      </h2>
+      <div className="flex overflow-x-auto space-x-4 pb-4">
+        {endorsements.map((org, idx) => (
+          <div
+            key={idx}
+            className="min-w-[250px] max-w-xs flex-shrink-0 bg-white border border-blue-200 rounded-2xl p-4 shadow hover:shadow-lg transition"
+          >
+            <h3 className="text-lg font-semibold text-blue-800 mb-1">{org.name}</h3>
+            <p className="text-sm text-gray-600 italic mb-1">{org.region}</p>
+            <p className="text-sm text-gray-700 mb-3">{org.summary}</p>
+            <a
+              href={org.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-green-700 hover:underline font-medium"
+            >
+              View Guideline
+            </a>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-gray-600 text-center mt-6 px-4">
+        The organisations listed above have endorsed EMDR as a treatment for PTSD. Their inclusion here reflects support for the EMDR method itself, not this specific app.
+      </p>
+    </div>
+  );
+}

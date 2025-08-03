@@ -1,0 +1,106 @@
+Please update `client/components/AuditoryModal.tsx` with this version that includes both speed and volume sliders:
+
+import { useEffect, useRef, useState } from "react";
+
+export default function AuditoryModal({ onClose }: { onClose: () => void }) {
+  const [speed, setSpeed] = useState(500); // ms between pans
+  const [volume, setVolume] = useState(0.5); // 0 to 1
+
+  const contextRef = useRef<AudioContext | null>(null);
+  const oscillatorRef = useRef<OscillatorNode | null>(null);
+  const pannerRef = useRef<StereoPannerNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
+  const intervalRef = useRef<number>();
+
+  useEffect(() => {
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    contextRef.current = context;
+
+    const oscillator = context.createOscillator();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(440, context.currentTime);
+
+    const panner = context.createStereoPanner();
+    const gain = context.createGain();
+    gain.gain.setValueAtTime(volume, context.currentTime);
+
+    oscillator.connect(panner).connect(gain).connect(context.destination);
+    oscillator.start();
+
+    oscillatorRef.current = oscillator;
+    pannerRef.current = panner;
+    gainRef.current = gain;
+
+    let direction = 1;
+    intervalRef.current = window.setInterval(() => {
+      panner.pan.setValueAtTime(direction, context.currentTime);
+      direction *= -1;
+    }, speed);
+
+    return () => {
+      oscillator.stop();
+      oscillator.disconnect();
+      clearInterval(intervalRef.current);
+      context.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (gainRef.current && contextRef.current) {
+      gainRef.current.gain.setValueAtTime(volume, contextRef.current.currentTime);
+    }
+  }, [volume]);
+
+  useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      let direction = 1;
+      intervalRef.current = window.setInterval(() => {
+        if (pannerRef.current && contextRef.current) {
+          pannerRef.current.pan.setValueAtTime(direction, contextRef.current.currentTime);
+          direction *= -1;
+        }
+      }, speed);
+    }
+  }, [speed]);
+
+  return (
+    <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center text-white">
+      <h2 className="text-xl mb-4">Auditory BLS</h2>
+
+      <div className="w-64 mb-4">
+        <label className="block text-sm mb-1 text-center">Speed</label>
+        <input
+          type="range"
+          min="200"
+          max="1000"
+          value={speed}
+          onChange={(e) => setSpeed(Number(e.target.value))}
+          className="w-full"
+        />
+        <p className="text-center text-xs mt-1">{speed}ms left/right switch</p>
+      </div>
+
+      <div className="w-64 mb-6">
+        <label className="block text-sm mb-1 text-center">Volume</label>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value={volume}
+          onChange={(e) => setVolume(Number(e.target.value))}
+          className="w-full"
+        />
+        <p className="text-center text-xs mt-1">{Math.round(volume * 100)}%</p>
+      </div>
+
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 border px-4 py-2"
+      >
+        Close
+      </button>
+    </div>
+  );
+}

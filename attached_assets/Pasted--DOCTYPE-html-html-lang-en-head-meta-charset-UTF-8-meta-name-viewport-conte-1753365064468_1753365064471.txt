@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMDR Journey Timeline</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f2f9f7;
+      padding: 20px;
+    }
+    #emdr-journey {
+      padding: 20px;
+      background: #f2f9f7;
+    }
+    .timeline {
+      display: flex;
+      overflow-x: auto;
+      gap: 32px;
+      padding: 16px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .step {
+      flex: 0 0 auto;
+      text-align: center;
+      width: 100px;
+      position: relative;
+      cursor: pointer;
+    }
+    .step .icon {
+      width: 32px;
+      height: 32px;
+      margin: 0 auto 8px;
+      color: #007f91;
+    }
+    .step .label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #007f91;
+    }
+    .tooltip {
+      visibility: hidden;
+      width: 180px;
+      background-color: #e0f7f1;
+      color: #003f4f;
+      text-align: center;
+      border-radius: 6px;
+      padding: 8px;
+      position: absolute;
+      z-index: 1;
+      bottom: 110%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .step:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <section id="emdr-journey">
+    <h2>Your EMDR Journey</h2>
+    <div class="timeline">
+      <div class="step">
+        <div class="icon" data-lucide="sliders"></div>
+        <div class="label">Preparation</div>
+        <div class="tooltip">Try your preferred BLS method.</div>
+      </div>
+      <div class="step">
+        <div class="icon" data-lucide="cloud"></div>
+        <div class="label">Calm Place</div>
+        <div class="tooltip">Create a mental safe space to return to when needed.</div>
+      </div>
+      <div class="step">
+        <div class="icon" data-lucide="target"></div>
+        <div class="label">Target Memory</div>
+        <div class="tooltip">Identify the image, belief, and emotions that represent the memory.</div>
+      </div>
+      <div class="step">
+        <div class="icon" data-lucide="refresh-ccw"></div>
+        <div class="label">Reprocessing</div>
+        <div class="tooltip">Process the memory using BLS while observing what comes up.</div>
+      </div>
+      <div class="step">
+        <div class="icon" data-lucide="link"></div>
+        <div class="label">Installation</div>
+        <div class="tooltip">Strengthen the positive belief using BLS.</div>
+      </div>
+      <div class="step">
+        <div class="icon" data-lucide="activity"></div>
+        <div class="label">Body Scan</div>
+        <div class="tooltip">Check your body for any lingering tension or discomfort.</div>
+      </div>
+      <div class="step">
+        <div class="icon" data-lucide="lock"></div>
+        <div class="label">Closure</div>
+        <div class="tooltip">Return to a calm state before finishing the session.</div>
+      </div>
+      <div class="step">
+        <div class="icon" data-lucide="heart"></div>
+        <div class="label">Aftercare</div>
+        <div class="tooltip">Reflect and take gentle steps to look after yourself post-session.</div>
+      </div>
+    </div>
+  </section>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>

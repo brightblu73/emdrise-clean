@@ -1,0 +1,34 @@
+Hi Agent, please implement the following features for my EMDR app. Each item is described with the function I want and the required code elements:
+
+1. **Visual BLS – Eye Tracking with Speed Control**
+   - Create an animation of a ball or dot moving left to right across the screen and back.
+   - Include a slider that lets the user adjust the speed (e.g., fast, medium, slow).
+   - This will be used during reprocessing.
+
+2. **Auditory BLS – Alternating Beeps with Volume Control**
+   - Create a toggle that starts and stops alternating left/right beep sounds.
+   - Add a volume slider so users can adjust the audio level.
+   - This should work with headphones for true bilateral effect.
+
+3. **Tapping Instructions for Tactile BLS**
+   - Display text instructions explaining how to perform the butterfly tap or thigh tapping.
+   - Optionally include a simple animated icon or graphic showing the rhythm.
+   - Add a timer pulse or metronome (e.g., left/right flashing text or dot) if feasible.
+
+4. **Save Preferred BLS Type**
+   - When a user selects their preferred BLS method (visual, auditory, tapping), save this selection using `localStorage`.
+   - Retrieve it later to auto-load their preferred method.
+
+5. **‘Which BLS Should I Use?’ Guide**
+   - Add a small button that opens a modal or popup with brief descriptions:
+     - Visual: for people who like tracking movement
+     - Auditory: good for eyes-closed or low-vision
+     - Tapping: helpful when wanting to stay grounded in the body
+   - Keep it short and client-friendly.
+
+6. **Session Timer or Set Counter**
+   - Add a visual counter that starts when the user begins reprocessing.
+   - Allow the therapist or client to track how many sets of BLS have been done (e.g., 1 of 24).
+   - Optionally add an estimated timer (e.g., 45 seconds per set) that counts down or up.
+
+Please implement each feature as a modular component if possible. Let me know once they’re added or if any part needs clarification.
