@@ -13,7 +13,6 @@ import Progress from "./pages/progress";
 import Subscribe from "./pages/subscribe";
 
 import EMDRSession from "./pages/emdr-session";
-import LegalDisclaimer from "./pages/legal-disclaimer";
 import TermsOfUse from "./pages/terms-of-use";
 import PrivacyPolicy from "./pages/privacy-policy";
 import NotFound from "./pages/not-found";
@@ -33,7 +32,6 @@ function Router() {
       <Route path="/subscribe" component={Subscribe} />
 
       <Route path="/emdr-session" component={EMDRSession} />
-      <Route path="/legal-disclaimer" component={LegalDisclaimer} />
       <Route path="/terms-of-use" component={TermsOfUse} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route component={NotFound} />

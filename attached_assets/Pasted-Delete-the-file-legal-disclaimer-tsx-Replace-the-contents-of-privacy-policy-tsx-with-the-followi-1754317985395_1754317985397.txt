@@ -1,0 +1,185 @@
+Delete the file: legal-disclaimer.tsx
+
+Replace the contents of privacy-policy.tsx with the following:
+
+import React from 'react';
+
+export default function PrivacyPolicy() {
+  return (
+    <div style={{ padding: '1rem', maxWidth: '800px', margin: '0 auto' }}>
+      <h1>Privacy Policy – EMDRise</h1>
+      <p><strong>Last updated: 04.08.2025</strong></p>
+
+      <p>
+        EMDRise (“we,” “our,” “us”) is committed to protecting your privacy and handling
+        your personal information responsibly. By using the EMDRise mobile app and any
+        related services (collectively, the “Services”), you agree to the terms of this
+        Privacy Policy.
+      </p>
+
+      <h2>1. Information We Collect</h2>
+      <ul>
+        <li><strong>Account Information:</strong> Email address and any details you provide when creating an account.</li>
+        <li><strong>Therapeutic Data:</strong> Self‑entered session notes, progress tracking, and reflections (sensitive personal data).</li>
+        <li><strong>Technical and Usage Data:</strong> Device type, operating system, app version, anonymized usage analytics, IP address, and approximate location.</li>
+        <li><strong>Payment Information:</strong> Processed via Apple App Store, Google Play Store, or Stripe. We do not store your card details.</li>
+        <li><strong>Communications:</strong> If you opt in, we may send account updates, reminders, or follow‑ups via email or in‑app notifications.</li>
+      </ul>
+
+      <h2>2. How We Use Your Information</h2>
+      <ul>
+        <li>Provide and maintain the EMDRise app</li>
+        <li>Securely store your session history and progress</li>
+        <li>Respond to support requests and troubleshoot issues</li>
+        <li>Communicate updates, reminders, or relevant information (if opted in)</li>
+        <li>Comply with legal obligations</li>
+      </ul>
+      <p>We do not sell your personal information.</p>
+
+      <h2>3. Data Storage and Security</h2>
+      <p>
+        Your data is stored on <strong>Supabase</strong>, a GDPR‑compliant cloud platform.
+        Data is encrypted in transit and at rest. While we take strong measures to protect
+        your data, no system is completely secure. Enter sensitive information thoughtfully.
+      </p>
+
+      <h2>4. International Users and Data Transfers</h2>
+      <p>
+        We follow UK GDPR and EU GDPR principles. If you use EMDRise outside these regions,
+        your information may be stored on servers located outside your country. By using
+        the app, you consent to this transfer and processing of your data.
+      </p>
+
+      <h2>5. Data Retention and Deletion</h2>
+      <p>
+        We retain your data while your account is active or as required by law. You can
+        request deletion of your data at any time by contacting
+        <strong> support@emdrise.com</strong>.
+      </p>
+
+      <h2>6. Your Rights</h2>
+      <ul>
+        <li>Access the information we hold about you</li>
+        <li>Request correction or deletion of your data</li>
+        <li>Withdraw consent for processing (may limit functionality)</li>
+      </ul>
+
+      <h2>7. Children’s Privacy</h2>
+      <p>
+        EMDRise is intended for users aged 18 and over. Users under 18 require parental
+        supervision and professional guidance. We do not knowingly collect data from
+        children under 13.
+      </p>
+
+      <h2>8. Data Breaches</h2>
+      <p>
+        If a breach affects your data, we will notify you and relevant authorities as
+        required by law.
+      </p>
+
+      <h2>9. Changes to This Privacy Policy</h2>
+      <p>
+        We may update this policy to reflect changes in our practices or legal requirements.
+        Material updates will be communicated in‑app or via email.
+      </p>
+
+      <h2>10. Contact</h2>
+      <p>
+        For any questions about this Privacy Policy, contact us at:
+        <br />
+        <strong>support@emdrise.com</strong>
+      </p>
+    </div>
+  );
+}
+
+
+Replace the contents of terms-of-use.tsx with the following:
+
+import React from 'react';
+
+export default function TermsOfUse() {
+  return (
+    <div style={{ padding: '1rem', maxWidth: '800px', margin: '0 auto' }}>
+      <h1>Terms & Conditions – EMDRise</h1>
+      <p><strong>Last updated: 04.08.2025</strong></p>
+
+      <h2>1. Purpose of EMDRise</h2>
+      <p>
+        EMDRise is a self‑guided EMDR‑based tool designed to support emotional processing
+        and personal well‑being. It is not a substitute for professional mental health
+        care, diagnosis, or treatment. If you are experiencing a mental health emergency
+        or crisis, call emergency services (e.g., 999 in the UK, 911 in the US) or seek
+        professional help immediately.
+      </p>
+
+      <h2>2. Eligibility</h2>
+      <ul>
+        <li>You are 18 years or older and able to consent; OR</li>
+        <li>You are under 18 and using the app with parental supervision and professional guidance.</li>
+      </ul>
+
+      <h2>3. Subscriptions, Payments, and Refunds</h2>
+      <ul>
+        <li>Subscription pricing is displayed at the point of purchase.</li>
+        <li>Payments are processed via Apple App Store, Google Play Store, or Stripe.</li>
+        <li>All payments are final and non‑refundable, except as required by law or by Apple/Google policies.</li>
+        <li>Subscriptions auto‑renew unless canceled in your App Store or Google Play settings before the renewal date.</li>
+      </ul>
+
+      <h2>4. User Responsibilities</h2>
+      <ul>
+        <li>Use the app responsibly and in a safe environment.</li>
+        <li>Stop any session immediately if you experience severe distress and contact a mental health professional if needed.</li>
+        <li>Do not use EMDRise in emergencies or situations requiring urgent mental health intervention.</li>
+      </ul>
+      <p>You are solely responsible for your well‑being and safety while using EMDRise.</p>
+
+      <h2>5. Disclaimer and Waiver of Liability</h2>
+      <p>
+        By using EMDRise, you acknowledge and agree that:
+      </p>
+      <ul>
+        <li>No medical advice is provided by the app.</li>
+        <li>Results may vary; some users may experience emotional discomfort, vivid dreams, or temporary distress.</li>
+        <li>You assume full responsibility for your use of the app and its exercises.</li>
+        <li>EMDRise disclaims all liability to the fullest extent permitted by law for emotional or physical reactions, decisions made based on the app, or data loss and technical failures.</li>
+      </ul>
+      <p>
+        If you experience severe distress or a medical emergency, stop using EMDRise and seek professional help immediately.
+      </p>
+
+      <h2>6. Data and Privacy</h2>
+      <p>
+        We process your personal information according to our Privacy Policy. By using the
+        app, you consent to our data handling practices as described in that policy.
+      </p>
+
+      <h2>7. Intellectual Property</h2>
+      <p>
+        EMDRise and its content are the intellectual property of EMDRise and its licensors.
+        You may not copy, distribute, or modify the app or its content without our prior
+        written consent.
+      </p>
+
+      <h2>8. Termination of Access</h2>
+      <p>
+        We may suspend or terminate your access if you violate these Terms, or remove
+        content and accounts at our discretion to maintain safety and compliance.
+      </p>
+
+      <h2>9. Governing Law</h2>
+      <p>
+        These Terms are governed by the laws of England and Wales, without regard to
+        conflict of law principles.
+      </p>
+
+      <h2>10. Contact</h2>
+      <p>
+        For any questions or concerns about these Terms, contact:
+        <br />
+        <strong>support@emdrise.com</strong>
+      </p>
+    </div>
+  );
+}
