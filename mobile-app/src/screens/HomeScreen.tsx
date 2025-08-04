@@ -12,7 +12,51 @@ import { useAuth } from '../providers/AuthProvider';
 import { useEMDR } from '../providers/EMDRProvider';
 import { useNavigation } from '@react-navigation/native';
 
-const HomeScreen = () => {
+// Placeholder for the Logo component - This would typically be in its own file
+const Logo = () => (
+  <View style={styles.logoContainer}>
+    <Image
+      source={require('../assets/emdrise_logo.png')} // Assuming the logo is in assets folder
+      style={styles.logoImage}
+      resizeMode="contain"
+    />
+  </View>
+);
+
+// Placeholder for PrivacyPolicyScreen - This would typically be in its own file
+const PrivacyPolicyScreen = () => (
+  <SafeAreaView style={styles.legalScreenContainer}>
+    <ScrollView contentContainerStyle={styles.legalScreenScroll}>
+      <Text style={styles.legalScreenTitle}>Privacy Policy</Text>
+      <Text style={styles.legalScreenContent}>
+        This is the Privacy Policy content.
+        [... Actual policy text would go here ...]
+      </Text>
+    </ScrollView>
+  </SafeAreaView>
+);
+
+// Placeholder for TermsOfUseScreen - This would typically be in its own file
+const TermsOfUseScreen = () => (
+  <SafeAreaView style={styles.legalScreenContainer}>
+    <ScrollView contentContainerStyle={styles.legalScreenScroll}>
+      <Text style={styles.legalScreenTitle}>Terms of Use</Text>
+      <Text style={styles.legalScreenContent}>
+        These are the Terms of Use.
+        [... Actual terms text would go here ...]
+      </Text>
+    </SafeAreaView>
+  </SafeAreaView>
+);
+
+interface HomeScreenProps {
+  onLogin: () => void;
+  onSelectTherapist: () => void;
+  onShowPrivacyPolicy?: () => void;
+  onShowTermsOfUse?: () => void;
+}
+
+export default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPolicy, onShowTermsOfUse }: HomeScreenProps) {
   const { isAuthenticated, user } = useAuth();
   const { selectedTherapist } = useEMDR();
   const navigation = useNavigation();
@@ -36,7 +80,7 @@ const HomeScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.logo}>EMDR👁️👁️ise</Text>
+          <Logo />
           <Text style={styles.subtitle}>
             Professional EMDR Therapy at Your Fingertips
           </Text>
@@ -156,6 +200,23 @@ const HomeScreen = () => {
             Then £12.99/month • Cancel anytime
           </Text>
         </View>
+
+        {/* Legal Links */}
+        <View style={styles.legalSection}>
+          <TouchableOpacity
+            style={styles.legalLink}
+            onPress={onShowPrivacyPolicy}
+          >
+            <Text style={styles.legalLinkText}>Privacy Policy</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalSeparator}> • </Text>
+          <TouchableOpacity
+            style={styles.legalLink}
+            onPress={onShowTermsOfUse}
+          >
+            <Text style={styles.legalLinkText}>Terms of Use</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -174,11 +235,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 40,
   },
-  logo: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#1e40af',
+  logoContainer: {
     marginBottom: 10,
+  },
+  logoImage: {
+    width: 200, // Adjust as needed
+    height: 60, // Adjust as needed
   },
   subtitle: {
     fontSize: 16,
@@ -431,6 +493,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
   },
+  legalSection: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 32,
+    marginBottom: 16,
+  },
+  legalLink: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  legalLinkText: {
+    color: '#1E90FF',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+  legalSeparator: {
+    color: '#64748b',
+    fontSize: 14,
+  },
+  legalScreenContainer: {
+    flex: 1,
+    backgroundColor: '#f0f9ff',
+  },
+  legalScreenScroll: {
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+  },
+  legalScreenTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1e40af',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  legalScreenContent: {
+    fontSize: 16,
+    color: '#374151',
+    lineHeight: 24,
+  },
 });
-
-export default HomeScreen;

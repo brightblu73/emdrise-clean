@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  ScrollView, 
-  TouchableOpacity, 
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
   Alert,
-  SafeAreaView 
+  SafeAreaView
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EMDRSessionScreen from './src/screens/EMDRSessionScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import PrivacyPolicyScreen from './src/screens/PrivacyPolicyScreen';
+import TermsOfUseScreen from './src/screens/TermsOfUseScreen';
+import LoadingScreen from './src/components/LoadingScreen';
+
+export type TherapistType = 'maria' | 'alistair';
 
 // Mobile App with all today's improvements
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('home');
-  const [selectedTherapist, setSelectedTherapist] = useState<'maria' | 'alistair' | null>(null);
+  const [currentScreen, setCurrentScreen] = useState<'loading' | 'home' | 'login' | 'therapist-selection' | 'emdr-session' | 'privacy-policy' | 'terms-of-use'>('loading');
+  const [selectedTherapist, setSelectedTherapist] = useState<TherapistType | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Load saved therapist preference
@@ -29,8 +35,13 @@ export default function App() {
       if (savedTherapist) {
         setSelectedTherapist(savedTherapist as 'maria' | 'alistair');
       }
+      // Once preference is loaded, set screen to home or login based on auth status
+      setIsAuthenticated(true); // For now, assume authenticated to skip login
+      setCurrentScreen('home');
     } catch (error) {
       console.log('No saved therapist preference');
+      setIsAuthenticated(true); // For now, assume authenticated to skip login
+      setCurrentScreen('home');
     }
   };
 
@@ -60,12 +71,12 @@ export default function App() {
       );
       return;
     }
-    
+
     if (!isAuthenticated) {
       setCurrentScreen('login');
       return;
     }
-    
+
     setCurrentScreen('emdr');
   };
 
@@ -81,9 +92,9 @@ export default function App() {
         <Text style={styles.cardDescription}>
           Select your preferred EMDR therapist to guide your healing journey
         </Text>
-        
+
         <View style={styles.therapistGrid}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.therapistCard,
               selectedTherapist === 'maria' && styles.selectedTherapist
@@ -93,8 +104,8 @@ export default function App() {
             <Text style={styles.therapistName}>Maria</Text>
             <Text style={styles.therapistRole}>EMDR Therapist</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[
               styles.therapistCard,
               selectedTherapist === 'alistair' && styles.selectedTherapist
@@ -117,8 +128,8 @@ export default function App() {
           • Progress tracking & session notes{'\n'}
           • Therapeutic resources library
         </Text>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={[
             styles.startButton,
             !selectedTherapist && styles.disabledButton
@@ -133,6 +144,12 @@ export default function App() {
       </View>
 
       <View style={styles.footer}>
+        <TouchableOpacity onPress={handleShowPrivacyPolicy}>
+          <Text style={styles.footerLink}>Privacy Policy</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleShowTermsOfUse}>
+          <Text style={styles.footerLink}>Terms of Use</Text>
+        </TouchableOpacity>
         <Text style={styles.footerText}>
           Professional EMDR therapy designed by certified therapists
         </Text>
@@ -146,18 +163,18 @@ export default function App() {
         <Text style={styles.logo}>EMDRise</Text>
         <Text style={styles.tagline}>Sign In to Continue</Text>
       </View>
-      
+
       <View style={styles.card}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.loginButton}
           onPress={() => {
             setIsAuthenticated(true);
-            setCurrentScreen('emdr');
+            setCurrentScreen('home');
           }}
         >
           <Text style={styles.loginButtonText}>Continue as Guest</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity onPress={() => setCurrentScreen('home')}>
           <Text style={styles.backLink}>← Back to Home</Text>
         </TouchableOpacity>
@@ -165,30 +182,79 @@ export default function App() {
     </View>
   );
 
-  const renderEMDRScreen = () => (
-    <EMDRSessionScreen 
-      therapist={selectedTherapist!}
-      onBack={() => setCurrentScreen('home')}
-    />
-  );
+  const handleStartEMDR = () => {
+    if (selectedTherapist) {
+      setCurrentScreen('emdr-session');
+    } else {
+      Alert.alert('Please select a therapist first');
+    }
+  };
+
+  const handleBackToHome = () => {
+    setCurrentScreen('home');
+  };
+
+  const handleShowPrivacyPolicy = () => {
+    setCurrentScreen('privacy-policy');
+  };
+
+  const handleShowTermsOfUse = () => {
+    setCurrentScreen('terms-of-use');
+  };
 
   // Render current screen with StatusBar
-  const renderCurrentScreen = () => {
+  const renderScreen = () => {
     switch (currentScreen) {
+      case 'loading':
+        return <LoadingScreen />;
+      case 'home':
+        return (
+          <HomeScreen
+            onLogin={() => setCurrentScreen('login')}
+            onSelectTherapist={() => setCurrentScreen('therapist-selection')}
+            onShowPrivacyPolicy={handleShowPrivacyPolicy}
+            onShowTermsOfUse={handleShowTermsOfUse}
+          />
+        );
       case 'login':
         return renderLoginScreen();
-      case 'emdr':
-        return renderEMDRScreen();
+      case 'therapist-selection':
+        // This screen is not fully implemented in the original code,
+        // but we can navigate to it if needed.
+        // For now, we'll simulate selection directly in HomeScreen.
+        return <View><Text>Therapist Selection Screen (Not Implemented)</Text></View>;
+      case 'emdr-session':
+        return (
+          <EMDRSessionScreen
+            therapist={selectedTherapist!}
+            onComplete={handleBackToHome}
+            onBack={handleBackToHome}
+          />
+        );
+
+      case 'privacy-policy':
+        return (
+          <PrivacyPolicyScreen
+            onBack={handleBackToHome}
+          />
+        );
+
+      case 'terms-of-use':
+        return (
+          <TermsOfUseScreen
+            onBack={handleBackToHome}
+          />
+        );
+
       default:
-        return renderHomeScreen();
+        return <LoadingScreen />;
     }
   };
 
   return (
-    <>
-      {renderCurrentScreen()}
-      <StatusBar style="auto" />
-    </>
+    <View style={styles.container}>
+      {renderScreen()}
+    </View>
   );
 }
 
@@ -358,5 +424,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
     textAlign: 'center',
+    marginTop: 10,
+  },
+  footerLink: {
+    color: '#3b82f6',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+    marginBottom: 5,
   },
 });
