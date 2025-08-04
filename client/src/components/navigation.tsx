@@ -272,16 +272,6 @@ export default function Navigation() {
                               Privacy Policy
                             </Button>
                           </Link>
-                          <Link href="/legal-disclaimer">
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start text-slate-600"
-                              onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                              <Shield className="h-4 w-4 mr-2" />
-                              Legal Disclaimer
-                            </Button>
-                          </Link>
                         </div>
 
                       </div>
