@@ -8,7 +8,7 @@ interface LogoProps {
 }
 
 export function Logo({ variant = 'header', className = '', showText = true }: LogoProps) {
-  // Use the EMDRise logo directly
+  // Use the streamlined EMDRise logo from public folder
   const logoSrc = "/emdrise-logo.svg"; 
 
   // Simplified approach - use inline styles to ensure sizing works
