@@ -56,6 +56,7 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
 
   const getSpeed = (currentSpeed: number) => {
     const timeInMs = speedMap[currentSpeed] || 3318; // Default to 7.0 speed
+    // The CSV values represent time-per-pass (one direction), not full round trip
     return timeInMs;
   };
 
@@ -94,8 +95,8 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
       }
       
       const elapsed = now - startTime;
-      const cycleDuration = getSpeed(speedRef.current);
-      const progress = Math.min(elapsed / cycleDuration, 1);
+      const passDirection = getSpeed(speedRef.current); // Time for one direction (left→right or right→left)
+      const progress = Math.min(elapsed / passDirection, 1);
       
       let currentPosition;
       // Linear movement for smooth, straight motion
