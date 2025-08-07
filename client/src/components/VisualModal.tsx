@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
 import { X } from "lucide-react";
 
 interface VisualModalProps {
@@ -15,21 +16,38 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   
   const [isActive, setIsActive] = useState(false);
   const [setCount, setSetCount] = useState(0);
-  const [speed, setSpeed] = useState(2); // 1=slow, 2=normal, 3=fast
+  const [speed, setSpeed] = useState(7.0); // Default to 7.0, range 1.0-10.0
   const [phase, setPhase] = useState<'ready' | 'active' | 'complete'>('ready');
 
   // Professional BLS settings
   const TOTAL_SETS = 22;
   const BALL_SIZE = 40;
   
-  // Speed settings (duration per half cycle in milliseconds)
+  // Speed mapping according to requirements (time per pass in seconds)
   const getSpeed = () => {
-    switch(speed) {
-      case 1: return 1000; // Slow
-      case 2: return 700;  // Normal  
-      case 3: return 500;  // Fast
-      default: return 700;
-    }
+    const speedMap: { [key: number]: number } = {
+      1.0: 8.75,
+      1.5: 6.57,
+      2.0: 4.38,
+      2.5: 3.65,
+      3.0: 2.92,
+      3.5: 2.56,
+      4.0: 2.19,
+      4.5: 1.97,
+      5.0: 1.75,
+      5.5: 1.6,
+      6.0: 1.46,
+      6.5: 1.36,
+      7.0: 1.25,
+      7.5: 1.17,
+      8.0: 1.09,
+      8.5: 1.03,
+      9.0: 0.97,
+      9.5: 0.92,
+      10.0: 0.88
+    };
+    
+    return (speedMap[speed] || 1.25) * 1000; // Convert seconds to milliseconds
   };
 
   const startBLS = () => {
@@ -62,16 +80,13 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
       const cycleDuration = getSpeed();
       const progress = Math.min(elapsed / cycleDuration, 1);
       
-      // Smooth easing function for natural movement
-      const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
-      const easedProgress = easeInOutSine(progress);
-      
+      // Linear movement for smooth, straight motion
       if (isMovingRight) {
         // Moving from center to right
-        currentPosition = leftBound + (totalDistance / 2) + (totalDistance / 2) * easedProgress;
+        currentPosition = leftBound + (totalDistance / 2) + (totalDistance / 2) * progress;
       } else {
         // Moving from right to left
-        currentPosition = rightBound - totalDistance * easedProgress;
+        currentPosition = rightBound - totalDistance * progress;
       }
       
       // Update ball position smoothly
@@ -110,17 +125,8 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
     animationRef.current = requestAnimationFrame(animate);
   };
 
-  const adjustSpeed = (newSpeed: number) => {
-    setSpeed(Math.max(1, Math.min(3, newSpeed)));
-  };
-
-  const getSpeedLabel = () => {
-    switch(speed) {
-      case 1: return 'Slow';
-      case 2: return 'Normal';
-      case 3: return 'Fast';
-      default: return 'Normal';
-    }
+  const handleSpeedChange = (value: number[]) => {
+    setSpeed(value[0]);
   };
 
   useEffect(() => {
@@ -128,6 +134,8 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      // Reset speed to default when component unmounts (session ends)
+      setSpeed(7.0);
     };
   }, []);
 
@@ -155,11 +163,11 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
           {/* Center reference line */}
           <div className="absolute top-1/2 left-1/2 w-1 h-8 bg-slate-600 transform -translate-x-1/2 -translate-y-1/2 opacity-30"></div>
           
-          {/* Ball */}
+          {/* Ball - Blue color as per requirements */}
           <div
             ref={ballRef}
             className={`absolute top-1/2 rounded-full transition-colors duration-200 ${
-              isActive ? 'bg-white shadow-xl' : 'bg-slate-300'
+              isActive ? 'bg-blue-500 shadow-xl' : 'bg-blue-300'
             }`}
             style={{
               width: `${BALL_SIZE}px`,
@@ -210,29 +218,24 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
                   Keep your head still and follow the ball with your eyes only.
                 </p>
                 
-                {/* Working Speed Controls */}
-                <div className="flex items-center gap-4 justify-center">
-                  <Button
-                    onClick={() => adjustSpeed(speed - 1)}
-                    variant="outline"
-                    size="sm"
-                    disabled={speed <= 1}
-                    className="border-slate-500 text-slate-300 hover:bg-slate-700 disabled:opacity-50"
-                  >
-                    Slower
-                  </Button>
-                  <span className="text-sm text-slate-400 min-w-16">
-                    {getSpeedLabel()}
-                  </span>
-                  <Button
-                    onClick={() => adjustSpeed(speed + 1)}
-                    variant="outline"
-                    size="sm"
-                    disabled={speed >= 3}
-                    className="border-slate-500 text-slate-300 hover:bg-slate-700 disabled:opacity-50"
-                  >
-                    Faster
-                  </Button>
+                {/* Speed Slider Control */}
+                <div className="space-y-3">
+                  <label className="text-sm text-slate-300 text-center block">
+                    Adjust Speed
+                  </label>
+                  <div className="px-4">
+                    <Slider
+                      value={[speed]}
+                      onValueChange={handleSpeedChange}
+                      min={1.0}
+                      max={10.0}
+                      step={0.5}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="text-center text-sm text-slate-400">
+                    Speed: {speed.toFixed(1)}
+                  </div>
                 </div>
                 
                 <div className="text-lg text-blue-400">
