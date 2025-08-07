@@ -24,31 +24,31 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   const BALL_SIZE = 40;
   
   // Speed mapping according to requirements (time per pass in milliseconds)
-  const getSpeed = () => {
-    const speedMap: { [key: number]: number } = {
-      1.0: 8750,
-      1.5: 6570,
-      2.0: 4380,
-      2.5: 3650,
-      3.0: 2920,
-      3.5: 2560,
-      4.0: 2190,
-      4.5: 1970,
-      5.0: 1750,
-      5.5: 1600,
-      6.0: 1460,
-      6.5: 1360,
-      7.0: 1250,
-      7.5: 1170,
-      8.0: 1090,
-      8.5: 1030,
-      9.0: 970,
-      9.5: 920,
-      10.0: 880
-    };
-    
-    const timeInMs = speedMap[speed] || 1250;
-    console.log(`Speed ${speed} -> ${timeInMs}ms (${(timeInMs/1000).toFixed(2)}s)`);
+  const speedMap: { [key: number]: number } = {
+    1.0: 8750,
+    1.5: 6570,
+    2.0: 4380,
+    2.5: 3650,
+    3.0: 2920,
+    3.5: 2560,
+    4.0: 2190,
+    4.5: 1970,
+    5.0: 1750,
+    5.5: 1600,
+    6.0: 1460,
+    6.5: 1360,
+    7.0: 1250,
+    7.5: 1170,
+    8.0: 1090,
+    8.5: 1030,
+    9.0: 970,
+    9.5: 920,
+    10.0: 880
+  };
+
+  const getSpeed = (currentSpeed: number) => {
+    const timeInMs = speedMap[currentSpeed] || 1250;
+    console.log(`Speed ${currentSpeed} -> ${timeInMs}ms (${(timeInMs/1000).toFixed(2)}s)`);
     return timeInMs;
   };
 
@@ -88,7 +88,7 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
       }
       
       const elapsed = now - startTime;
-      const cycleDuration = getSpeed();
+      const cycleDuration = getSpeed(speed);
       const progress = Math.min(elapsed / cycleDuration, 1);
       
       let currentPosition;
@@ -138,8 +138,13 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   };
 
   const handleSpeedChange = (value: number[]) => {
-    console.log('Speed changed to:', value[0]);
-    setSpeed(value[0]);
+    const newSpeed = value[0];
+    console.log('Speed changed to:', newSpeed);
+    setSpeed(newSpeed);
+    
+    // Test the mapping immediately
+    const testDuration = getSpeed(newSpeed);
+    console.log('Immediate speed test - Expected duration:', testDuration + 'ms');
   };
 
   useEffect(() => {
