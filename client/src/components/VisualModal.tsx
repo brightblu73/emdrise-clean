@@ -31,31 +31,31 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   const TOTAL_SETS = 22;
   const BALL_SIZE = 40;
   
-  // Accurate BLS speed mapping from therapeutic research - 44% faster for optimal movement
+  // Accurate BLS speed mapping from therapeutic research - 50% faster for optimal movement
   const speedMap: { [key: number]: number } = {
-    1.0: 4922,   // 4.922s (44% faster) - 12 BPM
-    1.5: 4667,   // 4.667s (44% faster) - 13 BPM
-    2.0: 4413,   // 4.413s (44% faster) - 14 BPM
-    2.5: 4158,   // 4.158s (44% faster) - 14 BPM
-    3.0: 3903,   // 3.903s (44% faster) - 15 BPM
-    3.5: 3649,   // 3.649s (44% faster) - 16 BPM
-    4.0: 3395,   // 3.395s (44% faster) - 18 BPM
-    4.5: 3140,   // 3.140s (44% faster) - 19 BPM
-    5.0: 2885,   // 2.885s (44% faster) - 21 BPM
-    5.5: 2630,   // 2.630s (44% faster) - 23 BPM
-    6.0: 2376,   // 2.376s (44% faster) - 25 BPM
-    6.5: 2121,   // 2.121s (44% faster) - 28 BPM
-    7.0: 1867,   // 1.867s (44% faster) - 32 BPM (default)
-    7.5: 1613,   // 1.613s (44% faster) - 37 BPM
-    8.0: 1358,   // 1.358s (44% faster) - 44 BPM
-    8.5: 1103,   // 1.103s (44% faster) - 54 BPM
-    9.0: 848,    // 0.848s (44% faster) - 71 BPM
-    9.5: 593,    // 0.593s (44% faster) - 101 BPM
-    10.0: 339    // 0.339s (44% faster) - 177 BPM
+    1.0: 4375,   // 4.375s (50% faster) - 14 BPM
+    1.5: 4149,   // 4.149s (50% faster) - 14 BPM
+    2.0: 3923,   // 3.923s (50% faster) - 15 BPM
+    2.5: 3696,   // 3.696s (50% faster) - 16 BPM
+    3.0: 3470,   // 3.470s (50% faster) - 17 BPM
+    3.5: 3244,   // 3.244s (50% faster) - 18 BPM
+    4.0: 3017,   // 3.017s (50% faster) - 20 BPM
+    4.5: 2791,   // 2.791s (50% faster) - 21 BPM
+    5.0: 2565,   // 2.565s (50% faster) - 23 BPM
+    5.5: 2338,   // 2.338s (50% faster) - 26 BPM
+    6.0: 2112,   // 2.112s (50% faster) - 28 BPM
+    6.5: 1886,   // 1.886s (50% faster) - 32 BPM
+    7.0: 1659,   // 1.659s (50% faster) - 36 BPM (default)
+    7.5: 1433,   // 1.433s (50% faster) - 42 BPM
+    8.0: 1207,   // 1.207s (50% faster) - 50 BPM
+    8.5: 981,    // 0.981s (50% faster) - 61 BPM
+    9.0: 754,    // 0.754s (50% faster) - 80 BPM
+    9.5: 528,    // 0.528s (50% faster) - 114 BPM
+    10.0: 302    // 0.302s (50% faster) - 199 BPM
   };
 
   const getSpeed = (currentSpeed: number) => {
-    const timeInMs = speedMap[currentSpeed] || 1867; // Default to 7.0 speed (44% faster)
+    const timeInMs = speedMap[currentSpeed] || 1659; // Default to 7.0 speed (50% faster)
     // The CSV values represent time-per-pass (one direction), not full round trip
     return timeInMs;
   };
