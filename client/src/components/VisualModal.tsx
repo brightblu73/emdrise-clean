@@ -47,7 +47,10 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
       10.0: 0.88
     };
     
-    return (speedMap[speed] || 1.25) * 1000; // Convert seconds to milliseconds
+    const timeInSeconds = speedMap[speed] || 1.25;
+    const timeInMs = timeInSeconds * 1000;
+    console.log(`Speed ${speed} -> ${timeInSeconds}s -> ${timeInMs}ms`);
+    return timeInMs; // Convert seconds to milliseconds
   };
 
   const startBLS = () => {
@@ -73,9 +76,17 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
     let isMovingRight = true;
     let startTime = Date.now();
     let currentPosition = leftBound + (totalDistance / 2); // Start at center
+    let lastSpeed = speed;
     
     const animate = () => {
       const now = Date.now();
+      
+      // Reset timing if speed changed
+      if (speed !== lastSpeed) {
+        startTime = now;
+        lastSpeed = speed;
+      }
+      
       const elapsed = now - startTime;
       const cycleDuration = getSpeed();
       const progress = Math.min(elapsed / cycleDuration, 1);
@@ -126,6 +137,7 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   };
 
   const handleSpeedChange = (value: number[]) => {
+    console.log('Speed changed to:', value[0]);
     setSpeed(value[0]);
   };
 
