@@ -40,7 +40,6 @@ export default function Navigation() {
   const navItems = [
     { href: "/", label: "Home", icon: Brain },
     { href: "/emdr-session", label: "Therapy Session", icon: Heart },
-    { href: "/resources", label: "EMDR Resources", icon: Shield },
     { href: "/progress", label: "Progress", icon: TrendingUp },
   ];
 
