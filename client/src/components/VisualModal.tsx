@@ -23,34 +23,33 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   const TOTAL_SETS = 22;
   const BALL_SIZE = 40;
   
-  // Speed mapping according to requirements (time per pass in seconds)
+  // Speed mapping according to requirements (time per pass in milliseconds)
   const getSpeed = () => {
     const speedMap: { [key: number]: number } = {
-      1.0: 8.75,
-      1.5: 6.57,
-      2.0: 4.38,
-      2.5: 3.65,
-      3.0: 2.92,
-      3.5: 2.56,
-      4.0: 2.19,
-      4.5: 1.97,
-      5.0: 1.75,
-      5.5: 1.6,
-      6.0: 1.46,
-      6.5: 1.36,
-      7.0: 1.25,
-      7.5: 1.17,
-      8.0: 1.09,
-      8.5: 1.03,
-      9.0: 0.97,
-      9.5: 0.92,
-      10.0: 0.88
+      1.0: 8750,
+      1.5: 6570,
+      2.0: 4380,
+      2.5: 3650,
+      3.0: 2920,
+      3.5: 2560,
+      4.0: 2190,
+      4.5: 1970,
+      5.0: 1750,
+      5.5: 1600,
+      6.0: 1460,
+      6.5: 1360,
+      7.0: 1250,
+      7.5: 1170,
+      8.0: 1090,
+      8.5: 1030,
+      9.0: 970,
+      9.5: 920,
+      10.0: 880
     };
     
-    const timeInSeconds = speedMap[speed] || 1.25;
-    const timeInMs = timeInSeconds * 1000;
-    console.log(`Speed ${speed} -> ${timeInSeconds}s -> ${timeInMs}ms`);
-    return timeInMs; // Convert seconds to milliseconds
+    const timeInMs = speedMap[speed] || 1250;
+    console.log(`Speed ${speed} -> ${timeInMs}ms (${(timeInMs/1000).toFixed(2)}s)`);
+    return timeInMs;
   };
 
   const startBLS = () => {
