@@ -83,13 +83,19 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
       // Reset timing if speed changed (immediate effect)
       if (speed !== lastSpeed) {
         startTime = now;
+        const newDuration = getSpeed(speed);
+        console.log(`✓ Animation speed updated: ${lastSpeed} -> ${speed}, new duration: ${newDuration}ms`);
         lastSpeed = speed;
-        console.log(`Speed changed during animation to ${speed}`);
       }
       
       const elapsed = now - startTime;
       const cycleDuration = getSpeed(speed);
       const progress = Math.min(elapsed / cycleDuration, 1);
+      
+      // Debug logging for first few frames
+      if (currentSet === 0 && progress < 0.1) {
+        console.log(`✓ Animation frame: elapsed=${elapsed}ms, cycleDuration=${cycleDuration}ms, progress=${(progress*100).toFixed(1)}%`);
+      }
       
       let currentPosition;
       // Linear movement for smooth, straight motion
@@ -101,8 +107,9 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
         currentPosition = rightBound - (totalDistance * progress);
       }
       
-      // Update ball position smoothly
-      ballElement.style.transform = `translate(${currentPosition - BALL_SIZE/2}px, -50%)`;
+      // Update ball position with linear motion (no easing)
+      ballElement.style.transitionTimingFunction = 'linear';
+      ballElement.style.transform = `translateX(${currentPosition - BALL_SIZE/2}px) translateY(-50%)`;
       
       // Check if half-cycle is complete
       if (progress >= 1) {
@@ -139,12 +146,11 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
 
   const handleSpeedChange = (value: number[]) => {
     const newSpeed = value[0];
-    console.log('Speed changed to:', newSpeed);
+    console.log('✓ Slider value:', newSpeed, 'Duration (ms):', speedMap[newSpeed] || 1250);
     setSpeed(newSpeed);
     
-    // Test the mapping immediately
-    const testDuration = getSpeed(newSpeed);
-    console.log('Immediate speed test - Expected duration:', testDuration + 'ms');
+    // If animation is running, the speed change will be picked up in the next frame
+    console.log('✓ Speed setting updated - next animation frame will use new duration');
   };
 
   useEffect(() => {
