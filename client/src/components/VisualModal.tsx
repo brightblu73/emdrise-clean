@@ -24,31 +24,31 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   const TOTAL_SETS = 22;
   const BALL_SIZE = 40;
   
-  // Speed mapping according to requirements (time per pass in milliseconds)
+  // Accurate BLS speed mapping from therapeutic research (time per pass in milliseconds)
   const speedMap: { [key: number]: number } = {
-    1.0: 8750,
-    1.5: 6570,
-    2.0: 4380,
-    2.5: 3650,
-    3.0: 2920,
-    3.5: 2560,
-    4.0: 2190,
-    4.5: 1970,
-    5.0: 1750,
-    5.5: 1600,
-    6.0: 1460,
-    6.5: 1360,
-    7.0: 1250,
-    7.5: 1170,
-    8.0: 1090,
-    8.5: 1030,
-    9.0: 970,
-    9.5: 920,
-    10.0: 880
+    1.0: 8750,   // 8.75s - 7 BPM
+    1.5: 8297,   // 8.297s - 7 BPM
+    2.0: 7845,   // 7.845s - 8 BPM
+    2.5: 7392,   // 7.392s - 8 BPM
+    3.0: 6939,   // 6.939s - 9 BPM
+    3.5: 6487,   // 6.487s - 9 BPM
+    4.0: 6034,   // 6.034s - 10 BPM
+    4.5: 5582,   // 5.582s - 11 BPM
+    5.0: 5129,   // 5.129s - 12 BPM
+    5.5: 4676,   // 4.676s - 13 BPM
+    6.0: 4224,   // 4.224s - 14 BPM
+    6.5: 3771,   // 3.771s - 16 BPM
+    7.0: 3318,   // 3.318s - 18 BPM (default)
+    7.5: 2866,   // 2.866s - 21 BPM
+    8.0: 2413,   // 2.413s - 25 BPM
+    8.5: 1961,   // 1.961s - 31 BPM
+    9.0: 1508,   // 1.508s - 40 BPM
+    9.5: 1055,   // 1.055s - 57 BPM
+    10.0: 603    // 0.603s - 99 BPM
   };
 
   const getSpeed = (currentSpeed: number) => {
-    const timeInMs = speedMap[currentSpeed] || 1250;
+    const timeInMs = speedMap[currentSpeed] || 3318; // Default to 7.0 speed
     return timeInMs;
   };
 
