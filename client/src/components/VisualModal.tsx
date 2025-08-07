@@ -17,7 +17,7 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   // Session memory for speed - remembers during session, resets after session ends
   const getSessionSpeed = () => {
     const sessionSpeed = sessionStorage.getItem('blsSpeed');
-    return sessionSpeed ? parseFloat(sessionSpeed) : 7.0; // Default to 7.0
+    return sessionSpeed ? parseFloat(sessionSpeed) : 8.0; // Default to 8.0
   };
   
   const speedRef = useRef<number>(getSessionSpeed()); // Use ref for immediate access in animation
@@ -202,10 +202,10 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
           {/* Ball - Blue color as per requirements */}
           <div
             ref={ballRef}
-            className={`absolute top-1/2 rounded-full transition-colors duration-200 ${
-              isActive ? 'bg-blue-500 shadow-xl' : 'bg-blue-300'
-            }`}
+            className={`absolute top-1/2 rounded-full transition-colors duration-200`}
             style={{
+              backgroundColor: '#0C2340', // Pantone 289 blue
+              boxShadow: isActive ? '0 25px 50px -12px rgba(0, 0, 0, 0.25)' : 'none',
               width: `${BALL_SIZE}px`,
               height: `${BALL_SIZE}px`,
               transform: 'translate(50%, -50%)'

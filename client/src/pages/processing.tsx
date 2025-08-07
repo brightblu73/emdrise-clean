@@ -67,7 +67,7 @@ export default function Processing() {
               width: "30px",
               height: "30px",
               borderRadius: "50%",
-              backgroundColor: "blue",
+              backgroundColor: "#0C2340",
               position: "absolute",
               animation: "blsBall 2s linear infinite",
             }}
