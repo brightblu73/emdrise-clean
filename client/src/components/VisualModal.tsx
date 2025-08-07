@@ -13,11 +13,18 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   const ballRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   const containerRef = useRef<HTMLDivElement>(null);
-  const speedRef = useRef<number>(7.0); // Use ref for immediate access in animation
+  
+  // Session memory for speed - remembers during session, resets after session ends
+  const getSessionSpeed = () => {
+    const sessionSpeed = sessionStorage.getItem('blsSpeed');
+    return sessionSpeed ? parseFloat(sessionSpeed) : 7.0; // Default to 7.0
+  };
+  
+  const speedRef = useRef<number>(getSessionSpeed()); // Use ref for immediate access in animation
   
   const [isActive, setIsActive] = useState(false);
   const [setCount, setSetCount] = useState(0);
-  const [speed, setSpeed] = useState(7.0); // Default to 7.0, range 1.0-10.0
+  const [speed, setSpeed] = useState(getSessionSpeed()); // Load session speed or default to 7.0
   const [phase, setPhase] = useState<'ready' | 'active' | 'complete'>('ready');
 
   // Professional BLS settings
@@ -141,6 +148,9 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
     const newSpeed = value[0];
     setSpeed(newSpeed);
     speedRef.current = newSpeed; // Update ref immediately for animation access
+    
+    // Remember speed during this session
+    sessionStorage.setItem('blsSpeed', newSpeed.toString());
   };
 
   useEffect(() => {
@@ -148,9 +158,19 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
-      // Reset speed to default when component unmounts (session ends)
-      setSpeed(7.0);
-      speedRef.current = 7.0;
+    };
+  }, []);
+  
+  // Reset speed to default when session ends (navigating away from therapy session)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.removeItem('blsSpeed');
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 

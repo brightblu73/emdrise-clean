@@ -1475,6 +1475,10 @@ export default function EMDRSession() {
                       // Complete the session and return to home
                       localStorage.removeItem('emdrSession');
                       localStorage.removeItem('pausedEMDRSession');
+                      
+                      // Reset BLS speed to default (7.0) for next session
+                      sessionStorage.removeItem('blsSpeed');
+                      
                       window.location.href = '/';
                     }}
                     className="bg-primary-green hover:bg-primary-green/90"
