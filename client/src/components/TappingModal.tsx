@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
 
 interface TappingModalProps {
   onClose: () => void;
@@ -16,9 +17,52 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
   const [currentSide, setCurrentSide] = useState<'left' | 'right'>('left');
   const [phase, setPhase] = useState<'ready' | 'active' | 'complete' | 'notice'>('ready');
 
+  // Session memory for speed - remembers during session, resets after session ends
+  const getSessionSpeed = () => {
+    const sessionSpeed = sessionStorage.getItem('blsSpeed');
+    return sessionSpeed ? parseFloat(sessionSpeed) : 8.0; // Default to 8.0
+  };
+
   // Professional BLS settings
   const TOTAL_SETS = 22;
-  const [tapDuration, setTapDuration] = useState(600); // ms per tap instruction
+  const [speed, setSpeed] = useState(getSessionSpeed()); // Use same 1.0-10.0 scale as visual
+  const speedRef = useRef<number>(getSessionSpeed()); // Use ref for immediate access in animation
+
+  // Speed mapping using same scale as visual BLS (1.0 to 10.0)
+  const speedMap: { [key: number]: number } = {
+    1.0: 4000,   // 4.0s - 15 BPM
+    1.5: 3000,   // 3.0s - 20 BPM
+    2.0: 2200,   // 2.2s - 27 BPM
+    2.5: 1750,   // 1.75s - 34 BPM
+    3.0: 1460,   // 1.46s - 41 BPM
+    3.5: 1250,   // 1.25s - 48 BPM
+    4.0: 1090,   // 1.09s - 55 BPM
+    4.5: 970,    // 0.97s - 62 BPM
+    5.0: 880,    // 0.88s - 68 BPM
+    5.5: 800,    // 0.8s - 75 BPM
+    6.0: 730,    // 0.73s - 82 BPM
+    6.5: 670,    // 0.67s - 90 BPM
+    7.0: 630,    // 0.63s - 95 BPM
+    7.5: 580,    // 0.58s - 103 BPM
+    8.0: 540,    // 0.54s - 111 BPM (default)
+    8.5: 500,    // 0.5s - 120 BPM
+    9.0: 380,    // 0.38s - 158 BPM
+    9.5: 250,    // 0.25s - 240 BPM
+    10.0: 150    // 0.15s - 400 BPM
+  };
+
+  const getTapDuration = (currentSpeed: number) => {
+    return speedMap[currentSpeed] || 540; // Default to 8.0 speed (0.54s - 111 BPM)
+  };
+
+  const handleSpeedChange = (value: number[]) => {
+    const newSpeed = value[0];
+    setSpeed(newSpeed);
+    speedRef.current = newSpeed; // Update ref immediately for animation access
+    
+    // Remember speed during this session
+    sessionStorage.setItem('blsSpeed', newSpeed.toString());
+  };
 
   const startBLS = () => {
     setPhase('active');
@@ -49,7 +93,7 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
       movements++;
       currentSideState = currentSideState === 'left' ? 'right' : 'left';
 
-      timeoutRef.current = setTimeout(showNextTap, tapDuration);
+      timeoutRef.current = setTimeout(showNextTap, getTapDuration(speedRef.current));
     };
 
     showNextTap();
@@ -71,6 +115,19 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+    };
+  }, []);
+
+  // Reset speed to default when session ends (navigating away from therapy session)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.removeItem('blsSpeed');
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
@@ -146,27 +203,24 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
                 <p className="text-slate-300">
                   Tap with your {currentSide} hand.
                 </p>
-                {/* Speed Controls */}
-                <div className="flex items-center gap-4 justify-center">
-                  <Button
-                    onClick={() => setTapDuration(Math.min(1200, tapDuration + 200))}
-                    variant="outline"
-                    size="sm"
-                    className="border-slate-500 text-slate-300 hover:bg-slate-700"
-                  >
-                    Slower
-                  </Button>
-                  <span className="text-sm text-slate-400">
-                    Speed: {tapDuration === 600 ? 'Fast' : tapDuration === 800 ? 'Normal' : 'Slow'}
-                  </span>
-                  <Button
-                    onClick={() => setTapDuration(Math.max(600, tapDuration - 200))}
-                    variant="outline"
-                    size="sm"
-                    className="border-slate-500 text-slate-300 hover:bg-slate-700"
-                  >
-                    Faster
-                  </Button>
+                {/* Speed Slider Control */}
+                <div className="space-y-3">
+                  <label className="text-sm text-slate-300 text-center block">
+                    Adjust Speed
+                  </label>
+                  <div className="px-4">
+                    <Slider
+                      value={[speed]}
+                      onValueChange={handleSpeedChange}
+                      min={1.0}
+                      max={10.0}
+                      step={0.5}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="text-center text-sm text-slate-400">
+                    Speed: {speed.toFixed(1)}
+                  </div>
                 </div>
                 <div className="text-lg text-purple-400">
                   Tap {setCount} of {TOTAL_SETS}

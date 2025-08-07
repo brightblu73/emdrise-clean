@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
 
 interface AuditoryModalProps {
   onClose: () => void;
@@ -18,11 +19,54 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
   const [currentSide, setCurrentSide] = useState<'left' | 'right'>('left');
   const [phase, setPhase] = useState<'ready' | 'active' | 'complete' | 'notice' | 'warning'>('ready');
 
+  // Session memory for speed - remembers during session, resets after session ends
+  const getSessionSpeed = () => {
+    const sessionSpeed = sessionStorage.getItem('blsSpeed');
+    return sessionSpeed ? parseFloat(sessionSpeed) : 8.0; // Default to 8.0
+  };
+
   // Professional BLS settings  
   const TOTAL_SETS = 22;
-  const [toneDuration, setToneDuration] = useState(300); // ms per tone
+  const [speed, setSpeed] = useState(getSessionSpeed()); // Use same 1.0-10.0 scale as visual
+  const speedRef = useRef<number>(getSessionSpeed()); // Use ref for immediate access in animation
   const TONE_FREQUENCY = 440; // Hz
   const PAUSE_BETWEEN = 200; // ms pause between tones
+
+  // Speed mapping using same scale as visual BLS (1.0 to 10.0)
+  const speedMap: { [key: number]: number } = {
+    1.0: 4000,   // 4.0s - 15 BPM
+    1.5: 3000,   // 3.0s - 20 BPM
+    2.0: 2200,   // 2.2s - 27 BPM
+    2.5: 1750,   // 1.75s - 34 BPM
+    3.0: 1460,   // 1.46s - 41 BPM
+    3.5: 1250,   // 1.25s - 48 BPM
+    4.0: 1090,   // 1.09s - 55 BPM
+    4.5: 970,    // 0.97s - 62 BPM
+    5.0: 880,    // 0.88s - 68 BPM
+    5.5: 800,    // 0.8s - 75 BPM
+    6.0: 730,    // 0.73s - 82 BPM
+    6.5: 670,    // 0.67s - 90 BPM
+    7.0: 630,    // 0.63s - 95 BPM
+    7.5: 580,    // 0.58s - 103 BPM
+    8.0: 540,    // 0.54s - 111 BPM (default)
+    8.5: 500,    // 0.5s - 120 BPM
+    9.0: 380,    // 0.38s - 158 BPM
+    9.5: 250,    // 0.25s - 240 BPM
+    10.0: 150    // 0.15s - 400 BPM
+  };
+
+  const getToneDuration = (currentSpeed: number) => {
+    return speedMap[currentSpeed] || 540; // Default to 8.0 speed (0.54s - 111 BPM)
+  };
+
+  const handleSpeedChange = (value: number[]) => {
+    const newSpeed = value[0];
+    setSpeed(newSpeed);
+    speedRef.current = newSpeed; // Update ref immediately for animation access
+    
+    // Remember speed during this session
+    sessionStorage.setItem('blsSpeed', newSpeed.toString());
+  };
 
   // Initialize audio context
   useEffect(() => {
@@ -46,6 +90,19 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
       if (audioContext.current) {
         audioContext.current.close();
       }
+    };
+  }, []);
+
+  // Reset speed to default when session ends (navigating away from therapy session)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.removeItem('blsSpeed');
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
@@ -75,10 +132,10 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
     
     const now = audioContext.current.currentTime;
     gain.gain.setValueAtTime(0.5, now);  // Match the increased stereo volume
-    gain.gain.exponentialRampToValueAtTime(0.01, now + toneDuration / 1000);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + getToneDuration(speedRef.current) / 1000);
     
     oscillator.start(now);
-    oscillator.stop(now + toneDuration / 1000);
+    oscillator.stop(now + getToneDuration(speedRef.current) / 1000);
   };
 
   const startBLS = () => {
@@ -111,7 +168,7 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
       movements++;
       currentSideState = currentSideState === 'left' ? 'right' : 'left';
 
-      timeoutRef.current = setTimeout(playNextTone, toneDuration + PAUSE_BETWEEN);
+      timeoutRef.current = setTimeout(playNextTone, getToneDuration(speedRef.current) + PAUSE_BETWEEN);
     };
 
     playNextTone();
@@ -193,27 +250,24 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
                   Listen to the alternating tones in your left and right ears.
                   The set will automatically complete after {TOTAL_SETS} sets.
                 </p>
-                {/* Speed Controls */}
-                <div className="flex items-center gap-4 justify-center mb-4">
-                  <Button
-                    onClick={() => setToneDuration(Math.min(500, toneDuration + 100))}
-                    variant="outline"
-                    size="sm"
-                    className="border-slate-500 text-slate-300 hover:bg-slate-700"
-                  >
-                    Slower
-                  </Button>
-                  <span className="text-sm text-slate-400">
-                    Speed: {toneDuration === 200 ? 'Fast' : toneDuration === 300 ? 'Normal' : 'Slow'}
-                  </span>
-                  <Button
-                    onClick={() => setToneDuration(Math.max(200, toneDuration - 100))}
-                    variant="outline"
-                    size="sm"
-                    className="border-slate-500 text-slate-300 hover:bg-slate-700"
-                  >
-                    Faster
-                  </Button>
+                {/* Speed Slider Control */}
+                <div className="space-y-3 mb-4">
+                  <label className="text-sm text-slate-300 text-center block">
+                    Adjust Speed
+                  </label>
+                  <div className="px-4">
+                    <Slider
+                      value={[speed]}
+                      onValueChange={handleSpeedChange}
+                      min={1.0}
+                      max={10.0}
+                      step={0.5}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="text-center text-sm text-slate-400">
+                    Speed: {speed.toFixed(1)}
+                  </div>
                 </div>
                 <Button
                   onClick={startBLS}
@@ -233,27 +287,24 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
                 <div className="text-lg text-green-400">
                   Set {setCount} of {TOTAL_SETS}
                 </div>
-                {/* Speed Controls during active BLS */}
-                <div className="flex items-center gap-4 justify-center">
-                  <Button
-                    onClick={() => setToneDuration(Math.min(500, toneDuration + 100))}
-                    variant="outline"
-                    size="sm"
-                    className="border-slate-500 text-slate-300 hover:bg-slate-700"
-                  >
-                    Slower
-                  </Button>
-                  <span className="text-sm text-slate-400">
-                    Speed: {toneDuration === 200 ? 'Fast' : toneDuration === 300 ? 'Normal' : 'Slow'}
-                  </span>
-                  <Button
-                    onClick={() => setToneDuration(Math.max(200, toneDuration - 100))}
-                    variant="outline"
-                    size="sm"
-                    className="border-slate-500 text-slate-300 hover:bg-slate-700"
-                  >
-                    Faster
-                  </Button>
+                {/* Speed Slider Control during active BLS */}
+                <div className="space-y-3">
+                  <label className="text-sm text-slate-300 text-center block">
+                    Adjust Speed
+                  </label>
+                  <div className="px-4">
+                    <Slider
+                      value={[speed]}
+                      onValueChange={handleSpeedChange}
+                      min={1.0}
+                      max={10.0}
+                      step={0.5}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="text-center text-sm text-slate-400">
+                    Speed: {speed.toFixed(1)}
+                  </div>
                 </div>
               </div>
             )}
