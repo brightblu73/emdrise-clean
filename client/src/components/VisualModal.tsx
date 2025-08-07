@@ -74,29 +74,31 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
     let currentSet = 0;
     let isMovingRight = true;
     let startTime = Date.now();
-    let currentPosition = leftBound + (totalDistance / 2); // Start at center
+    // Start at left position
     let lastSpeed = speed;
     
     const animate = () => {
       const now = Date.now();
       
-      // Reset timing if speed changed
+      // Reset timing if speed changed (immediate effect)
       if (speed !== lastSpeed) {
         startTime = now;
         lastSpeed = speed;
+        console.log(`Speed changed during animation to ${speed}`);
       }
       
       const elapsed = now - startTime;
       const cycleDuration = getSpeed();
       const progress = Math.min(elapsed / cycleDuration, 1);
       
+      let currentPosition;
       // Linear movement for smooth, straight motion
       if (isMovingRight) {
-        // Moving from center to right
-        currentPosition = leftBound + (totalDistance / 2) + (totalDistance / 2) * progress;
+        // Moving from left to right
+        currentPosition = leftBound + (totalDistance * progress);
       } else {
         // Moving from right to left
-        currentPosition = rightBound - totalDistance * progress;
+        currentPosition = rightBound - (totalDistance * progress);
       }
       
       // Update ball position smoothly
