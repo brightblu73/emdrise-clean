@@ -49,7 +49,6 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
 
   const getSpeed = (currentSpeed: number) => {
     const timeInMs = speedMap[currentSpeed] || 1250;
-    console.log(`Speed ${currentSpeed} -> ${timeInMs}ms (${(timeInMs/1000).toFixed(2)}s)`);
     return timeInMs;
   };
 
@@ -84,19 +83,12 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
       // Reset timing if speed changed (immediate effect)
       if (speedRef.current !== lastSpeed) {
         startTime = now;
-        const newDuration = getSpeed(speedRef.current);
-        console.log(`✓ Animation speed updated: ${lastSpeed} -> ${speedRef.current}, new duration: ${newDuration}ms`);
         lastSpeed = speedRef.current;
       }
       
       const elapsed = now - startTime;
       const cycleDuration = getSpeed(speedRef.current);
       const progress = Math.min(elapsed / cycleDuration, 1);
-      
-      // Debug logging for first few frames
-      if (currentSet === 0 && progress < 0.1) {
-        console.log(`✓ Animation frame: elapsed=${elapsed}ms, cycleDuration=${cycleDuration}ms, progress=${(progress*100).toFixed(1)}%`);
-      }
       
       let currentPosition;
       // Linear movement for smooth, straight motion
@@ -147,11 +139,8 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
 
   const handleSpeedChange = (value: number[]) => {
     const newSpeed = value[0];
-    console.log('✓ Slider value:', newSpeed, 'Duration (ms):', speedMap[newSpeed] || 1250);
     setSpeed(newSpeed);
     speedRef.current = newSpeed; // Update ref immediately for animation access
-    
-    console.log('✓ Speed updated in both state and ref - animation will use new speed immediately');
   };
 
   useEffect(() => {
