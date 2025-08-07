@@ -13,6 +13,7 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   const ballRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   const containerRef = useRef<HTMLDivElement>(null);
+  const speedRef = useRef<number>(7.0); // Use ref for immediate access in animation
   
   const [isActive, setIsActive] = useState(false);
   const [setCount, setSetCount] = useState(0);
@@ -75,21 +76,21 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
     let isMovingRight = true;
     let startTime = Date.now();
     // Start at left position
-    let lastSpeed = speed;
+    let lastSpeed = speedRef.current;
     
     const animate = () => {
       const now = Date.now();
       
       // Reset timing if speed changed (immediate effect)
-      if (speed !== lastSpeed) {
+      if (speedRef.current !== lastSpeed) {
         startTime = now;
-        const newDuration = getSpeed(speed);
-        console.log(`✓ Animation speed updated: ${lastSpeed} -> ${speed}, new duration: ${newDuration}ms`);
-        lastSpeed = speed;
+        const newDuration = getSpeed(speedRef.current);
+        console.log(`✓ Animation speed updated: ${lastSpeed} -> ${speedRef.current}, new duration: ${newDuration}ms`);
+        lastSpeed = speedRef.current;
       }
       
       const elapsed = now - startTime;
-      const cycleDuration = getSpeed(speed);
+      const cycleDuration = getSpeed(speedRef.current);
       const progress = Math.min(elapsed / cycleDuration, 1);
       
       // Debug logging for first few frames
@@ -148,9 +149,9 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
     const newSpeed = value[0];
     console.log('✓ Slider value:', newSpeed, 'Duration (ms):', speedMap[newSpeed] || 1250);
     setSpeed(newSpeed);
+    speedRef.current = newSpeed; // Update ref immediately for animation access
     
-    // If animation is running, the speed change will be picked up in the next frame
-    console.log('✓ Speed setting updated - next animation frame will use new duration');
+    console.log('✓ Speed updated in both state and ref - animation will use new speed immediately');
   };
 
   useEffect(() => {
@@ -160,6 +161,7 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
       }
       // Reset speed to default when component unmounts (session ends)
       setSpeed(7.0);
+      speedRef.current = 7.0;
     };
   }, []);
 
