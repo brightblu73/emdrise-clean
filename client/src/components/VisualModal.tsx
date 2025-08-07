@@ -199,20 +199,16 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
           {/* Center reference line */}
           <div className="absolute top-1/2 left-1/2 w-1 h-8 bg-slate-600 transform -translate-x-1/2 -translate-y-1/2 opacity-30"></div>
           
-          {/* Ball - Darker blue with subtle glow for visual clarity */}
+          {/* Ball - Blue color as per requirements */}
           <div
             ref={ballRef}
-            className={`absolute top-1/2 rounded-full transition-all duration-200 ${
-              isActive ? 'bg-blue-700 shadow-2xl' : 'bg-blue-400'
+            className={`absolute top-1/2 rounded-full transition-colors duration-200 ${
+              isActive ? 'bg-blue-500 shadow-xl' : 'bg-blue-300'
             }`}
             style={{
               width: `${BALL_SIZE}px`,
               height: `${BALL_SIZE}px`,
-              transform: 'translate(50%, -50%)',
-              boxShadow: isActive 
-                ? '0 0 20px rgba(29, 78, 216, 0.6), 0 0 40px rgba(29, 78, 216, 0.3), 0 10px 25px rgba(0, 0, 0, 0.4)' 
-                : '0 4px 10px rgba(0, 0, 0, 0.2)',
-              filter: isActive ? 'blur(0.5px)' : 'none'
+              transform: 'translate(50%, -50%)'
             }}
           />
 
