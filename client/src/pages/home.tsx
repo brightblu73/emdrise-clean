@@ -421,7 +421,7 @@ export default function Home() {
               <div className="space-y-3 text-left">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
-                  <span className="text-sm">Complete 10-script EMDR protocol</span>
+                  <span className="text-sm">Complete eight phase EMDR protocol</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
