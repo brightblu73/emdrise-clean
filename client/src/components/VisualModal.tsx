@@ -183,6 +183,12 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              // Force cleanup of animation state
+              if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current);
+              }
+              setIsActive(false);
+              setPhase('ready');
               onClose();
             }}
             variant="ghost"
@@ -305,6 +311,12 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  // Force cleanup of animation state
+                  if (animationRef.current) {
+                    cancelAnimationFrame(animationRef.current);
+                  }
+                  setIsActive(false);
+                  setPhase('ready');
                   onClose();
                 }}
                 variant="ghost"

@@ -277,6 +277,12 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  // Force cleanup of tapping state
+                  if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                  }
+                  setIsActive(false);
+                  setPhase('ready');
                   onClose();
                 }}
                 variant="ghost"
