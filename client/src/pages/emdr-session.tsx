@@ -648,46 +648,35 @@ export default function EMDRSession() {
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <Button
+                    <BLSOptionBox
+                      type="visual"
                       onClick={() => {
                         setShowBLS(true);
                         setBLSType('visual');
                       }}
-                      variant="outline"
-                      className="h-24 flex flex-col space-y-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
-                    >
-                      <div className="w-8 h-8 bg-blue-600 rounded-full"></div>
-                      <span className="font-semibold text-blue-700">Visual</span>
-                      <span className="text-xs text-blue-600">Follow moving ball</span>
-                    </Button>
-
-                    <Button
+                      isSelected={blsType === 'visual'}
+                      size="large"
+                    />
+                    
+                    <BLSOptionBox
+                      type="auditory"
                       onClick={() => {
                         setShowBLS(true);
                         setBLSType('auditory');
                       }}
-                      variant="outline"
-                      className="h-24 flex flex-col space-y-2 bg-green-50 hover:bg-green-100 border-green-200"
-                    >
-                      <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                        <div className="w-4 h-4 bg-white rounded-full"></div>
-                      </div>
-                      <span className="font-semibold text-green-700">Auditory</span>
-                      <span className="text-xs text-green-600">Stereo sound tones</span>
-                    </Button>
-
-                    <Button
+                      isSelected={blsType === 'auditory'}
+                      size="large"
+                    />
+                    
+                    <BLSOptionBox
+                      type="tapping"
                       onClick={() => {
                         setShowBLS(true);
                         setBLSType('tapping');
                       }}
-                      variant="outline"
-                      className="h-24 flex flex-col space-y-2 bg-purple-50 hover:bg-purple-100 border-purple-200"
-                    >
-                      <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white text-sm">👋</div>
-                      <span className="font-semibold text-purple-700">Tapping</span>
-                      <span className="text-xs text-purple-600">Self-administered</span>
-                    </Button>
+                      isSelected={blsType === 'tapping'}
+                      size="large"
+                    />
                   </div>
                 </div>
 
@@ -914,34 +903,26 @@ export default function EMDRSession() {
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <Button
+                    <BLSOptionBox
+                      type="visual"
                       onClick={() => setBLSType('visual')}
-                      variant={blsType === 'visual' ? 'default' : 'outline'}
-                      className="h-20 flex flex-col space-y-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
-                    >
-                      <div className="w-6 h-6 bg-blue-600 rounded-full"></div>
-                      <span className="font-semibold text-blue-700">Visual BLS</span>
-                    </Button>
-
-                    <Button
+                      isSelected={blsType === 'visual'}
+                      size="medium"
+                    />
+                    
+                    <BLSOptionBox
+                      type="auditory"
                       onClick={() => setBLSType('auditory')}
-                      variant={blsType === 'auditory' ? 'default' : 'outline'}
-                      className="h-20 flex flex-col space-y-2 bg-green-50 hover:bg-green-100 border-green-200"
-                    >
-                      <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
-                        <div className="w-3 h-3 bg-white rounded-full"></div>
-                      </div>
-                      <span className="font-semibold text-green-700">Auditory BLS</span>
-                    </Button>
-
-                    <Button
+                      isSelected={blsType === 'auditory'}
+                      size="medium"
+                    />
+                    
+                    <BLSOptionBox
+                      type="tapping"
                       onClick={() => setBLSType('tapping')}
-                      variant={blsType === 'tapping' ? 'default' : 'outline'}
-                      className="h-20 flex flex-col space-y-2 bg-purple-50 hover:bg-purple-100 border-purple-200"
-                    >
-                      <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">👋</div>
-                      <span className="font-semibold text-purple-700">Tapping BLS</span>
-                    </Button>
+                      isSelected={blsType === 'tapping'}
+                      size="medium"
+                    />
                   </div>
 
                   {/* BLS Component - Only show when activated */}
@@ -1006,34 +987,26 @@ export default function EMDRSession() {
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <Button
+                    <BLSOptionBox
+                      type="visual"
                       onClick={() => setBLSType('visual')}
-                      variant={blsType === 'visual' ? 'default' : 'outline'}
-                      className="h-20 flex flex-col space-y-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
-                    >
-                      <div className="w-6 h-6 bg-blue-600 rounded-full"></div>
-                      <span className="font-semibold text-blue-700">Visual BLS</span>
-                    </Button>
-
-                    <Button
+                      isSelected={blsType === 'visual'}
+                      size="medium"
+                    />
+                    
+                    <BLSOptionBox
+                      type="auditory"
                       onClick={() => setBLSType('auditory')}
-                      variant={blsType === 'auditory' ? 'default' : 'outline'}
-                      className="h-20 flex flex-col space-y-2 bg-green-50 hover:bg-green-100 border-green-200"
-                    >
-                      <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
-                        <div className="w-3 h-3 bg-white rounded-full"></div>
-                      </div>
-                      <span className="font-semibold text-green-700">Auditory BLS</span>
-                    </Button>
-
-                    <Button
+                      isSelected={blsType === 'auditory'}
+                      size="medium"
+                    />
+                    
+                    <BLSOptionBox
+                      type="tapping"
                       onClick={() => setBLSType('tapping')}
-                      variant={blsType === 'tapping' ? 'default' : 'outline'}
-                      className="h-20 flex flex-col space-y-2 bg-purple-50 hover:bg-purple-100 border-purple-200"
-                    >
-                      <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">👋</div>
-                      <span className="font-semibold text-purple-700">Tapping BLS</span>
-                    </Button>
+                      isSelected={blsType === 'tapping'}
+                      size="medium"
+                    />
                   </div>
 
                   {/* BLS Component - Only show when activated via Begin Installation */}
@@ -1131,34 +1104,26 @@ export default function EMDRSession() {
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <Button
+                    <BLSOptionBox
+                      type="visual"
                       onClick={() => setBLSType('visual')}
-                      variant={blsType === 'visual' ? 'default' : 'outline'}
-                      className="h-20 flex flex-col space-y-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
-                    >
-                      <div className="w-6 h-6 bg-blue-600 rounded-full"></div>
-                      <span className="font-semibold text-blue-700">Visual BLS</span>
-                    </Button>
-
-                    <Button
+                      isSelected={blsType === 'visual'}
+                      size="medium"
+                    />
+                    
+                    <BLSOptionBox
+                      type="auditory"
                       onClick={() => setBLSType('auditory')}
-                      variant={blsType === 'auditory' ? 'default' : 'outline'}
-                      className="h-20 flex flex-col space-y-2 bg-green-50 hover:bg-green-100 border-green-200"
-                    >
-                      <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
-                        <div className="w-3 h-3 bg-white rounded-full"></div>
-                      </div>
-                      <span className="font-semibold text-green-700">Auditory BLS</span>
-                    </Button>
-
-                    <Button
+                      isSelected={blsType === 'auditory'}
+                      size="medium"
+                    />
+                    
+                    <BLSOptionBox
+                      type="tapping"
                       onClick={() => setBLSType('tapping')}
-                      variant={blsType === 'tapping' ? 'default' : 'outline'}
-                      className="h-20 flex flex-col space-y-2 bg-purple-50 hover:bg-purple-100 border-purple-200"
-                    >
-                      <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">👋</div>
-                      <span className="font-semibold text-purple-700">Tapping BLS</span>
-                    </Button>
+                      isSelected={blsType === 'tapping'}
+                      size="medium"
+                    />
                   </div>
 
                   {/* BLS Component - Only show when activated via Continue Installation */}
@@ -1272,30 +1237,26 @@ export default function EMDRSession() {
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <Button
+                    <BLSOptionBox
+                      type="visual"
                       onClick={() => setBLSType('visual')}
-                      variant={blsType === 'visual' ? 'default' : 'outline'}
-                      size="lg"
-                      className="h-12"
-                    >
-                      Visual BLS
-                    </Button>
-                    <Button
+                      isSelected={blsType === 'visual'}
+                      size="medium"
+                    />
+                    
+                    <BLSOptionBox
+                      type="auditory"
                       onClick={() => setBLSType('auditory')}
-                      variant={blsType === 'auditory' ? 'default' : 'outline'}
-                      size="lg"
-                      className="h-12"
-                    >
-                      Auditory BLS
-                    </Button>
-                    <Button
+                      isSelected={blsType === 'auditory'}
+                      size="medium"
+                    />
+                    
+                    <BLSOptionBox
+                      type="tapping"
                       onClick={() => setBLSType('tapping')}
-                      variant={blsType === 'tapping' ? 'default' : 'outline'}
-                      size="lg"
-                      className="h-12"
-                    >
-                      Tapping BLS
-                    </Button>
+                      isSelected={blsType === 'tapping'}
+                      size="medium"
+                    />
                   </div>
 
                   {/* BLS Component - Only show when activated */}
