@@ -58,6 +58,7 @@ EMDRise is a web and mobile application providing guided EMDR (Eye Movement Dese
 - **Enhanced User Choice**: Therapist selection now properly persists and loads selected therapist's videos
 - **Cloud-First Architecture**: All video content now served from reliable cloud infrastructure
 - **Complete BLS Speed System Upgrade**: Successfully implemented unified speed slider (1.0-10.0 with 0.5 increments) across ALL BLS types (visual, auditory, tapping), replacing legacy speed controls with therapeutically accurate speed mapping (1.0=4.0s/15BPM to 10.0=0.15s/400BPM), consistent default speed of 8.0 (0.54s/111BPM), session memory for speed persistence, and real-time speed adjustments during active BLS sessions
+- **BLS Close Button Optimization**: Completely resolved double-click issue with immediate close functionality - implemented forceClose functions with multiple event triggers (onClick, onMouseDown, onTouchStart), aggressive animation cleanup, and immediate state reset across all BLS modals for silky smooth responsiveness
 - **Focus Maintained**: Core EMDR workflow remains unchanged and production-ready
 
 ## External Dependencies
