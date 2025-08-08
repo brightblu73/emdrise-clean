@@ -94,22 +94,19 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFieldBlur = (field: keyof CalmPlaceData) => {
-    // Auto-scroll to next field when user finishes with current field
+  const handleFieldFocus = (field: keyof CalmPlaceData) => {
+    // Auto-scroll to current field when user clicks/focuses on it  
     const fieldOrder = ['imageDescription', 'sensoryDetails', 'positiveEmotion', 'bodyLocation', 'cueWord', 'reminderPrompt'];
     const currentIndex = fieldOrder.indexOf(field);
-    const currentValue = formData[field];
     
-    if (currentIndex !== -1 && currentValue && currentValue.trim() !== '') {
-      const nextIndex = currentIndex + 1;
-      if (nextIndex < fieldRefs.length && fieldRefs[nextIndex]?.current) {
-        setTimeout(() => {
-          fieldRefs[nextIndex].current?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-          });
-        }, 500);
-      }
+    if (currentIndex !== -1 && fieldRefs[currentIndex]?.current) {
+      setTimeout(() => {
+        fieldRefs[currentIndex].current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+      }, 100);
     }
   };
 
@@ -137,7 +134,7 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 id="imageDescription"
                 value={formData.imageDescription}
                 onChange={(e) => updateField("imageDescription", e.target.value)}
-                onBlur={() => handleFieldBlur("imageDescription")}
+                onFocus={() => handleFieldFocus("imageDescription")}
                 placeholder="Describe the visual details of your calm place - a beach, forest, room, or any space that feels peaceful to you..."
                 rows={3}
                 className="w-full"
@@ -155,7 +152,7 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 id="sensoryDetails"
                 value={formData.sensoryDetails}
                 onChange={(e) => updateField("sensoryDetails", e.target.value)}
-                onBlur={() => handleFieldBlur("sensoryDetails")}
+                onFocus={() => handleFieldFocus("sensoryDetails")}
                 placeholder="Include any sensory details - the sound of waves, scent of flowers, warm sunlight, soft grass..."
                 rows={3}
                 className="w-full"
@@ -173,7 +170,7 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 id="positiveEmotion"
                 value={formData.positiveEmotion}
                 onChange={(e) => updateField("positiveEmotion", e.target.value)}
-                onBlur={() => handleFieldBlur("positiveEmotion")}
+                onFocus={() => handleFieldFocus("positiveEmotion")}
                 placeholder="Peace, calm, safety, happiness, contentment..."
                 className="w-full"
                 required
@@ -190,7 +187,7 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 id="bodyLocation"
                 value={formData.bodyLocation}
                 onChange={(e) => updateField("bodyLocation", e.target.value)}
-                onBlur={() => handleFieldBlur("bodyLocation")}
+                onFocus={() => handleFieldFocus("bodyLocation")}
                 placeholder="Chest, shoulders, stomach, whole body..."
                 className="w-full"
                 required
@@ -207,7 +204,7 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 id="cueWord"
                 value={formData.cueWord}
                 onChange={(e) => updateField("cueWord", e.target.value)}
-                onBlur={() => handleFieldBlur("cueWord")}
+                onFocus={() => handleFieldFocus("cueWord")}
                 placeholder="Peace, safe, calm, breathe..."
                 className="w-full"
                 required
@@ -224,7 +221,7 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 id="reminderPrompt"
                 value={formData.reminderPrompt}
                 onChange={(e) => updateField("reminderPrompt", e.target.value)}
-                onBlur={() => handleFieldBlur("reminderPrompt")}
+                onFocus={() => handleFieldFocus("reminderPrompt")}
                 placeholder="A personal message of encouragement or reminder..."
                 rows={2}
                 className="w-full"

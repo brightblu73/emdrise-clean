@@ -129,22 +129,19 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
     }
   };
 
-  const handleFieldBlur = (field: keyof TargetMemoryData) => {
-    // Auto-scroll to next field when user finishes with current field
+  const handleFieldFocus = (field: keyof TargetMemoryData) => {
+    // Auto-scroll to current field when user clicks/focuses on it
     const fieldOrder = ['targetMemory', 'worstPartImage', 'negativeCognition', 'positiveCognition', 'initialVoc', 'emotions', 'initialSuds', 'bodyLocation'];
     const currentIndex = fieldOrder.indexOf(field);
-    const currentValue = formData[field];
     
-    if (currentIndex !== -1 && currentValue && currentValue.toString().trim() !== '') {
-      const nextIndex = currentIndex + 1;
-      if (nextIndex < fieldRefs.length && fieldRefs[nextIndex]?.current) {
-        setTimeout(() => {
-          fieldRefs[nextIndex].current?.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
-          });
-        }, 500);
-      }
+    if (currentIndex !== -1 && fieldRefs[currentIndex]?.current) {
+      setTimeout(() => {
+        fieldRefs[currentIndex].current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        });
+      }, 100);
     }
   };
 
@@ -188,7 +185,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="targetMemory"
                 value={formData.targetMemory}
                 onChange={(e) => updateField("targetMemory", e.target.value)}
-                onBlur={() => handleFieldBlur("targetMemory")}
+                onFocus={() => handleFieldFocus("targetMemory")}
                 placeholder="Describe the specific memory you want to work on..."
                 rows={3}
                 className="w-full"
@@ -206,7 +203,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="worstPartImage"
                 value={formData.worstPartImage}
                 onChange={(e) => updateField("worstPartImage", e.target.value)}
-                onBlur={() => handleFieldBlur("worstPartImage")}
+                onFocus={() => handleFieldFocus("worstPartImage")}
                 placeholder="Describe the most disturbing image or snapshot from this memory..."
                 rows={3}
                 className="w-full"
@@ -227,7 +224,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="negativeCognition"
                 value={formData.negativeCognition}
                 onChange={(e) => updateField("negativeCognition", e.target.value)}
-                onBlur={() => handleFieldBlur("negativeCognition")}
+                onFocus={() => handleFieldFocus("negativeCognition")}
                 placeholder="I am..."
                 className="w-full"
                 required
@@ -247,7 +244,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="positiveCognition"
                 value={formData.positiveCognition}
                 onChange={(e) => updateField("positiveCognition", e.target.value)}
-                onBlur={() => handleFieldBlur("positiveCognition")}
+                onFocus={() => handleFieldFocus("positiveCognition")}
                 placeholder="I am..."
                 className="w-full"
                 required
@@ -289,7 +286,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="emotions"
                 value={formData.emotions}
                 onChange={(e) => updateField("emotions", e.target.value)}
-                onBlur={() => handleFieldBlur("emotions")}
+                onFocus={() => handleFieldFocus("emotions")}
                 placeholder="Fear, anger, sadness, shame..."
                 className="w-full"
                 required
@@ -331,7 +328,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="bodyLocation"
                 value={formData.bodyLocation}
                 onChange={(e) => updateField("bodyLocation", e.target.value)}
-                onBlur={() => handleFieldBlur("bodyLocation")}
+                onFocus={() => handleFieldFocus("bodyLocation")}
                 placeholder="Chest, stomach, shoulders, throat..."
                 className="w-full"
                 required
