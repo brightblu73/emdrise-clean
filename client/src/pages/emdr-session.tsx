@@ -138,9 +138,11 @@ export default function EMDRSession() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentSession?.currentScript]);
 
-  // Reset BLS when script changes
+  // Reset BLS when script changes - but only if BLS is actually shown
   useEffect(() => {
-    setShowBLS(false);
+    if (showBLS) {
+      setShowBLS(false);
+    }
     if (currentSession?.currentScript === 8) {
       setBodyScanStep('scanning');
     }
