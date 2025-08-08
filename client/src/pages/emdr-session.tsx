@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -422,7 +422,11 @@ export default function EMDRSession() {
 
   const requiresRatings = false; // No generic ratings needed - custom interfaces handle their own
   const allowsBLS = currentSession && [4, 5, 6, 7, 8].includes(currentSession.currentScript); // Keep as numbers for this variable
-  const currentScriptInfo = currentSession ? getScriptInfo(currentSession.currentScript) : null;
+  
+  // Memoize currentScriptInfo to prevent unnecessary re-renders
+  const currentScriptInfo = useMemo(() => {
+    return currentSession ? getScriptInfo(currentSession.currentScript) : null;
+  }, [currentSession?.currentScript, selectedTherapist]);
 
   if (isLoading) {
     return (
