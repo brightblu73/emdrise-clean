@@ -550,15 +550,10 @@ export default function EMDRSession() {
                       <div className="mb-8">
                         <BilateralStimulation 
                           isActive={showBLS}
-                          onComplete={() => {
-                            setShowBLS(false);
-                            setBLSType('visual'); // Reset to default
-                          }}
-                          onSetComplete={() => {
-                            setShowBLS(false);
-                            setBLSType('visual'); // Reset to default
-                          }}
+                          onComplete={() => setShowBLS(false)}
+                          onSetComplete={() => setShowBLS(false)}
                           blsType={blsType}
+                          disableAutoStart={false}
                         />
                       </div>
                     )}
