@@ -19,6 +19,20 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
   const [currentSide, setCurrentSide] = useState<'left' | 'right'>('left');
   const [phase, setPhase] = useState<'ready' | 'active' | 'complete' | 'notice' | 'warning'>('ready');
 
+  // Immediate close function that bypasses React event system
+  const forceClose = () => {
+    // Immediate cleanup
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = undefined;
+    }
+    setIsActive(false);
+    setPhase('ready');
+    setSetCount(0);
+    // Close modal immediately
+    onClose();
+  };
+
   // Session memory for speed - remembers during session, resets after session ends
   const getSessionSpeed = () => {
     const sessionSpeed = sessionStorage.getItem('blsSpeed');
@@ -336,17 +350,9 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
 
             <div className="flex justify-center pt-4">
               <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // Force cleanup of audio state
-                  if (timeoutRef.current) {
-                    clearTimeout(timeoutRef.current);
-                  }
-                  setIsActive(false);
-                  setPhase('ready');
-                  onClose();
-                }}
+                onClick={forceClose}
+                onMouseDown={forceClose}
+                onTouchStart={forceClose}
                 variant="ghost"
                 className="text-slate-400 hover:text-white"
               >

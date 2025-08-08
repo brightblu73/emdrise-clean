@@ -13,6 +13,7 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   const ballRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   const containerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   
   // Session memory for speed - remembers during session, resets after session ends
   const getSessionSpeed = () => {
@@ -26,6 +27,20 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   const [setCount, setSetCount] = useState(0);
   const [speed, setSpeed] = useState(getSessionSpeed()); // Load session speed or default to 7.0
   const [phase, setPhase] = useState<'ready' | 'active' | 'complete'>('ready');
+
+  // Immediate close function that bypasses React event system
+  const forceClose = () => {
+    // Immediate cleanup
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = undefined;
+    }
+    setIsActive(false);
+    setPhase('ready');
+    setSetCount(0);
+    // Close modal immediately
+    onClose();
+  };
 
   // Professional BLS settings
   const TOTAL_SETS = 22;
@@ -180,17 +195,10 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
         {/* X Close Button */}
         <div className="flex justify-end mb-4">
           <Button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // Force cleanup of animation state
-              if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current);
-              }
-              setIsActive(false);
-              setPhase('ready');
-              onClose();
-            }}
+            ref={closeButtonRef}
+            onClick={forceClose}
+            onMouseDown={forceClose}
+            onTouchStart={forceClose}
             variant="ghost"
             size="icon"
             className="text-white hover:bg-slate-700 rounded-full"
@@ -308,17 +316,9 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
 
             <div className="flex justify-center pt-4">
               <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // Force cleanup of animation state
-                  if (animationRef.current) {
-                    cancelAnimationFrame(animationRef.current);
-                  }
-                  setIsActive(false);
-                  setPhase('ready');
-                  onClose();
-                }}
+                onClick={forceClose}
+                onMouseDown={forceClose}
+                onTouchStart={forceClose}
                 variant="ghost"
                 className="text-slate-400 hover:text-white"
               >
