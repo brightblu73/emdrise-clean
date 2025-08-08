@@ -322,7 +322,11 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
                   Bilateral stimulation set complete
                 </p>
                 <Button
-                  onClick={onClose}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onClose();
+                  }}
                   className="bg-primary-green hover:bg-primary-green/90"
                 >
                   Continue Session
@@ -332,7 +336,11 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
 
             <div className="flex justify-center pt-4">
               <Button
-                onClick={onClose}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                }}
                 variant="ghost"
                 className="text-slate-400 hover:text-white"
               >

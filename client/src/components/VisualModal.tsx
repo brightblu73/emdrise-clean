@@ -180,7 +180,11 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
         {/* X Close Button */}
         <div className="flex justify-end mb-4">
           <Button
-            onClick={onClose}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
             variant="ghost"
             size="icon"
             className="text-white hover:bg-slate-700 rounded-full"
@@ -284,7 +288,11 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
                   Visual bilateral stimulation set complete
                 </p>
                 <Button
-                  onClick={onClose}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onClose();
+                  }}
                   className="bg-primary-green hover:bg-primary-green/90"
                 >
                   Continue Session
@@ -294,7 +302,11 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
 
             <div className="flex justify-center pt-4">
               <Button
-                onClick={onClose}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                }}
                 variant="ghost"
                 className="text-slate-400 hover:text-white"
               >

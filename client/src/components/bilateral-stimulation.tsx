@@ -25,24 +25,19 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
 
   const handleModalClose = () => {
     setActiveModal(null);
-    if (onComplete) {
-      onComplete();
-    }
+    onComplete?.();
   };
 
   const handleSetComplete = () => {
-    if (onSetComplete) {
-      onSetComplete();
-    }
+    setActiveModal(null);
+    onSetComplete?.();
   };
 
   const startBLS = (type: 'visual' | 'auditory' | 'tapping') => {
-    // Close any currently active modal first
+    // Close any currently active modal first, then immediately open new one
     setActiveModal(null);
-    // Then open the new one after a brief delay to ensure cleanup
-    setTimeout(() => {
-      setActiveModal(type);
-    }, 50);
+    // Use immediate state update without delay for responsiveness
+    setActiveModal(type);
   };
 
   return (
@@ -76,41 +71,22 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
       {/* Professional BLS Modals */}
       {activeModal === 'visual' && (
         <VisualModal 
-          onClose={() => {
-            setActiveModal(null);
-            if (onComplete) onComplete();
-          }}
-          onSetComplete={() => {
-            setActiveModal(null);
-            if (onSetComplete) onSetComplete();
-          }}
+          onClose={handleModalClose}
+          onSetComplete={handleSetComplete}
         />
       )}
 
       {activeModal === 'auditory' && (
         <AuditoryModal 
-          onClose={() => {
-            setActiveModal(null);
-            if (onComplete) onComplete();
-          }}
-          onSetComplete={() => {
-            setActiveModal(null);
-            if (onSetComplete) onSetComplete();
-          }}
-
+          onClose={handleModalClose}
+          onSetComplete={handleSetComplete}
         />
       )}
 
       {activeModal === 'tapping' && (
         <TappingModal 
-          onClose={() => {
-            setActiveModal(null);
-            if (onComplete) onComplete();
-          }}
-          onSetComplete={() => {
-            setActiveModal(null);
-            if (onSetComplete) onSetComplete();
-          }}
+          onClose={handleModalClose}
+          onSetComplete={handleSetComplete}
         />
       )}
     </>
