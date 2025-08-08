@@ -650,30 +650,21 @@ export default function EMDRSession() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <BLSOptionBox
                       type="visual"
-                      onClick={() => {
-                        setShowBLS(true);
-                        setBLSType('visual');
-                      }}
+                      onClick={() => setBLSType('visual')}
                       isSelected={blsType === 'visual'}
                       size="large"
                     />
                     
                     <BLSOptionBox
                       type="auditory"
-                      onClick={() => {
-                        setShowBLS(true);
-                        setBLSType('auditory');
-                      }}
+                      onClick={() => setBLSType('auditory')}
                       isSelected={blsType === 'auditory'}
                       size="large"
                     />
                     
                     <BLSOptionBox
                       type="tapping"
-                      onClick={() => {
-                        setShowBLS(true);
-                        setBLSType('tapping');
-                      }}
+                      onClick={() => setBLSType('tapping')}
                       isSelected={blsType === 'tapping'}
                       size="large"
                     />
