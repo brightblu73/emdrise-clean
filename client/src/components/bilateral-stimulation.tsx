@@ -26,16 +26,18 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
       setActiveModal(blsType);
       setHasAutoStarted(true);
     }
+    // Reset only when component becomes truly inactive
     if (!isActive) {
       console.log('Component inactive, resetting hasAutoStarted');
       setHasAutoStarted(false);
+      setActiveModal(null); // Ensure modal is closed when inactive
     }
   }, [isActive, blsType, activeModal, disableAutoStart, hasAutoStarted]);
 
   const handleModalClose = () => {
     console.log('BLS Modal closing, current activeModal:', activeModal);
     setActiveModal(null);
-    setHasAutoStarted(false); // Reset auto-start flag
+    setHasAutoStarted(true); // Keep auto-start flag true to prevent re-triggering
     console.log('BLS Modal closed, calling onComplete');
     onComplete?.();
   };
@@ -54,10 +56,29 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
 
   return (
     <>
-      {/* TEMPORARILY DISABLED BLS Option boxes to test if they're causing auto-clicks */}
+      {/* Only show BLS Type Selection if no active modal - hide when BLS is already running */}
       {!activeModal && (
-        <div className="text-center p-4 bg-yellow-100 rounded-lg">
-          <p className="text-sm text-yellow-800">BLS options temporarily disabled for debugging</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <BLSOptionBox
+            type="visual"
+            onClick={() => startBLS('visual')}
+            isSelected={blsType === 'visual'}
+            size="large"
+          />
+          
+          <BLSOptionBox
+            type="auditory"
+            onClick={() => startBLS('auditory')}
+            isSelected={blsType === 'auditory'}
+            size="large"
+          />
+          
+          <BLSOptionBox
+            type="tapping"
+            onClick={() => startBLS('tapping')}
+            isSelected={blsType === 'tapping'}
+            size="large"
+          />
         </div>
       )}
 
