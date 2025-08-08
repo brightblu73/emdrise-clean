@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import BLSOptionBox from "@/components/BLSOptionBox";
 
 export default function Processing() {
   const [blsType, setBlsType] = useState("visual");
@@ -51,13 +52,28 @@ export default function Processing() {
     <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
       <h2>EMDR Reprocessing</h2>
 
-      <div>
-        <label>Select BLS Mode:</label>
-        <select value={blsType} onChange={e => setBlsType(e.target.value)}>
-          <option value="visual">Visual (eye movement)</option>
-          <option value="audio">Auditory (beeps)</option>
-          <option value="tapping">Tapping (self-guided)</option>
-        </select>
+      <div style={{ marginBottom: "2rem" }}>
+        <h3>Select BLS Mode:</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginTop: "1rem" }}>
+          <BLSOptionBox
+            type="visual"
+            onClick={() => setBlsType("visual")}
+            isSelected={blsType === "visual"}
+            size="medium"
+          />
+          <BLSOptionBox
+            type="auditory"
+            onClick={() => setBlsType("audio")}
+            isSelected={blsType === "audio"}
+            size="medium"
+          />
+          <BLSOptionBox
+            type="tapping"
+            onClick={() => setBlsType("tapping")}
+            isSelected={blsType === "tapping"}
+            size="medium"
+          />
+        </div>
       </div>
 
       {blsType === "visual" && phase === "bls" && (

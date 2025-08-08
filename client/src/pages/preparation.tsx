@@ -11,6 +11,7 @@ import VisualModal from "@/components/VisualModal";
 import AuditoryModal from "@/components/AuditoryModal";
 import TappingModal from "@/components/TappingModal";
 import BLSPickerGuide from "@/components/BLSPickerGuide";
+import BLSOptionBox from "@/components/BLSOptionBox";
 import { useAuth } from "@/hooks/use-auth";
 import { ArrowRight, BookOpen, Shield, Brain } from "lucide-react";
 
@@ -170,32 +171,35 @@ export default function Preparation() {
                 </button>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button variant="outline" className="p-4 h-auto flex flex-col" onClick={() => {
-                    setShowVisual(true);
-                    localStorage.setItem("preferredBLS", "visual");
-                  }}>
-                    <div className="w-4 h-4 bg-green-500 rounded-full mb-2"></div>
-                    <span className="text-sm">Visual</span>
-                    <p className="text-xs text-slate-500">Follow the moving ball</p>
-                  </Button>
+                  <BLSOptionBox
+                    type="visual"
+                    onClick={() => {
+                      setShowVisual(true);
+                      localStorage.setItem("preferredBLS", "visual");
+                    }}
+                    isSelected={preferred === "visual"}
+                    size="medium"
+                  />
                   
-                  <Button variant="outline" className="p-4 h-auto flex flex-col" onClick={() => {
-                    setShowAuditory(true);
-                    localStorage.setItem("preferredBLS", "auditory");
-                  }}>
-                    <div className="w-4 h-4 bg-yellow-500 rounded-full mb-2"></div>
-                    <span className="text-sm">Auditory</span>
-                    <p className="text-xs text-slate-500">Listen to alternating tones</p>
-                  </Button>
+                  <BLSOptionBox
+                    type="auditory"
+                    onClick={() => {
+                      setShowAuditory(true);
+                      localStorage.setItem("preferredBLS", "auditory");
+                    }}
+                    isSelected={preferred === "auditory"}
+                    size="medium"
+                  />
                   
-                  <Button variant="outline" className="p-4 h-auto flex flex-col" onClick={() => {
-                    setShowTapping(true);
-                    localStorage.setItem("preferredBLS", "tapping");
-                  }}>
-                    <div className="w-4 h-4 bg-blue-500 rounded-full mb-2"></div>
-                    <span className="text-sm">Tapping</span>
-                    <p className="text-xs text-slate-500">Tap your chest or thighs in time</p>
-                  </Button>
+                  <BLSOptionBox
+                    type="tapping"
+                    onClick={() => {
+                      setShowTapping(true);
+                      localStorage.setItem("preferredBLS", "tapping");
+                    }}
+                    isSelected={preferred === "tapping"}
+                    size="medium"
+                  />
                 </div>
 
                 {/* Display preferred method */}
@@ -230,13 +234,13 @@ export default function Preparation() {
       </div>
       
       {/* Visual Modal */}
-      {showVisual && <VisualModal onClose={() => setShowVisual(false)} />}
+      {showVisual && <VisualModal onClose={() => setShowVisual(false)} onSetComplete={() => setShowVisual(false)} />}
       
       {/* Auditory Modal */}
-      {showAuditory && <AuditoryModal onClose={() => setShowAuditory(false)} />}
+      {showAuditory && <AuditoryModal onClose={() => setShowAuditory(false)} onSetComplete={() => setShowAuditory(false)} />}
       
       {/* Tapping Modal */}
-      {showTapping && <TappingModal onClose={() => setShowTapping(false)} />}
+      {showTapping && <TappingModal onClose={() => setShowTapping(false)} onSetComplete={() => setShowTapping(false)} />}
       
       {/* BLS Picker Guide */}
       {showGuide && <BLSPickerGuide onClose={() => setShowGuide(false)} />}

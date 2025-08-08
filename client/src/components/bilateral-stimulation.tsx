@@ -4,6 +4,7 @@ import { Eye, Volume2, Vibrate } from "lucide-react";
 import VisualModal from "./VisualModal";
 import AuditoryModal from "./AuditoryModal";
 import TappingModal from "./TappingModal";
+import BLSOptionBox from "./BLSOptionBox";
 
 interface BilateralStimulationProps {
   isActive: boolean;
@@ -49,35 +50,26 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
       {/* Only show BLS Type Selection if no active modal - hide when BLS is already running */}
       {!activeModal && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button
+          <BLSOptionBox
+            type="visual"
             onClick={() => startBLS('visual')}
-            variant={blsType === 'visual' ? 'default' : 'outline'}
-            className="h-24 flex flex-col space-y-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
-          >
-            <Eye className="h-8 w-8 text-blue-600" />
-            <span className="font-semibold text-blue-700">Visual</span>
-            <span className="text-xs text-blue-600">Follow moving ball</span>
-          </Button>
-
-          <Button
+            isSelected={blsType === 'visual'}
+            size="large"
+          />
+          
+          <BLSOptionBox
+            type="auditory"
             onClick={() => startBLS('auditory')}
-            variant={blsType === 'auditory' ? 'default' : 'outline'}
-            className="h-24 flex flex-col space-y-2 bg-green-50 hover:bg-green-100 border-green-200"
-          >
-            <Volume2 className="h-8 w-8 text-green-600" />
-            <span className="font-semibold text-green-700">Auditory</span>
-            <span className="text-xs text-green-600">Stereo sound tones</span>
-          </Button>
-
-          <Button
+            isSelected={blsType === 'auditory'}
+            size="large"
+          />
+          
+          <BLSOptionBox
+            type="tapping"
             onClick={() => startBLS('tapping')}
-            variant={blsType === 'tapping' ? 'default' : 'outline'}
-            className="h-24 flex flex-col space-y-2 bg-purple-50 hover:bg-purple-100 border-purple-200"
-          >
-            <Vibrate className="h-8 w-8 text-purple-600" />
-            <span className="font-semibold text-purple-700">Tapping</span>
-            <span className="text-xs text-purple-600">Self-administered</span>
-          </Button>
+            isSelected={blsType === 'tapping'}
+            size="large"
+          />
         </div>
       )}
 
