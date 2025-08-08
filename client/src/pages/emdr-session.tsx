@@ -697,7 +697,9 @@ export default function EMDRSession() {
                 {/* Processing Control Button - Single green button */}
                 <div className="flex justify-center items-center">
                   <Button
-                    onClick={async () => {
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       // Start reprocessing - activate BLS and will auto-advance to Script 5
                       setShowBLS(true);
                       if (currentSession) {
@@ -802,7 +804,9 @@ export default function EMDRSession() {
                 <div className="space-y-3">
                   <div className="flex justify-center items-center mb-2">
                     <Button
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         // Continue reprocessing - activate BLS and stay on Script 5
                         setShowBLS(true);
                         if (currentSession) {
@@ -942,7 +946,11 @@ export default function EMDRSession() {
                   {/* BLS Activation Button */}
                   <div className="flex justify-center">
                     <Button
-                      onClick={() => setShowBLS(!showBLS)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowBLS(!showBLS);
+                      }}
                       variant={showBLS ? "destructive" : "default"}
                       size="lg"
                       className={showBLS ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}
@@ -1051,7 +1059,9 @@ export default function EMDRSession() {
                 {/* Installation Control Buttons */}
                 <div className="flex justify-center items-center">
                   <Button
-                    onClick={async () => {
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       // Begin installation - activate BLS for Script 6
                       setShowBLS(true);
                       if (currentSession) {
@@ -1157,7 +1167,9 @@ export default function EMDRSession() {
                 <div className="space-y-3">
                   <div className="flex justify-center items-center">
                     <Button
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         // Continue installation - activate BLS and stay on Script 7
                         setShowBLS(true);
                         if (currentSession) {
@@ -1265,7 +1277,9 @@ export default function EMDRSession() {
                   <div className="space-y-3">
                     <div className="flex justify-center items-center">
                       <Button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           // Start BLS for body scan clearing
                           setShowBLS(true);
                         }}
