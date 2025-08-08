@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Headphones, Hand } from 'lucide-react';
+import { Headphones, Hand } from 'lucide-react';
 
 interface BLSOptionBoxProps {
   type: 'visual' | 'auditory' | 'tapping';
@@ -15,7 +15,7 @@ export default function BLSOptionBox({ type, onClick, isSelected = false, size =
         return {
           backgroundColor: '#E6F0FF',
           borderColor: isSelected ? '#3B82F6' : '#E6F0FF',
-          icon: <Eye className="h-8 w-8 text-blue-600" />,
+          icon: <div className="h-8 w-8 bg-blue-600 rounded-full"></div>,
           label: 'Visual',
           subtitle: 'Follow moving ball'
         };
