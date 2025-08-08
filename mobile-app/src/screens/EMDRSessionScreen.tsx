@@ -76,7 +76,9 @@ export default function EMDRSessionScreen({ therapist, onBack }: EMDRSessionScre
   };
 
   const handleAdvanceScript = async () => {
+    console.log('Mobile handleAdvanceScript called, current script:', currentScript);
     if (currentScript < 10) {
+      console.log('Mobile advancing script from', currentScript, 'to', currentScript + 1);
       await advanceScript();
     } else {
       // Session complete
@@ -95,7 +97,9 @@ export default function EMDRSessionScreen({ therapist, onBack }: EMDRSessionScre
   };
 
   const handleBackScript = async () => {
+    console.log('Mobile handleBackScript called, current script:', currentScript);
     if (currentScript > 1) {
+      console.log('Mobile going back from script', currentScript, 'to', currentScript - 1);
       await goBackScript();
     }
   };

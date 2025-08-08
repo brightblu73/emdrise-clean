@@ -121,19 +121,29 @@ export function useEMDRSession(therapist: 'maria' | 'alistair') {
     if (!sessionData) return;
 
     const updatedSession = { ...sessionData, ...updates };
+    console.log('Mobile updateSession - updating session with:', updates);
+    console.log('Mobile updateSession - updated session:', updatedSession);
     setSessionData(updatedSession);
     
     // Save locally
     await saveLocalSession(updatedSession);
     
-    // Try to sync with server
+    // TEMPORARILY DISABLE server sync to prevent web/mobile conflicts  
+    // TODO: Implement proper session isolation between web and mobile
+    console.log('Mobile updateSession - server sync DISABLED to prevent conflicts');
+    
+    /* 
+    // Try to sync with server (but add mobile identifier to prevent web conflicts)
     if (updatedSession.id) {
       try {
-        await apiService.updateSession(updatedSession.id, updates);
+        const mobileUpdates = { ...updates, platform: 'mobile' };
+        await apiService.updateSession(updatedSession.id, mobileUpdates);
+        console.log('Mobile updateSession - server sync successful');
       } catch (error) {
         console.log('Failed to sync with server, continuing with local session');
       }
     }
+    */
   };
 
   const advanceScript = async () => {
@@ -153,6 +163,7 @@ export function useEMDRSession(therapist: 'maria' | 'alistair') {
       nextScript = current + 1;
     }
     
+    console.log('Mobile advanceScript - advancing from', sessionData.currentScript, 'to', nextScript);
     await updateSession({ currentScript: nextScript });
   };
 
@@ -170,6 +181,7 @@ export function useEMDRSession(therapist: 'maria' | 'alistair') {
       prevScript = current - 1;
     }
     
+    console.log('Mobile goBackScript - going back from', sessionData.currentScript, 'to', prevScript);
     await updateSession({ currentScript: prevScript });
   };
 
