@@ -555,6 +555,7 @@ export default function EMDRSession() {
                         <BilateralStimulation 
                           isActive={showBLS}
                           onComplete={() => setShowBLS(false)}
+                          onSetComplete={() => setShowBLS(false)}
                           blsType={blsType}
                         />
                       </div>
