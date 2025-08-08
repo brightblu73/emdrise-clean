@@ -46,6 +46,7 @@ export default function EMDRSession() {
   const [sudsRating, setSudsRating] = useState([5]);
   const [vocRating, setVocRating] = useState([4]);
   const [showBLS, setShowBLS] = useState(false);
+  const [blsClosing, setBLSClosing] = useState(false); // Prevent touch events during close
   const [userInput, setUserInput] = useState<any>({});
   const [blsType, setBLSType] = useState<'visual' | 'auditory' | 'tapping'>('visual');
   
@@ -528,7 +529,7 @@ export default function EMDRSession() {
                           e.preventDefault();
                           e.stopPropagation();
                           console.log('Visual BLS clicked, setting showBLS=true, blsType=visual');
-                          if (!showBLS) { // Only allow if BLS is not already active
+                          if (!showBLS && !blsClosing) { // Prevent clicks during BLS closing
                             setShowBLS(true);
                             setBLSType('visual');
                           }
@@ -543,7 +544,7 @@ export default function EMDRSession() {
                           e.preventDefault();
                           e.stopPropagation();
                           console.log('Auditory BLS clicked, setting showBLS=true, blsType=auditory');
-                          if (!showBLS) { // Only allow if BLS is not already active
+                          if (!showBLS && !blsClosing) { // Prevent clicks during BLS closing
                             setShowBLS(true);
                             setBLSType('auditory');
                           }
@@ -558,7 +559,7 @@ export default function EMDRSession() {
                           e.preventDefault();
                           e.stopPropagation();
                           console.log('Tapping BLS clicked, setting showBLS=true, blsType=tapping');
-                          if (!showBLS) { // Only allow if BLS is not already active
+                          if (!showBLS && !blsClosing) { // Prevent clicks during BLS closing
                             setShowBLS(true);
                             setBLSType('tapping');
                           }
@@ -574,7 +575,13 @@ export default function EMDRSession() {
                           isActive={showBLS}
                           onComplete={() => {
                             console.log('BLS onComplete called, current blsType:', blsType, 'setting showBLS=false');
+                            setBLSClosing(true); // Block touch events temporarily
                             setShowBLS(false);
+                            // Prevent touch bleeding for 500ms
+                            setTimeout(() => {
+                              setBLSClosing(false);
+                              console.log('BLS completed, touch events re-enabled');
+                            }, 500);
                           }}
                           onSetComplete={() => {
                             console.log('BLS onSetComplete called, setting showBLS=false');
