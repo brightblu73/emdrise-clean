@@ -18,28 +18,34 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
   const [activeModal, setActiveModal] = useState<'visual' | 'auditory' | 'tapping' | null>(null);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
 
-  // Auto-start BLS if a type is provided and component is active (unless disabled)
+  // Auto-start BLS ONLY once when first activated - NEVER restart automatically
   useEffect(() => {
     console.log('BLS useEffect triggered - isActive:', isActive, 'blsType:', blsType, 'activeModal:', activeModal, 'hasAutoStarted:', hasAutoStarted);
+    
+    // ONLY auto-start on FIRST activation - never after user interactions
     if (isActive && blsType && !activeModal && !disableAutoStart && !hasAutoStarted) {
       console.log('Auto-starting BLS modal:', blsType, 'isActive:', isActive, 'activeModal:', activeModal);
       setActiveModal(blsType);
       setHasAutoStarted(true);
     }
-    // Reset only when component becomes truly inactive
+    
+    // Reset only when component becomes completely inactive
     if (!isActive) {
-      console.log('Component inactive, resetting hasAutoStarted');
+      console.log('Component inactive, resetting all BLS state');
       setHasAutoStarted(false);
-      setActiveModal(null); // Ensure modal is closed when inactive
+      setActiveModal(null);
     }
-  }, [isActive, blsType, activeModal, disableAutoStart, hasAutoStarted]);
+  }, [isActive, blsType, disableAutoStart, hasAutoStarted]); // Keep hasAutoStarted to track state properly
 
   const handleModalClose = () => {
     console.log('BLS Modal closing, current activeModal:', activeModal);
     setActiveModal(null);
-    setHasAutoStarted(true); // Keep auto-start flag true to prevent re-triggering
+    setHasAutoStarted(true); // PREVENT any auto-restart
     console.log('BLS Modal closed, calling onComplete');
-    onComplete?.();
+    // Add a small delay to prevent immediate re-triggering
+    setTimeout(() => {
+      onComplete?.();
+    }, 100);
   };
 
   const handleSetComplete = () => {
@@ -48,10 +54,12 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
   };
 
   const startBLS = (type: 'visual' | 'auditory' | 'tapping') => {
-    // Close any currently active modal first, then immediately open new one
-    setActiveModal(null);
-    // Use immediate state update without delay for responsiveness
-    setActiveModal(type);
+    console.log('Manual BLS start requested:', type);
+    // Only allow manual start if no modal is currently active
+    if (!activeModal) {
+      setActiveModal(type);
+      setHasAutoStarted(true); // Mark as manually started to prevent auto-restart
+    }
   };
 
   return (
