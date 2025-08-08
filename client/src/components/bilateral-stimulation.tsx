@@ -16,18 +16,24 @@ interface BilateralStimulationProps {
 
 export default function BilateralStimulation({ isActive, onComplete, onSetComplete, blsType = 'visual', disableAutoStart = false }: BilateralStimulationProps) {
   const [activeModal, setActiveModal] = useState<'visual' | 'auditory' | 'tapping' | null>(null);
+  const [hasAutoStarted, setHasAutoStarted] = useState(false);
 
   // Auto-start BLS if a type is provided and component is active (unless disabled)
   useEffect(() => {
-    if (isActive && blsType && !activeModal && !disableAutoStart) {
+    if (isActive && blsType && !activeModal && !disableAutoStart && !hasAutoStarted) {
       console.log('Auto-starting BLS modal:', blsType, 'isActive:', isActive, 'activeModal:', activeModal);
       setActiveModal(blsType);
+      setHasAutoStarted(true);
     }
-  }, [isActive, blsType, activeModal, disableAutoStart]);
+    if (!isActive) {
+      setHasAutoStarted(false);
+    }
+  }, [isActive, blsType, activeModal, disableAutoStart, hasAutoStarted]);
 
   const handleModalClose = () => {
     console.log('BLS Modal closing, current activeModal:', activeModal);
     setActiveModal(null);
+    setHasAutoStarted(false); // Reset auto-start flag
     console.log('BLS Modal closed, calling onComplete');
     onComplete?.();
   };
