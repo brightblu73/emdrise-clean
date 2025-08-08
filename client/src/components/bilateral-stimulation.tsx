@@ -54,29 +54,10 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
 
   return (
     <>
-      {/* Only show BLS Type Selection if no active modal - hide when BLS is already running */}
+      {/* TEMPORARILY DISABLED BLS Option boxes to test if they're causing auto-clicks */}
       {!activeModal && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <BLSOptionBox
-            type="visual"
-            onClick={() => startBLS('visual')}
-            isSelected={blsType === 'visual'}
-            size="large"
-          />
-          
-          <BLSOptionBox
-            type="auditory"
-            onClick={() => startBLS('auditory')}
-            isSelected={blsType === 'auditory'}
-            size="large"
-          />
-          
-          <BLSOptionBox
-            type="tapping"
-            onClick={() => startBLS('tapping')}
-            isSelected={blsType === 'tapping'}
-            size="large"
-          />
+        <div className="text-center p-4 bg-yellow-100 rounded-lg">
+          <p className="text-sm text-yellow-800">BLS options temporarily disabled for debugging</p>
         </div>
       )}
 
