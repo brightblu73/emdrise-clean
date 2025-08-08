@@ -250,25 +250,6 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
                   Listen to the alternating tones in your left and right ears.
                   The set will automatically complete after {TOTAL_SETS} sets.
                 </p>
-                {/* Speed Slider Control */}
-                <div className="space-y-3 mb-4">
-                  <label className="text-sm text-slate-300 text-center block">
-                    Adjust Speed
-                  </label>
-                  <div className="px-4">
-                    <Slider
-                      value={[speed]}
-                      onValueChange={handleSpeedChange}
-                      min={1.0}
-                      max={10.0}
-                      step={0.5}
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="text-center text-sm text-slate-400">
-                    Speed: {speed.toFixed(1)}
-                  </div>
-                </div>
                 <Button
                   onClick={startBLS}
                   size="lg"
