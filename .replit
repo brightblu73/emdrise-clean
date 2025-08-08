@@ -7,7 +7,6 @@ channel = "stable-24_05"
 packages = ["ffmpeg", "zip", "zulu11"]
 
 [deployment]
-deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
@@ -37,4 +36,8 @@ localPort = 5000
 externalPort = 80
 
 [agent]
-integrations = ["javascript_database==1.0.0", "javascript_object_storage==1.0.0", "javascript_log_in_with_replit==1.0.0"]
+integrations = [
+  "javascript_database==1.0.0",
+  "javascript_object_storage==1.0.0",
+  "javascript_log_in_with_replit==1.0.0",
+]
