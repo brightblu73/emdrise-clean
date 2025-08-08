@@ -350,7 +350,7 @@ export default function Home() {
                     onClick={() => handleTherapistSelect('female')}
                   >
                     <div className="text-center">
-                      <div className="w-32 h-32 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-primary-green transition-colors cursor-pointer bg-white shadow-sm">
+                      <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-primary-green transition-colors cursor-pointer bg-white shadow-sm">
                         <img src={mariaPortrait} alt="Maria" className="w-full h-full object-cover object-top" />
                       </div>
                       <h3 className="font-semibold text-slate-800 mb-1">Maria</h3>
@@ -370,7 +370,7 @@ export default function Home() {
                     onClick={() => handleTherapistSelect('male')}
                   >
                     <div className="text-center">
-                      <div className="w-32 h-32 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-secondary-blue transition-colors cursor-pointer bg-white shadow-sm">
+                      <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-secondary-blue transition-colors cursor-pointer bg-white shadow-sm">
                         <img src={alistairPortrait} alt="Alistair" className="w-full h-full object-cover object-top" />
                       </div>
                       <h3 className="font-semibold text-slate-800 mb-1">Alistair</h3>
