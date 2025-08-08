@@ -515,7 +515,9 @@ export default function EMDRSession() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                       <BLSOptionBox
                         type="visual"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           setShowBLS(true);
                           setBLSType('visual');
                         }}
@@ -525,7 +527,9 @@ export default function EMDRSession() {
                       
                       <BLSOptionBox
                         type="auditory"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           setShowBLS(true);
                           setBLSType('auditory');
                         }}
@@ -535,7 +539,9 @@ export default function EMDRSession() {
                       
                       <BLSOptionBox
                         type="tapping"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           setShowBLS(true);
                           setBLSType('tapping');
                         }}
