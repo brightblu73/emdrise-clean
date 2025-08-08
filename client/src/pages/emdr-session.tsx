@@ -13,7 +13,7 @@ import BLSOptionBox from "@/components/BLSOptionBox";
 import TherapistSelector from "@/components/therapist-selector";
 import CalmPlaceSetup from "@/components/calm-place-setup";
 import TargetMemorySetup from "@/components/target-memory-setup";
-import { Brain, ArrowRight, Clock, RotateCcw, Save, Star, ArrowLeft, Home } from "lucide-react";
+import { Brain, ArrowRight, Clock, RotateCcw, Save, Star, ArrowLeft, Home, Volume2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export default function EMDRSession() {
@@ -634,7 +634,7 @@ export default function EMDRSession() {
                 {/* BLS Testing Section */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
                   <div className="flex items-center space-x-2 mb-4">
-                    <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">ℹ</div>
+                    <Volume2 className="w-6 h-6 text-blue-600" />
                     <h3 className="text-lg font-semibold text-blue-800">Important: Use Headphones</h3>
                   </div>
                   <p className="text-blue-700 mb-6">
