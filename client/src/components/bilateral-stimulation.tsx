@@ -20,12 +20,14 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
 
   // Auto-start BLS if a type is provided and component is active (unless disabled)
   useEffect(() => {
+    console.log('BLS useEffect triggered - isActive:', isActive, 'blsType:', blsType, 'activeModal:', activeModal, 'hasAutoStarted:', hasAutoStarted);
     if (isActive && blsType && !activeModal && !disableAutoStart && !hasAutoStarted) {
       console.log('Auto-starting BLS modal:', blsType, 'isActive:', isActive, 'activeModal:', activeModal);
       setActiveModal(blsType);
       setHasAutoStarted(true);
     }
     if (!isActive) {
+      console.log('Component inactive, resetting hasAutoStarted');
       setHasAutoStarted(false);
     }
   }, [isActive, blsType, activeModal, disableAutoStart, hasAutoStarted]);

@@ -48,6 +48,11 @@ export default function EMDRSession() {
   const [showBLS, setShowBLS] = useState(false);
   const [userInput, setUserInput] = useState<any>({});
   const [blsType, setBLSType] = useState<'visual' | 'auditory' | 'tapping'>('visual');
+  
+  // Add debugging for blsType changes
+  useEffect(() => {
+    console.log('BLS Type changed to:', blsType);
+  }, [blsType]);
   const [bodyScanStep, setBodyScanStep] = useState<'scanning' | 'disturbance' | 'clearing' | 'complete'>('scanning');
   const [localVideoCompleted, setLocalVideoCompleted] = useState(false);
   const [disturbanceLevel, setDisturbanceLevel] = useState([0]);
@@ -554,7 +559,7 @@ export default function EMDRSession() {
                         <BilateralStimulation 
                           isActive={showBLS}
                           onComplete={() => {
-                            console.log('BLS onComplete called, setting showBLS=false');
+                            console.log('BLS onComplete called, current blsType:', blsType, 'setting showBLS=false');
                             setShowBLS(false);
                           }}
                           onSetComplete={() => {
