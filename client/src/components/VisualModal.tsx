@@ -126,10 +126,8 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
           if (currentSet >= TOTAL_SETS) {
             setPhase('complete');
             setIsActive(false);
-            // Auto-close after completing 22 sets
-            setTimeout(() => {
-              onSetComplete();
-            }, 500);
+            // Auto-close immediately after completing 22 sets
+            onSetComplete();
             return;
           }
         }

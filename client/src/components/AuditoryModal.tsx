@@ -155,9 +155,7 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
         setPhase('complete');
         setIsActive(false);
         // Auto-close immediately after completing 22 sets
-        setTimeout(() => {
-          onSetComplete();
-        }, 500);
+        onSetComplete();
         return;
       }
 
