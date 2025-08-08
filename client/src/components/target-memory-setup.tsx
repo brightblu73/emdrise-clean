@@ -127,12 +127,15 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
     if (errors.length > 0) {
       setErrors([]);
     }
-    
-    // Auto-scroll to next field when current field has content
+  };
+
+  const handleFieldBlur = (field: keyof TargetMemoryData) => {
+    // Auto-scroll to next field when user finishes with current field
     const fieldOrder = ['targetMemory', 'worstPartImage', 'negativeCognition', 'positiveCognition', 'initialVoc', 'emotions', 'initialSuds', 'bodyLocation'];
     const currentIndex = fieldOrder.indexOf(field);
+    const currentValue = formData[field];
     
-    if (currentIndex !== -1 && value && value.toString().trim() !== '') {
+    if (currentIndex !== -1 && currentValue && currentValue.toString().trim() !== '') {
       const nextIndex = currentIndex + 1;
       if (nextIndex < fieldRefs.length && fieldRefs[nextIndex]?.current) {
         setTimeout(() => {
@@ -140,12 +143,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
             behavior: 'smooth', 
             block: 'center' 
           });
-          // Focus the next field if it's an input
-          if (fieldRefs[nextIndex].current instanceof HTMLInputElement || 
-              fieldRefs[nextIndex].current instanceof HTMLTextAreaElement) {
-            fieldRefs[nextIndex].current?.focus();
-          }
-        }, 300);
+        }, 500);
       }
     }
   };
@@ -190,6 +188,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="targetMemory"
                 value={formData.targetMemory}
                 onChange={(e) => updateField("targetMemory", e.target.value)}
+                onBlur={() => handleFieldBlur("targetMemory")}
                 placeholder="Describe the specific memory you want to work on..."
                 rows={3}
                 className="w-full"
@@ -207,6 +206,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="worstPartImage"
                 value={formData.worstPartImage}
                 onChange={(e) => updateField("worstPartImage", e.target.value)}
+                onBlur={() => handleFieldBlur("worstPartImage")}
                 placeholder="Describe the most disturbing image or snapshot from this memory..."
                 rows={3}
                 className="w-full"
@@ -227,6 +227,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="negativeCognition"
                 value={formData.negativeCognition}
                 onChange={(e) => updateField("negativeCognition", e.target.value)}
+                onBlur={() => handleFieldBlur("negativeCognition")}
                 placeholder="I am..."
                 className="w-full"
                 required
@@ -246,6 +247,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="positiveCognition"
                 value={formData.positiveCognition}
                 onChange={(e) => updateField("positiveCognition", e.target.value)}
+                onBlur={() => handleFieldBlur("positiveCognition")}
                 placeholder="I am..."
                 className="w-full"
                 required
@@ -287,6 +289,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="emotions"
                 value={formData.emotions}
                 onChange={(e) => updateField("emotions", e.target.value)}
+                onBlur={() => handleFieldBlur("emotions")}
                 placeholder="Fear, anger, sadness, shame..."
                 className="w-full"
                 required
@@ -328,6 +331,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 id="bodyLocation"
                 value={formData.bodyLocation}
                 onChange={(e) => updateField("bodyLocation", e.target.value)}
+                onBlur={() => handleFieldBlur("bodyLocation")}
                 placeholder="Chest, stomach, shoulders, throat..."
                 className="w-full"
                 required

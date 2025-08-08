@@ -37,13 +37,16 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
   const queryClient = useQueryClient();
   
   // Refs for each field to enable smooth scrolling
+  const imageDescriptionRef = useRef<HTMLTextAreaElement>(null);
+  const sensoryDetailsRef = useRef<HTMLTextAreaElement>(null);
+  const positiveEmotionRef = useRef<HTMLInputElement>(null);
+  const bodyLocationRef = useRef<HTMLInputElement>(null);
+  const cueWordRef = useRef<HTMLInputElement>(null);
+  const reminderPromptRef = useRef<HTMLTextAreaElement>(null);
+  
   const fieldRefs = [
-    useRef<HTMLTextAreaElement>(null), // imageDescription
-    useRef<HTMLTextAreaElement>(null), // sensoryDetails
-    useRef<HTMLInputElement>(null),    // positiveEmotion
-    useRef<HTMLInputElement>(null),    // bodyLocation
-    useRef<HTMLInputElement>(null),    // cueWord
-    useRef<HTMLInputElement>(null),    // reminderPrompt
+    imageDescriptionRef, sensoryDetailsRef, positiveEmotionRef, 
+    bodyLocationRef, cueWordRef, reminderPromptRef
   ];
 
   const createCalmPlace = useMutation({
@@ -89,12 +92,15 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
 
   const updateField = (field: keyof CalmPlaceData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Auto-scroll to next field when current field has content
+  };
+
+  const handleFieldBlur = (field: keyof CalmPlaceData) => {
+    // Auto-scroll to next field when user finishes with current field
     const fieldOrder = ['imageDescription', 'sensoryDetails', 'positiveEmotion', 'bodyLocation', 'cueWord', 'reminderPrompt'];
     const currentIndex = fieldOrder.indexOf(field);
+    const currentValue = formData[field];
     
-    if (currentIndex !== -1 && value && value.trim() !== '') {
+    if (currentIndex !== -1 && currentValue && currentValue.trim() !== '') {
       const nextIndex = currentIndex + 1;
       if (nextIndex < fieldRefs.length && fieldRefs[nextIndex]?.current) {
         setTimeout(() => {
@@ -102,12 +108,7 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
             behavior: 'smooth', 
             block: 'center' 
           });
-          // Focus the next field if it's an input
-          if (fieldRefs[nextIndex].current instanceof HTMLInputElement || 
-              fieldRefs[nextIndex].current instanceof HTMLTextAreaElement) {
-            fieldRefs[nextIndex].current?.focus();
-          }
-        }, 300);
+        }, 500);
       }
     }
   };
@@ -132,10 +133,11 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 What does your Calm Place look like? *
               </Label>
               <Textarea
-                ref={fieldRefs[0]}
+                ref={imageDescriptionRef}
                 id="imageDescription"
                 value={formData.imageDescription}
                 onChange={(e) => updateField("imageDescription", e.target.value)}
+                onBlur={() => handleFieldBlur("imageDescription")}
                 placeholder="Describe the visual details of your calm place - a beach, forest, room, or any space that feels peaceful to you..."
                 rows={3}
                 className="w-full"
@@ -149,10 +151,11 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 What sounds, smells, colors, or textures are in your Calm Place? *
               </Label>
               <Textarea
-                ref={fieldRefs[1]}
+                ref={sensoryDetailsRef}
                 id="sensoryDetails"
                 value={formData.sensoryDetails}
                 onChange={(e) => updateField("sensoryDetails", e.target.value)}
+                onBlur={() => handleFieldBlur("sensoryDetails")}
                 placeholder="Include any sensory details - the sound of waves, scent of flowers, warm sunlight, soft grass..."
                 rows={3}
                 className="w-full"
@@ -166,10 +169,11 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 What emotions do you feel when you imagine being there? *
               </Label>
               <Input
-                ref={fieldRefs[2]}
+                ref={positiveEmotionRef}
                 id="positiveEmotion"
                 value={formData.positiveEmotion}
                 onChange={(e) => updateField("positiveEmotion", e.target.value)}
+                onBlur={() => handleFieldBlur("positiveEmotion")}
                 placeholder="Peace, calm, safety, happiness, contentment..."
                 className="w-full"
                 required
@@ -182,10 +186,11 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 Where in your body do you feel these calming sensations? *
               </Label>
               <Input
-                ref={fieldRefs[3]}
+                ref={bodyLocationRef}
                 id="bodyLocation"
                 value={formData.bodyLocation}
                 onChange={(e) => updateField("bodyLocation", e.target.value)}
+                onBlur={() => handleFieldBlur("bodyLocation")}
                 placeholder="Chest, shoulders, stomach, whole body..."
                 className="w-full"
                 required
@@ -198,10 +203,11 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 Choose a word that brings you back to this place *
               </Label>
               <Input
-                ref={fieldRefs[4]}
+                ref={cueWordRef}
                 id="cueWord"
                 value={formData.cueWord}
                 onChange={(e) => updateField("cueWord", e.target.value)}
+                onBlur={() => handleFieldBlur("cueWord")}
                 placeholder="Peace, safe, calm, breathe..."
                 className="w-full"
                 required
@@ -214,10 +220,11 @@ export default function CalmPlaceSetup({ sessionId, onComplete, onSkip, onBack }
                 What would you like to remind yourself the next time you visit this place? (Optional)
               </Label>
               <Textarea
-                ref={fieldRefs[5]}
+                ref={reminderPromptRef}
                 id="reminderPrompt"
                 value={formData.reminderPrompt}
                 onChange={(e) => updateField("reminderPrompt", e.target.value)}
+                onBlur={() => handleFieldBlur("reminderPrompt")}
                 placeholder="A personal message of encouragement or reminder..."
                 rows={2}
                 className="w-full"
