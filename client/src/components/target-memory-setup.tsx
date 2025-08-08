@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,23 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
   });
 
   const [errors, setErrors] = useState<string[]>([]);
+  const [currentFieldIndex, setCurrentFieldIndex] = useState(0);
   const queryClient = useQueryClient();
+  
+  // Refs for each field to enable smooth scrolling
+  const targetMemoryRef = useRef<HTMLTextAreaElement>(null);
+  const worstPartImageRef = useRef<HTMLTextAreaElement>(null);
+  const negativeCognitionRef = useRef<HTMLInputElement>(null);
+  const positiveCognitionRef = useRef<HTMLInputElement>(null);
+  const initialVocRef = useRef<HTMLDivElement>(null);
+  const emotionsRef = useRef<HTMLInputElement>(null);
+  const initialSudsRef = useRef<HTMLDivElement>(null);
+  const bodyLocationRef = useRef<HTMLInputElement>(null);
+  
+  const fieldRefs = [
+    targetMemoryRef, worstPartImageRef, negativeCognitionRef, positiveCognitionRef, 
+    initialVocRef, emotionsRef, initialSudsRef, bodyLocationRef
+  ];
 
   const createTarget = useMutation({
     mutationFn: async (data: TargetMemoryData) => {
@@ -111,6 +127,27 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
     if (errors.length > 0) {
       setErrors([]);
     }
+    
+    // Auto-scroll to next field when current field has content
+    const fieldOrder = ['targetMemory', 'worstPartImage', 'negativeCognition', 'positiveCognition', 'initialVoc', 'emotions', 'initialSuds', 'bodyLocation'];
+    const currentIndex = fieldOrder.indexOf(field);
+    
+    if (currentIndex !== -1 && value && value.toString().trim() !== '') {
+      const nextIndex = currentIndex + 1;
+      if (nextIndex < fieldRefs.length && fieldRefs[nextIndex]?.current) {
+        setTimeout(() => {
+          fieldRefs[nextIndex].current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          // Focus the next field if it's an input
+          if (fieldRefs[nextIndex].current instanceof HTMLInputElement || 
+              fieldRefs[nextIndex].current instanceof HTMLTextAreaElement) {
+            fieldRefs[nextIndex].current?.focus();
+          }
+        }, 300);
+      }
+    }
   };
 
   return (
@@ -149,6 +186,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 Target Memory - What memory are we going to work on today? *
               </Label>
               <Textarea
+                ref={targetMemoryRef}
                 id="targetMemory"
                 value={formData.targetMemory}
                 onChange={(e) => updateField("targetMemory", e.target.value)}
@@ -165,6 +203,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 Worst Part (Image) - What picture represents the worst part of the incident? *
               </Label>
               <Textarea
+                ref={worstPartImageRef}
                 id="worstPartImage"
                 value={formData.worstPartImage}
                 onChange={(e) => updateField("worstPartImage", e.target.value)}
@@ -184,6 +223,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 (The negative cognition should be self-referential: "I'm shameful", "I should have done something", "I am in danger", "I'm weak")
               </p>
               <Input
+                ref={negativeCognitionRef}
                 id="negativeCognition"
                 value={formData.negativeCognition}
                 onChange={(e) => updateField("negativeCognition", e.target.value)}
@@ -202,6 +242,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 (The positive cognition should be self-referential: "I'm a good person", "I did the best I could", "It's over; I'm safe now", "I'm strong")
               </p>
               <Input
+                ref={positiveCognitionRef}
                 id="positiveCognition"
                 value={formData.positiveCognition}
                 onChange={(e) => updateField("positiveCognition", e.target.value)}
@@ -219,7 +260,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
               <p className="text-sm text-gray-600">
                 Scale of 1 to 7, where 1 is untrue and 7 is totally true
               </p>
-              <div className="w-full px-4">
+              <div ref={initialVocRef} className="w-full px-4">
                 <Slider
                   value={[formData.initialVoc]}
                   onValueChange={(value) => updateField("initialVoc", value[0])}
@@ -242,6 +283,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 Emotions/Feelings - When you bring up that incident and those words (negative cognition), what emotions do you feel now? *
               </Label>
               <Input
+                ref={emotionsRef}
                 id="emotions"
                 value={formData.emotions}
                 onChange={(e) => updateField("emotions", e.target.value)}
@@ -259,7 +301,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
               <p className="text-sm text-gray-600">
                 Where 0 is no disturbance and 10 is the highest disturbance imaginable
               </p>
-              <div className="w-full px-4">
+              <div ref={initialSudsRef} className="w-full px-4">
                 <Slider
                   value={[formData.initialSuds]}
                   onValueChange={(value) => updateField("initialSuds", value[0])}
@@ -282,6 +324,7 @@ export default function TargetMemorySetup({ sessionId, onComplete, onBack }: Tar
                 Location of body sensation - Where do you feel that in your body? *
               </Label>
               <Input
+                ref={bodyLocationRef}
                 id="bodyLocation"
                 value={formData.bodyLocation}
                 onChange={(e) => updateField("bodyLocation", e.target.value)}
