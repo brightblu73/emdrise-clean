@@ -86,7 +86,7 @@ export default function EMDRSession() {
         pausedAt: (currentSession as any).pausedAt
       });
     }
-  }, [currentSession]);
+  }, [currentSession?.id, currentSession?.currentScript, currentSession?.status]);
   
   // Auto-start session if therapist is selected and user is authenticated
   useEffect(() => {
@@ -140,12 +140,10 @@ export default function EMDRSession() {
 
   // Reset BLS when script changes - but only if BLS is actually shown
   useEffect(() => {
-    if (showBLS) {
-      setShowBLS(false);
-    }
     if (currentSession?.currentScript === 8) {
       setBodyScanStep('scanning');
     }
+    // Removed showBLS reset to prevent render loop
   }, [currentSession?.currentScript]);
 
   // New script mapping for 10-script sequence with therapist-specific videos
