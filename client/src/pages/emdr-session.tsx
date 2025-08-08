@@ -139,9 +139,21 @@ export default function EMDRSession() {
     }
   }, [user, isLoading, setLocation]);
 
-  // Scroll to top when script changes
+  // Scroll to top when script changes - with delay to ensure DOM updates
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (currentSession?.currentScript) {
+      // Use a small delay to ensure the DOM has fully updated
+      const scrollTimer = setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Also scroll the main container to ensure we're at the very top
+        const mainContainer = document.querySelector('.min-h-screen');
+        if (mainContainer) {
+          mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 100);
+      
+      return () => clearTimeout(scrollTimer);
+    }
   }, [currentSession?.currentScript]);
 
   // Reset BLS when script changes - but only if BLS is actually shown
@@ -525,9 +537,7 @@ export default function EMDRSession() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                       <BLSOptionBox
                         type="visual"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
+                        onClick={() => {
                           console.log('Visual BLS clicked, setting showBLS=true, blsType=visual');
                           if (!showBLS && !blsClosing) { // Prevent clicks during BLS closing
                             setShowBLS(true);
@@ -540,9 +550,7 @@ export default function EMDRSession() {
                       
                       <BLSOptionBox
                         type="auditory"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
+                        onClick={() => {
                           console.log('Auditory BLS clicked, setting showBLS=true, blsType=auditory');
                           if (!showBLS && !blsClosing) { // Prevent clicks during BLS closing
                             setShowBLS(true);
@@ -555,9 +563,7 @@ export default function EMDRSession() {
                       
                       <BLSOptionBox
                         type="tapping"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
+                        onClick={() => {
                           console.log('Tapping BLS clicked, setting showBLS=true, blsType=tapping');
                           if (!showBLS && !blsClosing) { // Prevent clicks during BLS closing
                             setShowBLS(true);
