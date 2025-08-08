@@ -520,6 +520,7 @@ export default function EMDRSession() {
                       <BLSOptionBox
                         type="visual"
                         onClick={() => {
+                          console.log('Visual BLS clicked, setting showBLS=true, blsType=visual');
                           setShowBLS(true);
                           setBLSType('visual');
                         }}
@@ -552,8 +553,14 @@ export default function EMDRSession() {
                       <div className="mb-8">
                         <BilateralStimulation 
                           isActive={showBLS}
-                          onComplete={() => setShowBLS(false)}
-                          onSetComplete={() => setShowBLS(false)}
+                          onComplete={() => {
+                            console.log('BLS onComplete called, setting showBLS=false');
+                            setShowBLS(false);
+                          }}
+                          onSetComplete={() => {
+                            console.log('BLS onSetComplete called, setting showBLS=false');
+                            setShowBLS(false);
+                          }}
                           blsType={blsType}
                           disableAutoStart={false}
                         />
