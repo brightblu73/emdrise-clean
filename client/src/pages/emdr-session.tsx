@@ -642,8 +642,7 @@ export default function EMDRSession() {
                     This ensures the stereo audio stimulation works correctly.
                   </p>
                   
-                  <h4 className="text-lg font-semibold text-slate-800 mb-4">Test Bilateral Stimulation</h4>
-                  <p className="text-slate-600 mb-4">
+                  <p className="text-blue-700 mb-4 font-semibold">
                     Choose your preferred method of bilateral stimulation:
                   </p>
                   
