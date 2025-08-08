@@ -200,7 +200,13 @@ export default function BLSComponent({ type, speed, onComplete, onClose }: BLSCo
           {type === 'tapping' && 'Tapping BLS'}
         </Text>
         {onClose && (
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <TouchableOpacity 
+            style={styles.closeButton} 
+            onPress={() => {
+              console.log('Mobile BLS Component close button clicked');
+              onClose();
+            }}
+          >
             <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
         )}

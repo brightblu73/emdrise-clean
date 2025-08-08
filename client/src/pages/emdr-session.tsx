@@ -524,10 +524,14 @@ export default function EMDRSession() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                       <BLSOptionBox
                         type="visual"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           console.log('Visual BLS clicked, setting showBLS=true, blsType=visual');
-                          setShowBLS(true);
-                          setBLSType('visual');
+                          if (!showBLS) { // Only allow if BLS is not already active
+                            setShowBLS(true);
+                            setBLSType('visual');
+                          }
                         }}
                         isSelected={blsType === 'visual'}
                         size="medium"
@@ -535,9 +539,14 @@ export default function EMDRSession() {
                       
                       <BLSOptionBox
                         type="auditory"
-                        onClick={() => {
-                          setShowBLS(true);
-                          setBLSType('auditory');
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Auditory BLS clicked, setting showBLS=true, blsType=auditory');
+                          if (!showBLS) { // Only allow if BLS is not already active
+                            setShowBLS(true);
+                            setBLSType('auditory');
+                          }
                         }}
                         isSelected={blsType === 'auditory'}
                         size="medium"
@@ -545,9 +554,14 @@ export default function EMDRSession() {
                       
                       <BLSOptionBox
                         type="tapping"
-                        onClick={() => {
-                          setShowBLS(true);
-                          setBLSType('tapping');
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Tapping BLS clicked, setting showBLS=true, blsType=tapping');
+                          if (!showBLS) { // Only allow if BLS is not already active
+                            setShowBLS(true);
+                            setBLSType('tapping');
+                          }
                         }}
                         isSelected={blsType === 'tapping'}
                         size="medium"

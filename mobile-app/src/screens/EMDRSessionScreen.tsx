@@ -101,11 +101,13 @@ export default function EMDRSessionScreen({ therapist, onBack }: EMDRSessionScre
   };
 
   const handleBLSTest = (type: 'visual' | 'auditory' | 'tapping') => {
+    console.log('Mobile BLS Test clicked:', type);
     setBLSType(type);
     setShowBLS(true);
   };
 
   const handleBLSComplete = () => {
+    console.log('Mobile BLS Complete called');
     setShowBLS(false);
     Alert.alert('BLS Complete', 'How are you feeling right now? Notice any changes.');
   };
@@ -303,7 +305,10 @@ export default function EMDRSessionScreen({ therapist, onBack }: EMDRSessionScre
           type={blsType}
           speed={blsSpeed}
           onComplete={handleBLSComplete}
-          onClose={() => setShowBLS(false)}
+          onClose={() => {
+            console.log('Mobile BLS Close button pressed');
+            setShowBLS(false);
+          }}
         />
       </Modal>
 
