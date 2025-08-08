@@ -438,7 +438,7 @@ export default function EMDRSession() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      <div className="w-full max-w-4xl mx-auto px-4 py-8" key={`session-${currentSession?.id}-script-${currentSession?.currentScript}`}>
+      <div className="w-full max-w-4xl mx-auto px-4 py-8" key={`session-${currentSession?.id}`}>
         {/* Remove main header completely - page titles shown in video component only per amendments */}
 
         {/* Navigation Bar - Back to Previous Step for all scripts except Script 1 */}
