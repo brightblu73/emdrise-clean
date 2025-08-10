@@ -60,6 +60,7 @@ export default function EMDRSession() {
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(null);
   const [isSetupPhase, setIsSetupPhase] = useState(false);
   const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Client-side fix to prevent duplicate EMDR script blocks
   useEffect(() => {
@@ -156,12 +157,29 @@ export default function EMDRSession() {
     }
   }, [currentSession?.currentScript]);
 
-  // Reset BLS when script changes - but only if BLS is actually shown
+  // Reset BLS and other states when script changes
   useEffect(() => {
-    if (currentSession?.currentScript === 8) {
-      setBodyScanStep('scanning');
+    if (currentSession?.currentScript) {
+      // Set transitioning state to prevent component flashing
+      setIsTransitioning(true);
+      
+      // Reset BLS states to prevent ghost flashing
+      setShowBLS(false);
+      setBLSClosing(false);
+      setLocalVideoCompleted(false);
+      
+      // Script-specific resets
+      if (currentSession.currentScript === 8) {
+        setBodyScanStep('scanning');
+      }
+      
+      // Clear transitioning state after a brief delay
+      const transitionTimer = setTimeout(() => {
+        setIsTransitioning(false);
+      }, 150);
+      
+      return () => clearTimeout(transitionTimer);
     }
-    // Removed showBLS reset to prevent render loop
   }, [currentSession?.currentScript]);
 
   // New script mapping for 10-script sequence with therapist-specific videos
@@ -575,7 +593,7 @@ export default function EMDRSession() {
                       />
                     </div>
 
-                    {showBLS && (
+                    {showBLS && !isTransitioning && (
                       <div className="mb-8">
                         <BilateralStimulation 
                           isActive={showBLS}
@@ -716,7 +734,7 @@ export default function EMDRSession() {
                 </div>
 
                 {/* BLS Component - Only show when activated via Start Reprocessing */}
-                {showBLS && (
+                {showBLS && !isTransitioning && (
                   <div className="mt-4 p-4 bg-white rounded-lg border border-blue-200">
                     <BilateralStimulation
                       isActive={showBLS}
@@ -810,7 +828,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated via Continue Reprocessing */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-amber-200">
                       <BilateralStimulation
                         isActive={showBLS}
@@ -965,7 +983,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-red-200">
                       <BilateralStimulation
                         isActive={showBLS}
@@ -1053,7 +1071,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated via Begin Installation */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-green-200">
                       <BilateralStimulation
                         isActive={showBLS}
@@ -1172,7 +1190,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated via Continue Installation */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-green-200">
                       <BilateralStimulation
                         isActive={showBLS}
@@ -1307,7 +1325,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-indigo-200">
                       <BilateralStimulation
                         isActive={showBLS}
