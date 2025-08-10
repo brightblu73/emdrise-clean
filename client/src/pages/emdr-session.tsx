@@ -160,23 +160,23 @@ export default function EMDRSession() {
   // Reset BLS and other states when script changes
   useEffect(() => {
     if (currentSession?.currentScript) {
-      // Set transitioning state to prevent component flashing
-      setIsTransitioning(true);
-      
-      // Reset BLS states to prevent ghost flashing
+      // Immediately reset BLS states to prevent any ghost rendering
       setShowBLS(false);
       setBLSClosing(false);
       setLocalVideoCompleted(false);
+      
+      // Set transitioning state to prevent component flashing
+      setIsTransitioning(true);
       
       // Script-specific resets
       if (currentSession.currentScript === 8) {
         setBodyScanStep('scanning');
       }
       
-      // Clear transitioning state after a brief delay
+      // Clear transitioning state after a longer delay to ensure clean transitions
       const transitionTimer = setTimeout(() => {
         setIsTransitioning(false);
-      }, 150);
+      }, 300);
       
       return () => clearTimeout(transitionTimer);
     }
@@ -477,7 +477,7 @@ export default function EMDRSession() {
   // The user should always see therapist selection first, regardless of auth status
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <div className={`min-h-screen bg-gradient-to-br from-green-50 to-blue-50 ${isTransitioning ? 'script-transitioning' : ''}`}>
       <div className="w-full max-w-4xl mx-auto px-4 py-8" key={`session-${currentSession?.id}`}>
         {/* Remove main header completely - page titles shown in video component only per amendments */}
 
