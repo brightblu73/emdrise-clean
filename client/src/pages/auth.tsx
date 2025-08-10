@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
 import { signInWithGoogle, checkRedirectResult } from "@/lib/firebase";
+import { supabase } from '@/lib/supabaseClient'
 import { Brain, Apple, Mail } from "lucide-react";
 
 export default function Auth() {
@@ -20,6 +21,8 @@ export default function Auth() {
     password: "",
   });
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const loginMutation = useMutation({
     mutationFn: async (data: { email: string; password: string }) => {
@@ -55,6 +58,20 @@ export default function Auth() {
   });
 
   // TEST button functionality for development
+  async function handleEmailLogin(e?: React.FormEvent) {
+    if (e) e.preventDefault()
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) { console.error(error); alert(error.message); return }
+    window.location.href = '/home'
+  }
+
+  async function handleEmailSignUp(e?: React.FormEvent) {
+    if (e) e.preventDefault()
+    const { error } = await supabase.auth.signUp({ email, password })
+    if (error) { console.error(error); alert(error.message); return }
+    alert('Check your email to confirm, then log in.')
+  }
+
   const handleTestLogin = () => {
     // Skip Firebase and Stripe, create fake test user
     const testUser = {
@@ -204,7 +221,7 @@ export default function Auth() {
             </div>
 
             {/* Email and Password Form */}
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleEmailLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -212,8 +229,8 @@ export default function Auth() {
                   name="email"
                   type="email"
                   placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleInputChange}
+                  value={email}
+                  onChange={(e)=>setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -224,8 +241,8 @@ export default function Auth() {
                   name="password"
                   type="password"
                   placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={handleInputChange}
+                  value={password}
+                  onChange={(e)=>setPassword(e.target.value)}
                   required
                 />
               </div>
@@ -256,8 +273,19 @@ export default function Auth() {
                 type="submit" 
                 className="w-full emdr-gradient text-white"
                 disabled={loginMutation.isPending}
+                onClick={handleEmailLogin}
               >
                 {loginMutation.isPending ? "Signing in..." : "Sign In"}
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="outline"
+                className="w-full"
+                disabled={loginMutation.isPending}
+                onClick={handleEmailSignUp}
+              >
+                Create Account / Start Free Trial (email)
               </Button>
             </form>
           </CardContent>
