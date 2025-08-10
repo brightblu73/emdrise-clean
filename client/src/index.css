@@ -226,6 +226,8 @@
 }
 
 /* Script transition styles - prevent BLS component flashing */
+.script-transitioning .grid,
+.script-transitioning [class*="grid"],
 .script-transitioning [class*="BLS"],
 .script-transitioning [class*="bilateral"],
 .script-transitioning [class*="bls"],
@@ -233,7 +235,11 @@
 .script-transitioning .grid > *:has(button),
 .script-transitioning [class*="bg-blue-50"],
 .script-transitioning [class*="bg-green-50"],
-.script-transitioning [class*="bg-purple-50"] {
+.script-transitioning [class*="bg-purple-50"],
+.script-transitioning [class*="bg-amber-50"],
+.script-transitioning [class*="bg-indigo-50"],
+.script-transitioning div[class*="grid"] {
+  display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;

@@ -168,15 +168,41 @@ export default function EMDRSession() {
       // Set transitioning state to prevent component flashing
       setIsTransitioning(true);
       
+      // Force hide all grid elements immediately using DOM manipulation
+      const hideGrids = () => {
+        const grids = document.querySelectorAll('.grid, [class*="grid"]');
+        grids.forEach(grid => {
+          (grid as HTMLElement).style.display = 'none';
+          (grid as HTMLElement).style.visibility = 'hidden';
+          (grid as HTMLElement).style.opacity = '0';
+        });
+      };
+      
+      // Hide immediately and after a small delay
+      hideGrids();
+      setTimeout(hideGrids, 10);
+      
       // Script-specific resets
       if (currentSession.currentScript === 8) {
         setBodyScanStep('scanning');
       }
       
-      // Clear transitioning state after a longer delay to ensure clean transitions
+      // Clear transitioning state after an even longer delay to ensure completely clean transitions
       const transitionTimer = setTimeout(() => {
         setIsTransitioning(false);
-      }, 300);
+        
+        // Restore grid elements visibility after transition
+        const restoreGrids = () => {
+          const grids = document.querySelectorAll('.grid, [class*="grid"]');
+          grids.forEach(grid => {
+            (grid as HTMLElement).style.display = '';
+            (grid as HTMLElement).style.visibility = '';
+            (grid as HTMLElement).style.opacity = '';
+          });
+        };
+        
+        restoreGrids();
+      }, 500);
       
       return () => clearTimeout(transitionTimer);
     }
