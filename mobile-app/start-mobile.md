@@ -43,7 +43,7 @@
 ### Features to Test
 
 #### 1. **Authentication Flow**
-- Test login with credentials: `test@test.com` / `secret`
+- Test login with valid user credentials
 - Experience the complete authentication journey
 
 #### 2. **Therapist Selection**

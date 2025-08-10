@@ -72,21 +72,7 @@ export default function Auth() {
     alert('Check your email to confirm, then log in.')
   }
 
-  const handleTestLogin = () => {
-    // Skip Firebase and Stripe, create fake test user
-    const testUser = {
-      email: "test@emdrise.com",
-      isSubscribed: true,
-      trialStatus: "subscribed",
-      therapistSelected: true
-    };
-    
-    // Use existing login with test credentials
-    loginMutation.mutate({
-      email: "test@test.com",
-      password: "secret"
-    });
-  };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -208,7 +194,7 @@ export default function Auth() {
             {/* Google Sign In - Currently unavailable */}
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
               <p className="text-sm font-medium text-blue-800">Google Sign In Coming Soon</p>
-              <p className="text-xs text-blue-600 mt-1">Use email sign in or the green TEST button below</p>
+              <p className="text-xs text-blue-600 mt-1">Use email sign in for now</p>
             </div>
 
             <div className="relative">
@@ -291,20 +277,7 @@ export default function Auth() {
           </CardContent>
         </Card>
 
-        {/* TEST Button for Development - Made more prominent */}
-        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="text-center mb-3">
-            <p className="text-sm font-medium text-green-800">Quick Test Access</p>
-            <p className="text-xs text-green-600">Skip setup and try the app immediately</p>
-          </div>
-          <Button 
-            onClick={handleTestLogin}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold"
-            disabled={loginMutation.isPending}
-          >
-            {loginMutation.isPending ? "Signing In..." : "TEST - Quick Access"}
-          </Button>
-        </div>
+
       </div>
     </div>
   );

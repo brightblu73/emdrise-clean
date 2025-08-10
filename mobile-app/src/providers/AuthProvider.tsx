@@ -49,19 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // For now, simulate login with test credentials
-      if (email === 'test@test.com' && password === 'secret') {
-        const testUser: User = {
-          id: 1,
-          username: 'Test User',
-          email: 'test@test.com',
-          subscriptionStatus: 'trial'
-        };
-        
-        await AsyncStorage.setItem('user', JSON.stringify(testUser));
-        setUser(testUser);
-        return true;
-      }
+      // TODO: Implement actual authentication
       return false;
     } catch (error) {
       console.error('Login error:', error);

@@ -25,8 +25,8 @@ export default function Home() {
   const [isAudioBLSActive, setIsAudioBLSActive] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginFormData, setLoginFormData] = useState({
-    email: "test@test.com",
-    password: "secret"
+    email: "",
+    password: ""
   });
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(() => {
     // Get saved therapist from localStorage
@@ -136,13 +136,7 @@ export default function Home() {
     loginMutation.mutate(loginFormData);
   };
 
-  const handleTestLogin = () => {
-    // Simulate login with test credentials
-    loginMutation.mutate({
-      email: "test@test.com",
-      password: "secret"
-    });
-  };
+
 
   const handleGoogleSignIn = async () => {
     try {
@@ -167,9 +161,9 @@ export default function Home() {
       // Show user-friendly error message
       const errorMessage = (error as Error).message;
       if (errorMessage.includes('Domain not authorized')) {
-        alert('This domain is not authorized for Google Sign In. Please use the TEST button or email sign in for now.');
+        alert('This domain is not authorized for Google Sign In. Please use email sign in for now.');
       } else {
-        alert('Sign in failed. Please try the TEST button or email sign in.');
+        alert('Sign in failed. Please try email sign in.');
       }
     }
   };
@@ -314,20 +308,7 @@ export default function Home() {
                           </Button>
                         </form>
 
-                        {/* TEST Button for Development - Made more prominent */}
-                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="text-center mb-2">
-                            <p className="text-sm font-medium text-green-800">Quick Test Access</p>
-                            <p className="text-xs text-green-600">Try the app immediately</p>
-                          </div>
-                          <Button 
-                            onClick={handleTestLogin}
-                            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold"
-                            disabled={loginMutation.isPending}
-                          >
-                            {loginMutation.isPending ? "Signing In..." : "TEST - Quick Access"}
-                          </Button>
-                        </div>
+
                       </div>
                     </DialogContent>
                   </Dialog>
