@@ -246,3 +246,24 @@
   transition: none !important;
 }
 
+/* BLS component transition styles - prevent BLS option box flashing */
+.bls-transitioning .grid,
+.bls-transitioning [class*="grid"],
+.bls-transitioning [class*="BLS"],
+.bls-transitioning [class*="bilateral"],
+.bls-transitioning [class*="bls"],
+.bls-transitioning .grid > button,
+.bls-transitioning .grid > *:has(button),
+.bls-transitioning [class*="bg-blue-50"],
+.bls-transitioning [class*="bg-green-50"],
+.bls-transitioning [class*="bg-purple-50"],
+.bls-transitioning [class*="bg-amber-50"],
+.bls-transitioning [class*="bg-indigo-50"],
+.bls-transitioning div[class*="grid"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+

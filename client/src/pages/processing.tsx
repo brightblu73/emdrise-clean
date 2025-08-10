@@ -54,7 +54,7 @@ export default function Processing() {
 
       <div style={{ marginBottom: "2rem" }}>
         <h3>Select BLS Mode:</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem", marginTop: "1rem" }}>
+        <div className="grid grid-cols-3 gap-4 mt-4">
           <BLSOptionBox
             type="visual"
             onClick={() => setBlsType("visual")}
