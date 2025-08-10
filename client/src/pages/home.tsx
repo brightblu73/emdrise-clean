@@ -426,27 +426,22 @@ export default function Home() {
                 </div>
               </div>
               <div className="pt-4">
-                {!isLoggedIn && (
+                {/* {!isLoggedIn && ( */}
                   <Button 
-                    onClick={handleStartFreeTrial}
-                    disabled={!selectedTherapist}
-                    className={`w-full ${
-                      selectedTherapist 
-                        ? 'bg-primary hover:bg-primary/90' 
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
-                    }`}
+                    onClick={() => (window.location.href = '/auth')}
+                    className="w-full bg-primary hover:bg-primary/90"
                     size="lg"
                   >
-                    {selectedTherapist ? "Start Your 7-Day Free Trial" : "Select Therapist Above"}
+                    Start Your 7-Day Free Trial
                   </Button>
-                )}
+                {/* )}
                 {isLoggedIn && (
                   <Link href="/emdr-session">
                     <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
                       Continue Your Journey
                     </Button>
                   </Link>
-                )}
+                )} */}
                 <p className="text-xs text-slate-500 mt-2">No credit card required for trial</p>
               </div>
             </CardContent>
