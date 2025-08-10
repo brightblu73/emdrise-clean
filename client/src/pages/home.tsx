@@ -11,6 +11,7 @@ import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { signInWithGoogle, checkRedirectResult } from "@/lib/firebase";
+import { supabase } from '@/lib/supabaseClient'
 import mariaPortrait from "@/assets/maria-headshot.jpg";
 import alistairPortrait from "@/assets/alistair-headshot.jpg";
 import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
@@ -31,6 +32,7 @@ export default function Home() {
     // Get saved therapist from localStorage
     return (localStorage.getItem('selectedTherapist') as 'female' | 'male') || null;
   });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
@@ -120,7 +122,7 @@ export default function Home() {
       return;
     }
     // Navigate to sign-in
-    setLocation('/auth');
+    window.location.href = '/auth';
   };
 
 
@@ -186,6 +188,13 @@ export default function Home() {
     handleRedirectResult();
   }, [refetchUser, setLocation]);
 
+  // Check Supabase authentication state
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setIsLoggedIn(!!session?.user))
+    return () => subscription.unsubscribe()
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -200,7 +209,7 @@ export default function Home() {
               <p className="text-xl mb-8 text-blue-100">
                 Led by a therapist-designed video guide. Walking with you step by step offering structure, support, and connection when you need it most.
               </p>
-              {user ? (
+              {user && isLoggedIn ? (
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link href="/emdr-session">
                     <Button size="sm" className="bg-white text-primary hover:bg-slate-50 px-6 py-3">
@@ -441,18 +450,27 @@ export default function Home() {
                 </div>
               </div>
               <div className="pt-4">
-                <Button 
-                  onClick={handleStartFreeTrial}
-                  disabled={!selectedTherapist}
-                  className={`w-full ${
-                    selectedTherapist 
-                      ? 'bg-primary hover:bg-primary/90' 
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
-                  }`}
-                  size="lg"
-                >
-                  {selectedTherapist ? "Start Free Trial" : "Select Therapist Above"}
-                </Button>
+                {!isLoggedIn && (
+                  <Button 
+                    onClick={handleStartFreeTrial}
+                    disabled={!selectedTherapist}
+                    className={`w-full ${
+                      selectedTherapist 
+                        ? 'bg-primary hover:bg-primary/90' 
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
+                    }`}
+                    size="lg"
+                  >
+                    {selectedTherapist ? "Start Your 7-Day Free Trial" : "Select Therapist Above"}
+                  </Button>
+                )}
+                {isLoggedIn && (
+                  <Link href="/emdr-session">
+                    <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
+                      Continue Your Journey
+                    </Button>
+                  </Link>
+                )}
                 <p className="text-xs text-slate-500 mt-2">No credit card required for trial</p>
               </div>
             </CardContent>
