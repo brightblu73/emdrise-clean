@@ -214,14 +214,9 @@ export default function Home() {
               ) : (
                 <div className="space-y-4">
                   <Button 
-                    onClick={handleStartFreeTrial}
-                    disabled={!selectedTherapist}
+                    onClick={() => (window.location.href = '/auth')}
                     size="lg" 
-                    className={`w-full py-4 text-lg font-semibold ${
-                      selectedTherapist 
-                        ? 'bg-white text-primary hover:bg-slate-50' 
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
-                    }`}
+                    className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
                   >
                     Start Your 7-Day Free Trial
                   </Button>
