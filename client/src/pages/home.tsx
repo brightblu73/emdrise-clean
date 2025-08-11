@@ -161,6 +161,15 @@ export default function Home() {
     return () => subscription.unsubscribe()
   }, []);
 
+  async function gotoAuthOrSession() {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user) {
+      window.location.href = '/emdr-session'
+    } else {
+      window.location.href = '/auth'
+    }
+  }
+
   async function handlePrimaryCta(e?: React.MouseEvent) {
     // Works for buttons AND links
     if (e && typeof e.preventDefault === 'function') e.preventDefault()
@@ -200,7 +209,7 @@ export default function Home() {
               ) : (
                 <div className="space-y-4">
                   <Button 
-                    onClick={handlePrimaryCta}
+                    onClick={gotoAuthOrSession}
                     size="lg" 
                     className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
                   >
@@ -209,14 +218,7 @@ export default function Home() {
 
                   {/* Login to Continue Journey CTA */}
                   <Button
-                    onClick={async () => {
-                      const { data } = await supabase.auth.getUser()
-                      if (data.user) {
-                        window.location.href = '/emdr-session'
-                      } else {
-                        window.location.href = '/auth'
-                      }
-                    }}
+                    onClick={gotoAuthOrSession}
                     variant="outline"
                     size="lg" 
                     className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary"
@@ -447,7 +449,7 @@ export default function Home() {
               <div className="pt-4">
                 {/* {!isLoggedIn && ( */}
                   <Button 
-                    onClick={handlePrimaryCta}
+                    onClick={gotoAuthOrSession}
                     className="w-full bg-primary hover:bg-primary/90"
                     size="lg"
                   >
