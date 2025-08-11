@@ -228,7 +228,7 @@ export default function Home() {
               ) : (
                 <div className="space-y-4">
                   <Button 
-                    onClick={() => (window.location.href = '/auth')}
+                    onClick={handlePrimaryCta}
                     size="lg" 
                     className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
                   >
@@ -442,7 +442,7 @@ export default function Home() {
               <div className="pt-4">
                 {/* {!isLoggedIn && ( */}
                   <Button 
-                    onClick={() => (window.location.href = '/auth')}
+                    onClick={handlePrimaryCta}
                     className="w-full bg-primary hover:bg-primary/90"
                     size="lg"
                   >
