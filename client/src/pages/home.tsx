@@ -217,11 +217,13 @@ export default function Home() {
               </p>
               {user && isLoggedIn ? (
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href="/emdr-session">
-                    <Button size="sm" className="bg-white text-primary hover:bg-slate-50 px-6 py-3">
-                      Continue Your Journey
-                    </Button>
-                  </Link>
+                  <Button 
+                    onClick={handlePrimaryCta}
+                    size="sm" 
+                    className="bg-white text-primary hover:bg-slate-50 px-6 py-3"
+                  >
+                    Continue Your Journey
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
