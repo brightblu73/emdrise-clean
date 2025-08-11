@@ -285,7 +285,18 @@ export default function Home() {
                         </div>
 
                         {/* Email Login Form */}
-                        <form onSubmit={handleLogin} className="space-y-3">
+                        <form onSubmit={async (e) => {
+  e.preventDefault();
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: loginFormData.email,
+    password: loginFormData.password
+  });
+  if (error) {
+    alert('Login failed: ' + error.message);
+    return;
+  }
+  window.location.href = '/emdr-session';
+}} className="space-y-3">
                           <div>
                             <Label htmlFor="email">Email</Label>
                             <Input
