@@ -194,7 +194,9 @@ export default function Auth() {
             {/* Google Sign In - Currently unavailable */}
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
               <p className="text-sm font-medium text-blue-800">Google Sign In Coming Soon</p>
-              <p className="text-xs text-blue-600 mt-1">Use email sign in for now</p>
+              <p className="text-sm text-muted-foreground">
+                Use email sign‑in for now.
+              </p>
             </div>
 
             <div className="relative">
