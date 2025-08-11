@@ -62,7 +62,7 @@ export default function Auth() {
     if (e) e.preventDefault()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { console.error(error); alert(error.message); return }
-    window.location.href = '/'
+    window.location.href = '/emdr-session'
   }
 
   async function handleEmailSignUp(e?: React.FormEvent) {
