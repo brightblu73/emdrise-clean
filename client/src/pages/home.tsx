@@ -208,14 +208,31 @@ export default function Home() {
                   </Button>
 
                   {/* Login to Continue Journey CTA */}
+                  <Button
+                    onClick={async () => {
+                      const { data } = await supabase.auth.getUser()
+                      if (data.user) {
+                        window.location.href = '/emdr-session'
+                      } else {
+                        window.location.href = '/auth'
+                      }
+                    }}
+                    variant="outline"
+                    size="lg" 
+                    className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary"
+                  >
+                    Log In to Continue Journey
+                  </Button>
+
                   <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
                     <DialogTrigger asChild>
                       <Button 
                         variant="outline"
                         size="lg" 
                         className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary"
+                        style={{ display: 'none' }}
                       >
-                        Log In to Continue Journey
+                        Hidden Modal Trigger
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
