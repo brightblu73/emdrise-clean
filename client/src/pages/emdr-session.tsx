@@ -15,6 +15,7 @@ import CalmPlaceSetup from "@/components/calm-place-setup";
 import TargetMemorySetup from "@/components/target-memory-setup";
 import { Brain, ArrowRight, Clock, RotateCcw, Save, Star, ArrowLeft, Home, Volume2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { supabase } from '@/lib/supabaseClient';
 
 export default function EMDRSession() {
   const { user } = useAuth();
@@ -132,13 +133,22 @@ export default function EMDRSession() {
     }
   }, []);
 
-  // Redirect to login if user is not authenticated - simplified logic
+  // Redirect to login if user is not authenticated - Supabase check
   useEffect(() => {
-    if (!user && !isLoading) {
-      console.log("User not authenticated, redirecting to auth");
-      setLocation('/auth');
-    }
-  }, [user, isLoading, setLocation]);
+    let isMounted = true;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!isMounted) return;
+      if (!data.user) {
+        // not logged in → go to /auth
+        window.location.href = '/auth';
+      } else {
+        // logged in → allow page to continue (no redirect)
+        // (optional) console.log('Supabase user OK', data.user.id);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, []);
 
   // Scroll to top when script changes - with delay to ensure DOM updates
   useEffect(() => {
