@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 import { Link, useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,15 @@ export default function Navigation() {
   const { toast } = useToast();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [supabaseUser, setSupabaseUser] = useState<null | { id: string }>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setSupabaseUser(data.user ?? null))
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSupabaseUser(session?.user ?? null)
+    })
+    return () => { sub.subscription.unsubscribe() }
+  }, []);
 
   const logoutMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/logout"),
@@ -179,9 +189,21 @@ export default function Navigation() {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link href="/auth">
-                  <Button variant="ghost">Sign In</Button>
-                </Link>
+                {supabaseUser ? (
+                  <Button 
+                    variant="ghost"
+                    onClick={async () => { 
+                      await supabase.auth.signOut(); 
+                      window.location.href = '/auth' 
+                    }}
+                  >
+                    Sign out
+                  </Button>
+                ) : (
+                  <Link href="/auth">
+                    <Button variant="ghost">Sign In</Button>
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -293,15 +315,29 @@ export default function Navigation() {
                     </>
                   ) : (
                     <div className="space-y-3">
-                      <Link href="/auth">
+                      {supabaseUser ? (
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           className="w-full"
-                          onClick={() => setIsMobileMenuOpen(false)}
+                          onClick={async () => { 
+                            await supabase.auth.signOut(); 
+                            window.location.href = '/auth';
+                            setIsMobileMenuOpen(false);
+                          }}
                         >
-                          Sign In
+                          Sign out
                         </Button>
-                      </Link>
+                      ) : (
+                        <Link href="/auth">
+                          <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            Sign In
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   )}
                 </div>
