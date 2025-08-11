@@ -189,6 +189,18 @@ export default function Home() {
     return () => subscription.unsubscribe()
   }, []);
 
+  async function handlePrimaryCta(e?: React.MouseEvent) {
+    // Works for buttons AND links
+    if (e && typeof e.preventDefault === 'function') e.preventDefault()
+    const { data } = await supabase.auth.getUser()
+    if (!data.user) {
+      window.location.href = '/auth'
+      return
+    }
+    // Logged in → keep your existing flow
+    window.location.href = '/emdr-session'
+  }
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
