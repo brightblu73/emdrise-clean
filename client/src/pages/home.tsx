@@ -8,8 +8,6 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { Eye, Brain, Sprout, Clock, Play, Heart, CheckCircle, Volume2, Apple, Mail } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { signInWithGoogle, checkRedirectResult } from "@/lib/firebase";
 import { supabase } from '@/lib/supabaseClient'
 import mariaPortrait from "@/assets/maria-headshot.jpg";
@@ -19,7 +17,7 @@ import EndorsementCarousel from "@/components/EndorsementCarousel";
 import { Logo } from "@/components/ui/logo";
 
 export default function Home() {
-  const { user, refetchUser, loginUser } = useAuth();
+  const { user, refetchUser } = useAuth();
   const [, setLocation] = useLocation();
   const [isVisualBLSActive, setIsVisualBLSActive] = useState(false);
   const [isAudioBLSActive, setIsAudioBLSActive] = useState(false);
@@ -33,6 +31,7 @@ export default function Home() {
     return (localStorage.getItem('selectedTherapist') as 'female' | 'male') || null;
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
@@ -94,27 +93,7 @@ export default function Home() {
     localStorage.setItem('selectedTherapist', therapist);
   };
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string }) => {
-      console.log("Attempting login with:", data);
-      const response = await apiRequest("POST", "/api/login", data);
-      console.log("Login response:", response);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      console.log("Login successful:", data);
-      // Manually set user state for immediate UI update
-      if (data.user) {
-        loginUser(data.user);
-      }
-      setIsLoginModalOpen(false);
-      setLocation("/emdr-session");
-    },
-    onError: (error: any) => {
-      console.error("Login failed:", error);
-      alert(`Login failed: ${error.message || "Invalid email or password"}`);
-    },
-  });
+
 
   const handleStartFreeTrial = () => {
     if (!selectedTherapist) {
@@ -127,14 +106,7 @@ export default function Home() {
 
 
 
-  const handleLogin = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!loginFormData.email || !loginFormData.password) {
-      console.error("Please fill in both email and password");
-      return;
-    }
-    loginMutation.mutate(loginFormData);
-  };
+
 
 
 
@@ -287,15 +259,20 @@ export default function Home() {
                         {/* Email Login Form */}
                         <form onSubmit={async (e) => {
   e.preventDefault();
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: loginFormData.email,
-    password: loginFormData.password
-  });
-  if (error) {
-    alert('Login failed: ' + error.message);
-    return;
+  try {
+    setIsLoggingIn(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: loginFormData.email,
+      password: loginFormData.password
+    });
+    if (error) {
+      alert('Login failed: ' + error.message);
+      return;
+    }
+    window.location.href = '/emdr-session';
+  } finally {
+    setIsLoggingIn(false);
   }
-  window.location.href = '/emdr-session';
 }} className="space-y-3">
                           <div>
                             <Label htmlFor="email">Email</Label>
@@ -322,9 +299,9 @@ export default function Home() {
                           <Button 
                             type="submit"
                             className="w-full"
-                            disabled={loginMutation.isPending}
+                            disabled={isLoggingIn}
                           >
-                            {loginMutation.isPending ? "Signing In..." : "Sign In"}
+                            {isLoggingIn ? "Signing In..." : "Sign In"}
                           </Button>
                         </form>
 
