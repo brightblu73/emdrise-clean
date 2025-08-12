@@ -3,10 +3,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "./lib/auth.tsx";
+import { AuthProvider } from "./state/AuthProvider";
 import Navigation from "./components/navigation";
 import Home from "./pages/home";
 import Auth from "./pages/auth";
+import AuthCallback from "./pages/auth-callback";
 import Therapist from "./pages/therapist";
 import Resources from "./pages/resources";
 import Progress from "./pages/progress";
@@ -22,6 +23,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/auth" component={Auth} />
+      <Route path="/auth-callback" component={AuthCallback} />
       <Route path="/therapist" component={Therapist} />
       {/* Redirect old routes to new video-guided workflow */}
       <Route path="/preparation" component={EMDRSession} />
@@ -41,8 +43,8 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <div className="min-h-screen bg-therapeutic-bg">
             <Navigation />
@@ -50,8 +52,8 @@ function App() {
             <Toaster />
           </div>
         </TooltipProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }
 

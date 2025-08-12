@@ -1,146 +1,72 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth } from "@/hooks/use-auth";
-import { apiRequest } from "@/lib/queryClient";
-import { signInWithGoogle, checkRedirectResult } from "@/lib/firebase";
+import { useAuth } from "../state/AuthProvider";
+
+import { supabase } from '@/lib/supabase';
 import { Brain, Apple, Mail } from "lucide-react";
 
 export default function Auth() {
   const [, setLocation] = useLocation();
-  const { refetchUser, loginUser } = useAuth();
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-  });
-  const [acceptTerms, setAcceptTerms] = useState(false);
+  const { signInWithEmail } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string }) => {
-      console.log("Auth page login attempt:", data);
-      const response = await apiRequest("POST", "/api/login", data);
-      console.log("Auth page login response:", response);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      console.log("Auth page login successful:", data);
-      // Manually set user state for immediate UI update
-      if (data.user) {
-        loginUser(data.user);
-      }
-      setLocation("/emdr-session");
-    },
-    onError: (error: any) => {
-      console.error("Auth page login failed:", error.message || "Invalid email or password");
-      alert(`Login failed: ${error.message || "Invalid email or password"}`);
-    },
-  });
-
-  const registerMutation = useMutation({
-    mutationFn: async (data: { username: string; email: string; password: string }) =>
-      apiRequest("POST", "/api/register", data),
-    onSuccess: () => {
-      refetchUser();
-      setLocation("/emdr-session");
-    },
-    onError: (error: any) => {
-      console.error("Registration failed:", error.message || "Please try again");
-    },
-  });
-
-  // TEST button functionality for development
-  const handleTestLogin = () => {
-    // Skip Firebase and Stripe, create fake test user
-    const testUser = {
-      email: "test@emdrise.com",
-      isSubscribed: true,
-      trialStatus: "subscribed",
-      therapistSelected: true
-    };
+  // Supabase authentication handlers
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    const { error } = await signInWithEmail(email, password);
+    if (error) {
+      console.error('Login error:', error);
+      alert(error.message);
+      return;
+    }
     
-    // Use existing login with test credentials
-    loginMutation.mutate({
-      email: "test@test.com",
-      password: "secret"
-    });
-  };
+    // Post-auth routing rule: check if therapist selected
+    const selectedTherapist = localStorage.getItem('selectedTherapist');
+    if (selectedTherapist) {
+      setLocation("/emdr-session");
+    } else {
+      setLocation("/"); // Go to home to pick therapist first
+    }
+  }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
+  async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
-    if (!acceptTerms) {
-      alert("Please accept the Terms & Conditions and Privacy Policy to continue.");
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      console.error('Sign up error:', error);
+      alert(error.message);
       return;
     }
-    loginMutation.mutate({
-      email: formData.email,
-      password: formData.password,
-    });
-  };
+    alert('Check your email to confirm your account, then sign in.');
+  }
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!acceptTerms) {
-      alert("Please accept the Terms & Conditions and Privacy Policy to continue.");
-      return;
-    }
-    registerMutation.mutate(formData);
-  };
 
+
+
+
+  // Google Sign In with Supabase
   const handleGoogleSignIn = async () => {
     try {
-      const user = await signInWithGoogle();
-      
-      if (user) {
-        console.log('Google sign in successful:', user);
-        console.log('User info:', {
-          email: user.email,
-          name: user.displayName,
-          photoURL: user.photoURL
-        });
-        
-        refetchUser();
-        setLocation("/emdr-session");
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth-callback`
+        }
+      });
+      if (error) {
+        console.error('Google sign in error:', error);
+        alert(error.message);
       }
-      // If user is null, it means redirect was triggered
     } catch (error) {
       console.error('Google sign in failed:', error);
-      
-      // Show user-friendly error message
-      const errorMessage = (error as Error).message;
-      if (errorMessage.includes('Domain not authorized')) {
-        alert('This domain is not authorized for Google Sign In. Please use the TEST button or email sign in for now.');
-      } else {
-        alert('Sign in failed. Please try the TEST button or email sign in.');
-      }
+      alert('Sign in failed. Please try email sign in.');
     }
   };
-
-  // Check for redirect result on component mount
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-      const user = await checkRedirectResult();
-      if (user) {
-        console.log('Google sign in successful (redirect):', user);
-        refetchUser();
-        setLocation("/emdr-session");
-      }
-    };
-    
-    handleRedirectResult();
-  }, [refetchUser, setLocation]);
 
   return (
     <div className="min-h-screen flex items-center justify-center safe-space-bg">
@@ -191,7 +117,9 @@ export default function Auth() {
             {/* Google Sign In - Currently unavailable */}
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
               <p className="text-sm font-medium text-blue-800">Google Sign In Coming Soon</p>
-              <p className="text-xs text-blue-600 mt-1">Use email sign in or the green TEST button below</p>
+              <p className="text-sm text-muted-foreground">
+                Use email sign‑in for now.
+              </p>
             </div>
 
             <div className="relative">
@@ -212,8 +140,8 @@ export default function Auth() {
                   name="email"
                   type="email"
                   placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleInputChange}
+                  value={email}
+                  onChange={(e)=>setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -224,59 +152,32 @@ export default function Auth() {
                   name="password"
                   type="password"
                   placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={handleInputChange}
+                  value={password}
+                  onChange={(e)=>setPassword(e.target.value)}
                   required
                 />
-              </div>
-
-              {/* Terms & Conditions Checkbox */}
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="terms" 
-                  checked={acceptTerms}
-                  onCheckedChange={(checked) => setAcceptTerms(checked === true)}
-                />
-                <label
-                  htmlFor="terms"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  I accept the{" "}
-                  <a href="/terms-of-use" className="text-primary hover:underline">
-                    Terms & Conditions
-                  </a>{" "}
-                  and{" "}
-                  <a href="/privacy-policy" className="text-primary hover:underline">
-                    Privacy Policy
-                  </a>
-                </label>
               </div>
 
               <Button 
                 type="submit" 
                 className="w-full emdr-gradient text-white"
-                disabled={loginMutation.isPending}
               >
-                {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                Sign In
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="outline"
+                className="w-full"
+                onClick={handleSignUp}
+              >
+                Create Account / Start Free Trial
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* TEST Button for Development - Made more prominent */}
-        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <div className="text-center mb-3">
-            <p className="text-sm font-medium text-green-800">Quick Test Access</p>
-            <p className="text-xs text-green-600">Skip setup and try the app immediately</p>
-          </div>
-          <Button 
-            onClick={handleTestLogin}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold"
-            disabled={loginMutation.isPending}
-          >
-            {loginMutation.isPending ? "Signing In..." : "TEST - Quick Access"}
-          </Button>
-        </div>
+
       </div>
     </div>
   );

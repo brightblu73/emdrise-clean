@@ -17,6 +17,51 @@ interface BilateralStimulationProps {
 export default function BilateralStimulation({ isActive, onComplete, onSetComplete, blsType = 'visual', disableAutoStart = false }: BilateralStimulationProps) {
   const [activeModal, setActiveModal] = useState<'visual' | 'auditory' | 'tapping' | null>(null);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Reset BLS states and handle transitions when component state changes
+  useEffect(() => {
+    if (!isActive) {
+      // Set transitioning state when component becomes inactive
+      setIsTransitioning(true);
+      
+      // Force hide all grid elements immediately using DOM manipulation
+      const hideGrids = () => {
+        const grids = document.querySelectorAll('.grid, [class*="grid"]');
+        grids.forEach(grid => {
+          (grid as HTMLElement).style.display = 'none';
+          (grid as HTMLElement).style.visibility = 'hidden';
+          (grid as HTMLElement).style.opacity = '0';
+        });
+      };
+      
+      hideGrids();
+      setTimeout(hideGrids, 10);
+      
+      // Reset states
+      setHasAutoStarted(false);
+      setActiveModal(null);
+      
+      // Clear transitioning state after delay
+      const transitionTimer = setTimeout(() => {
+        setIsTransitioning(false);
+        
+        // Restore grid elements visibility after transition
+        const restoreGrids = () => {
+          const grids = document.querySelectorAll('.grid, [class*="grid"]');
+          grids.forEach(grid => {
+            (grid as HTMLElement).style.display = '';
+            (grid as HTMLElement).style.visibility = '';
+            (grid as HTMLElement).style.opacity = '';
+          });
+        };
+        
+        restoreGrids();
+      }, 300);
+      
+      return () => clearTimeout(transitionTimer);
+    }
+  }, [isActive]);
 
   // Auto-start BLS ONLY once when first activated - NEVER restart automatically
   useEffect(() => {
@@ -27,13 +72,6 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
       console.log('Auto-starting BLS modal:', blsType, 'isActive:', isActive, 'activeModal:', activeModal);
       setActiveModal(blsType);
       setHasAutoStarted(true);
-    }
-    
-    // Reset only when component becomes completely inactive
-    if (!isActive) {
-      console.log('Component inactive, resetting all BLS state');
-      setHasAutoStarted(false);
-      setActiveModal(null);
     }
   }, [isActive, blsType, disableAutoStart, hasAutoStarted]); // Keep hasAutoStarted to track state properly
 
@@ -66,7 +104,7 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
     <>
       {/* Only show BLS Type Selection if no active modal - hide when BLS is already running */}
       {!activeModal && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className={`grid grid-cols-1 md:grid-cols-3 gap-4 ${isTransitioning ? 'bls-transitioning' : ''}`}>
           <BLSOptionBox
             type="visual"
             onClick={() => startBLS('visual')}

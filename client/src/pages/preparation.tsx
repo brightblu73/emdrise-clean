@@ -12,7 +12,7 @@ import AuditoryModal from "@/components/AuditoryModal";
 import TappingModal from "@/components/TappingModal";
 import BLSPickerGuide from "@/components/BLSPickerGuide";
 import BLSOptionBox from "@/components/BLSOptionBox";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "../state/AuthProvider";
 import { ArrowRight, BookOpen, Shield, Brain } from "lucide-react";
 
 export default function Preparation() {

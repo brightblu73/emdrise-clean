@@ -92,12 +92,29 @@ export default function EMDRVideoPlayer({
     }
   }, [hasUserInteracted, autoPlay]);
 
-  // Force video reload when URL changes
+  // Force video reload when URL changes + preload for faster start
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
+      // Set preload for faster loading
+      video.preload = 'metadata';
       video.load(); // Force reload the video source
       console.log("Video reloaded with URL:", videoUrl);
+    }
+  }, [videoUrl]);
+
+  // Preload Script 1 video on mount for faster session start
+  useEffect(() => {
+    if (videoUrl && videoUrl.includes('script1')) {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'video';
+      link.href = videoUrl;
+      document.head.appendChild(link);
+      
+      return () => {
+        document.head.removeChild(link);
+      };
     }
   }, [videoUrl]);
 

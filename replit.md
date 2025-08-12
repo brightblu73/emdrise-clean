@@ -29,7 +29,7 @@ EMDRise is a web and mobile application providing guided EMDR (Eye Movement Dese
 - **Runtime**: Node.js with Express.js
 - **Language**: TypeScript with ES modules
 - **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Passport.js with local strategy
+- **Authentication**: Supabase Authentication (migrated from Passport.js)
 - **Payment Processing**: Stripe integration
 
 ### Database Architecture
@@ -38,7 +38,7 @@ EMDRise is a web and mobile application providing guided EMDR (Eye Movement Dese
 - **Schema**: Type-safe schema definitions with Zod validation
 
 ### Core EMDR Features (Production-Ready & Locked)
-- **Authentication System**: Session-based with bcrypt hashing and Passport.js
+- **Authentication System**: Supabase-based authentication with session management
 - **Video-Guided EMDR Therapy**: Complete video narration by professional therapists (Maria and Alistair) for all 10 phases of the EMDR protocol, including integrated Bilateral Stimulation (BLS)
 - **Video-Guided Workflow**: Seamless progression through EMDR phases (Welcome, Calm Place Setup, Target Memory, Desensitisation, Reprocessing Loops, Installation, Body Scan, Calm Place Return, Aftercare)
 - **Dual Session Flow Management**: 
@@ -52,6 +52,8 @@ EMDRise is a web and mobile application providing guided EMDR (Eye Movement Dese
 - **UI/UX**: Ambient color scheme, professional layout, EMDR Journey Timeline component, responsive button sizing, and endorsement carousel featuring organizations recommending EMDR
 
 ### Recent Changes (Aug 2025)
+- **Button Typography Consistency (Aug 12, 2025)**: Updated logged-in "Choose Therapist & Continue" button to match logged-out CTA typography - changed from size="sm" to size="lg", added text-lg font-semibold for consistent font size and weight, updated padding to py-4, and added max-w-md constraint for responsive stability at iPhone widths
+- **Button Text Update (Aug 12, 2025)**: Updated all "Continue Your Journey" buttons across web and mobile apps to "Select Your Therapist & Continue Your Journey" to better reflect the user flow
 - **Complete Video Migration**: All EMDR therapy videos (Scripts 1-10) migrated from local files to Supabase cloud storage
 - **Therapist Selection Fix**: Corrected force-override bug that was ignoring user's therapist selection
 - **File Cleanup**: Removed all local video files after successful Supabase migration (1.2GB+ storage saved)
@@ -60,6 +62,8 @@ EMDRise is a web and mobile application providing guided EMDR (Eye Movement Dese
 - **Complete BLS Speed System Upgrade**: Successfully implemented unified speed slider (1.0-10.0 with 0.5 increments) across ALL BLS types (visual, auditory, tapping), replacing legacy speed controls with therapeutically accurate speed mapping (1.0=4.0s/15BPM to 10.0=0.15s/400BPM), consistent default speed of 8.0 (0.54s/111BPM), session memory for speed persistence, and real-time speed adjustments during active BLS sessions
 - **BLS Close Button Optimization**: Completely resolved double-click issue with immediate close functionality - implemented forceClose functions with multiple event triggers (onClick, onMouseDown, onTouchStart), aggressive animation cleanup, and immediate state reset across all BLS modals for silky smooth responsiveness
 - **CRITICAL: Mobile Touch Event Fix (Aug 8, 2025)**: Resolved infinite BLS loop caused by mobile touch event bleeding where closing one BLS modal accidentally triggered other BLS buttons. Implemented `blsClosing` state with 500ms guard period, preventing accidental button activation during modal close transitions. Issue was mobile-specific touch sensitivity causing simultaneous button activations.
+- **BLS Component Flashing Fix (Aug 10, 2025)**: Completely eliminated ghost flashing of BLS option boxes across ALL screens containing BLS components. Implemented comprehensive protection with immediate DOM manipulation, extended transition periods (300-500ms), CSS-based hiding with universal selectors, and automatic style restoration. Applied to main EMDR session script transitions, bilateral stimulation component state changes, and processing page grids. All BLS transitions are now seamless and professional.
+- **Complete Supabase Authentication Migration (Aug 11, 2025)**: Successfully migrated entire application from Express session-based authentication to Supabase authentication system. Implemented unified `gotoAuthOrSession()` helper function for all homepage CTAs, updated auth page redirect to route to `/emdr-session` after login, integrated Supabase authentication guards in EMDR session access, and updated navigation component with comprehensive Supabase sign-out functionality including localStorage/sessionStorage cleanup. All authentication flows now use `supabase.auth.getSession()` and `supabase.auth.signInWithPassword()` for consistent user experience.
 - **Focus Maintained**: Core EMDR workflow remains unchanged and production-ready
 
 ## External Dependencies

@@ -5,12 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "../state/AuthProvider";
 import { Eye, Brain, Sprout, Clock, Play, Heart, CheckCircle, Volume2, Apple, Mail } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { signInWithGoogle, checkRedirectResult } from "@/lib/firebase";
+import { supabase } from '@/lib/supabase';
+import { gotoAuthOrSession } from '@/utils/gotoAuthOrSession'
 import mariaPortrait from "@/assets/maria-headshot.jpg";
 import alistairPortrait from "@/assets/alistair-headshot.jpg";
 import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
@@ -18,19 +17,21 @@ import EndorsementCarousel from "@/components/EndorsementCarousel";
 import { Logo } from "@/components/ui/logo";
 
 export default function Home() {
-  const { user, refetchUser, loginUser } = useAuth();
+  const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [isVisualBLSActive, setIsVisualBLSActive] = useState(false);
   const [isAudioBLSActive, setIsAudioBLSActive] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginFormData, setLoginFormData] = useState({
-    email: "test@test.com",
-    password: "secret"
+    email: "",
+    password: ""
   });
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(() => {
     // Get saved therapist from localStorage
     return (localStorage.getItem('selectedTherapist') as 'female' | 'male') || null;
   });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
@@ -92,27 +93,7 @@ export default function Home() {
     localStorage.setItem('selectedTherapist', therapist);
   };
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string }) => {
-      console.log("Attempting login with:", data);
-      const response = await apiRequest("POST", "/api/login", data);
-      console.log("Login response:", response);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      console.log("Login successful:", data);
-      // Manually set user state for immediate UI update
-      if (data.user) {
-        loginUser(data.user);
-      }
-      setIsLoginModalOpen(false);
-      setLocation("/emdr-session");
-    },
-    onError: (error: any) => {
-      console.error("Login failed:", error);
-      alert(`Login failed: ${error.message || "Invalid email or password"}`);
-    },
-  });
+
 
   const handleStartFreeTrial = () => {
     if (!selectedTherapist) {
@@ -120,71 +101,42 @@ export default function Home() {
       return;
     }
     // Navigate to sign-in
-    setLocation('/auth');
+    window.location.href = '/auth';
   };
 
 
 
-  const handleLogin = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!loginFormData.email || !loginFormData.password) {
-      console.error("Please fill in both email and password");
-      return;
-    }
-    loginMutation.mutate(loginFormData);
-  };
 
-  const handleTestLogin = () => {
-    // Simulate login with test credentials
-    loginMutation.mutate({
-      email: "test@test.com",
-      password: "secret"
-    });
-  };
 
+
+
+  // Google Sign In with Supabase (simplified)
   const handleGoogleSignIn = async () => {
     try {
-      const user = await signInWithGoogle();
-      
-      if (user) {
-        console.log('Google sign in successful:', user);
-        console.log('User info:', {
-          email: user.email,
-          name: user.displayName,
-          photoURL: user.photoURL
-        });
-        
-        refetchUser();
-        setIsLoginModalOpen(false);
-        setLocation("/emdr-session");
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/emdr-session`
+        }
+      });
+      if (error) {
+        console.error('Google sign in error:', error);
+        alert(error.message);
       }
-      // If user is null, it means redirect was triggered
     } catch (error) {
       console.error('Google sign in failed:', error);
-      
-      // Show user-friendly error message
-      const errorMessage = (error as Error).message;
-      if (errorMessage.includes('Domain not authorized')) {
-        alert('This domain is not authorized for Google Sign In. Please use the TEST button or email sign in for now.');
-      } else {
-        alert('Sign in failed. Please try the TEST button or email sign in.');
-      }
+      alert('Sign in failed. Please try email sign in.');
     }
   };
 
-  // Check for redirect result on component mount
+  // Check Supabase authentication state
   useEffect(() => {
-    const handleRedirectResult = async () => {
-      const user = await checkRedirectResult();
-      if (user) {
-        console.log('Google sign in successful (redirect):', user);
-        refetchUser();
-        setLocation("/emdr-session");
-      }
-    };
-    
-    handleRedirectResult();
-  }, [refetchUser, setLocation]);
+    supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setIsLoggedIn(!!session?.user))
+    return () => subscription.unsubscribe()
+  }, []);
+
+
 
   return (
     <div className="min-h-screen">
@@ -200,43 +152,50 @@ export default function Home() {
               <p className="text-xl mb-8 text-blue-100">
                 Led by a therapist-designed video guide. Walking with you step by step offering structure, support, and connection when you need it most.
               </p>
-              {user ? (
+              {user && isLoggedIn ? (
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href="/emdr-session">
-                    <Button size="sm" className="bg-white text-primary hover:bg-slate-50 px-6 py-3">
-                      Continue Your Journey
-                    </Button>
-                  </Link>
+                  <Button 
+                    onClick={gotoAuthOrSession}
+                    size="lg" 
+                    className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
+                  >
+                    Choose Therapist & Continue
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <Button 
-                    onClick={handleStartFreeTrial}
-                    disabled={!selectedTherapist}
+                    onClick={gotoAuthOrSession}
                     size="lg" 
-                    className={`w-full py-4 text-lg font-semibold ${
-                      selectedTherapist 
-                        ? 'bg-white text-primary hover:bg-slate-50' 
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
-                    }`}
+                    className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
                   >
                     Start Your 7-Day Free Trial
                   </Button>
 
                   {/* Login to Continue Journey CTA */}
+                  <Button
+                    onClick={gotoAuthOrSession}
+                    variant="outline"
+                    size="lg" 
+                    className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary whitespace-normal break-words text-center leading-snug"
+                  >
+                    Choose Therapist & Continue
+                  </Button>
+
                   <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
                     <DialogTrigger asChild>
                       <Button 
                         variant="outline"
                         size="lg" 
                         className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary"
+                        style={{ display: 'none' }}
                       >
-                        Log In to Continue Journey
+                        Hidden Modal Trigger
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Log In to Continue Your Journey</DialogTitle>
+                        <DialogTitle>Select Your Therapist & Continue Your Journey</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
                         {/* Only show if Apple is supported */}
@@ -273,7 +232,23 @@ export default function Home() {
                         </div>
 
                         {/* Email Login Form */}
-                        <form onSubmit={handleLogin} className="space-y-3">
+                        <form onSubmit={async (e) => {
+  e.preventDefault();
+  try {
+    setIsLoggingIn(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: loginFormData.email,
+      password: loginFormData.password
+    });
+    if (error) {
+      alert('Login failed: ' + error.message);
+      return;
+    }
+    window.location.href = '/emdr-session';
+  } finally {
+    setIsLoggingIn(false);
+  }
+}} className="space-y-3">
                           <div>
                             <Label htmlFor="email">Email</Label>
                             <Input
@@ -299,26 +274,13 @@ export default function Home() {
                           <Button 
                             type="submit"
                             className="w-full"
-                            disabled={loginMutation.isPending}
+                            disabled={isLoggingIn}
                           >
-                            {loginMutation.isPending ? "Signing In..." : "Sign In"}
+                            {isLoggingIn ? "Signing In..." : "Sign In"}
                           </Button>
                         </form>
 
-                        {/* TEST Button for Development - Made more prominent */}
-                        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="text-center mb-2">
-                            <p className="text-sm font-medium text-green-800">Quick Test Access</p>
-                            <p className="text-xs text-green-600">Try the app immediately</p>
-                          </div>
-                          <Button 
-                            onClick={handleTestLogin}
-                            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold"
-                            disabled={loginMutation.isPending}
-                          >
-                            {loginMutation.isPending ? "Signing In..." : "TEST - Quick Access"}
-                          </Button>
-                        </div>
+
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -441,18 +403,22 @@ export default function Home() {
                 </div>
               </div>
               <div className="pt-4">
-                <Button 
-                  onClick={handleStartFreeTrial}
-                  disabled={!selectedTherapist}
-                  className={`w-full ${
-                    selectedTherapist 
-                      ? 'bg-primary hover:bg-primary/90' 
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed hover:bg-gray-300'
-                  }`}
-                  size="lg"
-                >
-                  {selectedTherapist ? "Start Free Trial" : "Select Therapist Above"}
-                </Button>
+                {/* {!isLoggedIn && ( */}
+                  <Button 
+                    onClick={gotoAuthOrSession}
+                    className="w-full bg-primary hover:bg-primary/90"
+                    size="lg"
+                  >
+                    Start Your 7-Day Free Trial
+                  </Button>
+                {/* )}
+                {isLoggedIn && (
+                  <Link href="/emdr-session">
+                    <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
+                      Select Your Therapist & Continue Your Journey
+                    </Button>
+                  </Link>
+                )} */}
                 <p className="text-xs text-slate-500 mt-2">No credit card required for trial</p>
               </div>
             </CardContent>

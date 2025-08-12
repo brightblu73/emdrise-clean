@@ -187,7 +187,7 @@ export default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPo
               ? 'Sign In to Begin'
               : !selectedTherapist
               ? 'Select Therapist'
-              : 'Continue Your Journey'}
+              : 'Select Your Therapist & Continue Your Journey'}
           </Text>
         </TouchableOpacity>
 

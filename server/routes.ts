@@ -30,37 +30,9 @@ declare global {
   }
 }
 
-// Initialize test user for development
-async function initializeTestUser() {
-  if (process.env.NODE_ENV === 'development') {
-    try {
-      const existingTestUser = await storage.getUserByEmail("test@test.com");
-      if (!existingTestUser) {
-        const hashedPassword = await bcrypt.hash("secret", 10);
-        const trialEndDate = new Date();
-        trialEndDate.setDate(trialEndDate.getDate() + 7);
-        
-        // Create test user directly without schema validation
-        const testUser = await storage.createUser({
-          username: "Test User",
-          email: "test@test.com",
-          password: hashedPassword
-        });
-        
-        // Update with subscription info
-        await storage.updateUserSubscriptionStatus(testUser.id, "trial");
-        await storage.updateUserTrialEndDate(testUser.id, trialEndDate);
-        console.log("Test user created: test@test.com / secret");
-      }
-    } catch (error) {
-      console.log("Failed to create test user:", error);
-    }
-  }
-}
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize test user for development
-  await initializeTestUser();
 
   // Session configuration - simplified for Replit environment
   app.use(session({

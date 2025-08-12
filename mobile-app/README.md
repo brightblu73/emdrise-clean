@@ -103,9 +103,7 @@ For production deployment:
 
 ## Testing
 
-Test credentials:
-- Email: `test@test.com`
-- Password: `secret`
+Authentication system requires proper credentials for access.
 
 ## Next Steps
 

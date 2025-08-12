@@ -4,7 +4,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "../state/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { CheckCircle, Brain, Shield } from "lucide-react";
@@ -18,7 +18,7 @@ const SubscribeForm = () => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
-  const { refetchUser } = useAuth();
+  const { user } = useAuth();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +41,7 @@ const SubscribeForm = () => {
         variant: "destructive",
       });
     } else {
-      refetchUser();
+      // User will be automatically updated by AuthProvider
       toast({
         title: "Payment Successful",
         description: "Welcome to EMDRise Premium! You now have full access.",

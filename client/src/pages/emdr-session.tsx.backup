@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useEMDRSession } from "@/hooks/use-emdr-session";
-import { useAuth } from "../state/AuthProvider";
+import { useAuth } from "@/hooks/use-auth";
 import EMDRVideoPlayer from "@/components/emdr-video-player";
 import BilateralStimulation from "@/components/bilateral-stimulation";
 import BLSOptionBox from "@/components/BLSOptionBox";
@@ -61,7 +61,7 @@ export default function EMDRSession() {
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(null);
   const [isSetupPhase, setIsSetupPhase] = useState(false);
   const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
-  const [uiReady, setUiReady] = useState(false); // Optimized for fast Script 1 start
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Client-side fix to prevent duplicate EMDR script blocks
   useEffect(() => {
@@ -96,38 +96,28 @@ export default function EMDRSession() {
     }
   }, [currentSession?.id, currentSession?.currentScript, currentSession?.status]);
   
-  // Clean session initialization effect
+  // Auto-start session if therapist is selected and user is authenticated
   useEffect(() => {
-    let isMounted = true;
-
-    (async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        if (!data?.user) { 
-          window.location.href = '/auth'; 
-          return; 
-        }
-
-        const paused =
-          localStorage.getItem('emdrPauseFlag') === 'true' ||
-          !!localStorage.getItem('pausedEMDRSession');
-
-        if (paused) {
-          await startSession(); // Hook handles resume logic and sets currentSession
-        } else {
-          await startSession(); // Start new session and sets currentSession
-        }
-        // Set UI ready immediately for faster Script 1 start
-        if (isMounted) setUiReady(true);
-      } catch (err) {
-        console.error('Session init failed', err);
-        window.location.href = '/';
-        return;
-      }
-    })();
-
-    return () => { isMounted = false; };
-  }, []);
+    const isFromHomepage = !currentSession; // If no current session, we're coming from homepage
+    
+    // Simple detection using the pause flag
+    const pauseFlag = localStorage.getItem('emdrPauseFlag');
+    const pausedSession = localStorage.getItem('pausedEMDRSession');
+    const hasPausedSession = pauseFlag === 'true' || pausedSession;
+    
+    console.log("Checking for paused session - pauseFlag:", pauseFlag, "pausedSession:", !!pausedSession);
+    
+    if (hasPausedSession && selectedTherapist && user && isFromHomepage) {
+      console.log("Found paused session, triggering startSession to resume at Script 5a");
+      startSession();
+      return;
+    }
+    
+    if (selectedTherapist && !currentSession && !isLoading && !isStartingSession && user && !hasPausedSession) {
+      console.log("Auto-starting new session with therapist:", selectedTherapist);
+      startSession();
+    }
+  }, [selectedTherapist, currentSession, isLoading, isStartingSession, user]);
 
   // Use the therapist selected from localStorage, or default to Alistair if none selected
   useEffect(() => {
@@ -143,12 +133,22 @@ export default function EMDRSession() {
     }
   }, []);
 
-  // Set UI ready when currentSession is available
+  // Redirect to login if user is not authenticated - Supabase check
   useEffect(() => {
-    if (currentSession && selectedTherapist && !uiReady) {
-      setUiReady(true);
-    }
-  }, [currentSession, selectedTherapist, uiReady]);
+    let isMounted = true;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!isMounted) return;
+      if (!data.user) {
+        // not logged in → go to /auth
+        window.location.href = '/auth';
+      } else {
+        // logged in → allow page to continue (no redirect)
+        // (optional) console.log('Supabase user OK', data.user.id);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, []);
 
   // Scroll to top when script changes - with delay to ensure DOM updates
   useEffect(() => {
@@ -167,12 +167,55 @@ export default function EMDRSession() {
     }
   }, [currentSession?.currentScript]);
 
-  // Reset BLS when script changes - but only if BLS is actually shown
+  // Reset BLS and other states when script changes
   useEffect(() => {
-    if (currentSession?.currentScript === 8) {
-      setBodyScanStep('scanning');
+    if (currentSession?.currentScript) {
+      // Immediately reset BLS states to prevent any ghost rendering
+      setShowBLS(false);
+      setBLSClosing(false);
+      setLocalVideoCompleted(false);
+      
+      // Set transitioning state to prevent component flashing
+      setIsTransitioning(true);
+      
+      // Force hide all grid elements immediately using DOM manipulation
+      const hideGrids = () => {
+        const grids = document.querySelectorAll('.grid, [class*="grid"]');
+        grids.forEach(grid => {
+          (grid as HTMLElement).style.display = 'none';
+          (grid as HTMLElement).style.visibility = 'hidden';
+          (grid as HTMLElement).style.opacity = '0';
+        });
+      };
+      
+      // Hide immediately and after a small delay
+      hideGrids();
+      setTimeout(hideGrids, 10);
+      
+      // Script-specific resets
+      if (currentSession.currentScript === 8) {
+        setBodyScanStep('scanning');
+      }
+      
+      // Clear transitioning state after an even longer delay to ensure completely clean transitions
+      const transitionTimer = setTimeout(() => {
+        setIsTransitioning(false);
+        
+        // Restore grid elements visibility after transition
+        const restoreGrids = () => {
+          const grids = document.querySelectorAll('.grid, [class*="grid"]');
+          grids.forEach(grid => {
+            (grid as HTMLElement).style.display = '';
+            (grid as HTMLElement).style.visibility = '';
+            (grid as HTMLElement).style.opacity = '';
+          });
+        };
+        
+        restoreGrids();
+      }, 500);
+      
+      return () => clearTimeout(transitionTimer);
     }
-    // Removed showBLS reset to prevent render loop
   }, [currentSession?.currentScript]);
 
   // New script mapping for 10-script sequence with therapist-specific videos
@@ -448,11 +491,11 @@ export default function EMDRSession() {
   };
 
   const requiresRatings = false; // No generic ratings needed - custom interfaces handle their own
-  const allowsBLS = currentSession && [4, 5, 6, 7, 8].includes(currentSession?.currentScript); // Keep as numbers for this variable
+  const allowsBLS = currentSession && [4, 5, 6, 7, 8].includes(currentSession.currentScript); // Keep as numbers for this variable
   
   // Memoize currentScriptInfo to prevent unnecessary re-renders
   const currentScriptInfo = useMemo(() => {
-    return currentSession ? getScriptInfo(currentSession?.currentScript) : null;
+    return currentSession ? getScriptInfo(currentSession.currentScript) : null;
   }, [currentSession?.currentScript, selectedTherapist]);
 
   if (isLoading) {
@@ -466,21 +509,17 @@ export default function EMDRSession() {
     );
   }
 
-  // Render gate - show loading until session is ready
-  if (!uiReady || !currentSession) {
-    return (
-      <div className="py-24 text-center text-xl">Loading session…</div>
-    );
-  }
+  // Skip authentication check for now - move directly to therapist selection
+  // The user should always see therapist selection first, regardless of auth status
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <div className={`min-h-screen bg-gradient-to-br from-green-50 to-blue-50 ${isTransitioning ? 'script-transitioning' : ''}`}>
       <div className="w-full max-w-4xl mx-auto px-4 py-8" key={`session-${currentSession?.id}`}>
         {/* Remove main header completely - page titles shown in video component only per amendments */}
 
         {/* Navigation Bar - Back to Previous Step for all scripts except Script 1 */}
-        <div className="flex items-center justify-between mb-6">
-          {currentSession && (currentSession?.currentScript > 1 || String(currentSession?.currentScript) === "5a") ? (
+        <div className="flex items-center justify-between mb-6 hidden md:hidden">
+          {currentSession && (currentSession.currentScript > 1 || String(currentSession.currentScript) === "5a") ? (
             <Button 
               onClick={goBackToPreviousScript}
               disabled={updateCurrentScript?.isPending}
@@ -501,10 +540,27 @@ export default function EMDRSession() {
           )}
         </div>
 
-        {/* EMDR session player */}
-        <div className="space-y-8 emdr-script">
-          {/* Setup Phase - Special handling for Scripts 1, 2, 3 */}
-          {(currentScriptInfo?.needsSetup && currentSession?.currentScript === 1) && (
+        {/* Force direct access to EMDR session - bypass therapist selection */}
+        {!currentSession ? (
+          <div className="space-y-8">
+            <div className="text-center">
+              <Card className="max-w-2xl mx-auto opacity-0 pointer-events-none select-none">
+                <CardContent className="p-8">
+                  <Brain className="h-12 w-12 text-primary-green mx-auto mb-4 animate-pulse" />
+                  <p className="text-lg text-slate-600">
+                    Starting your EMDR session with {selectedTherapist === 'female' ? 'Maria' : 'Alistair'}...
+                  </p>
+                  {isStartingSession && (
+                    <p className="text-sm text-slate-500 mt-2">Please wait while we prepare your session...</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-8 emdr-script">
+            {/* Setup Phase - Special handling for Scripts 1, 2, 3 */}
+            {currentScriptInfo?.needsSetup && currentSession.currentScript === 1 && (
               <div className="space-y-6">
                 {/* Introduction Video */}
                 <EMDRVideoPlayer
@@ -573,7 +629,7 @@ export default function EMDRSession() {
                       />
                     </div>
 
-                    {showBLS && (
+                    {showBLS && !isTransitioning && (
                       <div className="mb-8">
                         <BilateralStimulation 
                           isActive={showBLS}
@@ -714,7 +770,7 @@ export default function EMDRSession() {
                 </div>
 
                 {/* BLS Component - Only show when activated via Start Reprocessing */}
-                {showBLS && (
+                {showBLS && !isTransitioning && (
                   <div className="mt-4 p-4 bg-white rounded-lg border border-blue-200">
                     <BilateralStimulation
                       isActive={showBLS}
@@ -808,7 +864,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated via Continue Reprocessing */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-amber-200">
                       <BilateralStimulation
                         isActive={showBLS}
@@ -963,7 +1019,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-red-200">
                       <BilateralStimulation
                         isActive={showBLS}
@@ -1051,7 +1107,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated via Begin Installation */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-green-200">
                       <BilateralStimulation
                         isActive={showBLS}
@@ -1170,7 +1226,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated via Continue Installation */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-green-200">
                       <BilateralStimulation
                         isActive={showBLS}
@@ -1305,7 +1361,7 @@ export default function EMDRSession() {
                   </div>
 
                   {/* BLS Component - Only show when activated */}
-                  {showBLS && (
+                  {showBLS && !isTransitioning && (
                     <div className="mt-4 p-4 bg-white rounded-lg border border-indigo-200">
                       <BilateralStimulation
                         isActive={showBLS}
@@ -1622,7 +1678,8 @@ export default function EMDRSession() {
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-    );
+    </div>
+  );
 }

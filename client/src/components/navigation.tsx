@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import { Link, useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -14,28 +14,19 @@ import {
   DropdownMenuSubTrigger
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from '../state/AuthProvider';
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { Heart, Menu, User, LogOut, TrendingUp, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 
 export default function Navigation() {
-  const { user, refetchUser } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const logoutMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/logout"),
-    onSuccess: () => {
-      refetchUser();
-      toast({
-        title: "Signed out",
-        description: "You have been successfully signed out.",
-      });
-    },
-  });
+
+
 
   const navItems = [
     { href: "/", label: "Home", icon: Brain },
@@ -49,8 +40,11 @@ export default function Navigation() {
     return false;
   };
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
+
+
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.href = '/';
   };
 
   return (
@@ -168,8 +162,7 @@ export default function Navigation() {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem 
-                      onClick={handleLogout}
-                      disabled={logoutMutation.isPending}
+                      onClick={handleSignOut}
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Sign Out
@@ -179,9 +172,18 @@ export default function Navigation() {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link href="/auth">
-                  <Button variant="ghost">Sign In</Button>
-                </Link>
+                {user ? (
+                  <Button 
+                    variant="ghost"
+                    onClick={handleSignOut}
+                  >
+                    Sign out
+                  </Button>
+                ) : (
+                  <Link href="/auth">
+                    <Button variant="ghost">Sign In</Button>
+                  </Link>
+                )}
               </div>
             )}
           </div>
@@ -281,10 +283,9 @@ export default function Navigation() {
                           variant="ghost" 
                           className="w-full justify-start text-slate-700"
                           onClick={() => {
-                            handleLogout();
+                            handleSignOut();
                             setIsMobileMenuOpen(false);
                           }}
-                          disabled={logoutMutation.isPending}
                         >
                           <LogOut className="h-4 w-4 mr-2" />
                           Sign Out
@@ -293,15 +294,28 @@ export default function Navigation() {
                     </>
                   ) : (
                     <div className="space-y-3">
-                      <Link href="/auth">
+                      {user ? (
                         <Button 
-                          variant="ghost" 
+                          variant="outline" 
                           className="w-full"
-                          onClick={() => setIsMobileMenuOpen(false)}
+                          onClick={() => {
+                            handleSignOut();
+                            setIsMobileMenuOpen(false);
+                          }}
                         >
-                          Sign In
+                          Sign out
                         </Button>
-                      </Link>
+                      ) : (
+                        <Link href="/auth">
+                          <Button 
+                            variant="outline" 
+                            className="w-full"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            Sign In
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   )}
                 </div>

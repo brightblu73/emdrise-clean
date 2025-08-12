@@ -14,8 +14,8 @@ import { useAuth } from '../providers/AuthProvider';
 import { useNavigation } from '@react-navigation/native';
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState('test@test.com');
-  const [password, setPassword] = useState('secret');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigation = useNavigation();
@@ -92,11 +92,7 @@ const LoginScreen = () => {
               </Text>
             </TouchableOpacity>
 
-            <View style={styles.testCredentials}>
-              <Text style={styles.testTitle}>Test Credentials:</Text>
-              <Text style={styles.testText}>Email: test@test.com</Text>
-              <Text style={styles.testText}>Password: secret</Text>
-            </View>
+
 
             <View style={styles.trialInfo}>
               <Text style={styles.trialText}>
@@ -184,25 +180,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  testCredentials: {
-    backgroundColor: '#f0fdf4',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#bbf7d0',
-  },
-  testTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#059669',
-    marginBottom: 5,
-  },
-  testText: {
-    fontSize: 14,
-    color: '#065f46',
-    fontFamily: 'monospace',
-  },
+
   trialInfo: {
     alignItems: 'center',
   },
