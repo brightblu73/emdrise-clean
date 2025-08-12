@@ -52,6 +52,7 @@ EMDRise is a web and mobile application providing guided EMDR (Eye Movement Dese
 - **UI/UX**: Ambient color scheme, professional layout, EMDR Journey Timeline component, responsive button sizing, and endorsement carousel featuring organizations recommending EMDR
 
 ### Recent Changes (Aug 2025)
+- **Button Text Update (Aug 12, 2025)**: Updated all "Continue Your Journey" buttons across web and mobile apps to "Select Your Therapist & Continue Your Journey" to better reflect the user flow
 - **Complete Video Migration**: All EMDR therapy videos (Scripts 1-10) migrated from local files to Supabase cloud storage
 - **Therapist Selection Fix**: Corrected force-override bug that was ignoring user's therapist selection
 - **File Cleanup**: Removed all local video files after successful Supabase migration (1.2GB+ storage saved)

@@ -185,7 +185,7 @@ export default function Home() {
                     size="sm" 
                     className="bg-white text-primary hover:bg-slate-50 px-6 py-3"
                   >
-                    Continue Your Journey
+                    Select Your Therapist & Continue Your Journey
                   </Button>
                 </div>
               ) : (
@@ -205,7 +205,7 @@ export default function Home() {
                     size="lg" 
                     className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary"
                   >
-                    Continue Your Journey
+                    Select Your Therapist & Continue Your Journey
                   </Button>
 
                   <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
@@ -221,7 +221,7 @@ export default function Home() {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Continue Your Journey</DialogTitle>
+                        <DialogTitle>Select Your Therapist & Continue Your Journey</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
                         {/* Only show if Apple is supported */}
@@ -441,7 +441,7 @@ export default function Home() {
                 {isLoggedIn && (
                   <Link href="/emdr-session">
                     <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
-                      Continue Your Journey
+                      Select Your Therapist & Continue Your Journey
                     </Button>
                   </Link>
                 )} */}
