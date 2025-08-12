@@ -10,6 +10,7 @@ import { Eye, Brain, Sprout, Clock, Play, Heart, CheckCircle, Volume2, Apple, Ma
 import { useState, useRef, useEffect } from "react";
 import { signInWithGoogle, checkRedirectResult } from "@/lib/firebase";
 import { supabase } from '@/lib/supabaseClient'
+import { gotoAuthOrSession } from '@/lib/auth-helpers'
 import mariaPortrait from "@/assets/maria-headshot.jpg";
 import alistairPortrait from "@/assets/alistair-headshot.jpg";
 import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
@@ -161,26 +162,7 @@ export default function Home() {
     return () => subscription.unsubscribe()
   }, []);
 
-  async function gotoAuthOrSession() {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session?.user) {
-      window.location.href = '/emdr-session'
-    } else {
-      window.location.href = '/auth'
-    }
-  }
 
-  async function handlePrimaryCta(e?: React.MouseEvent) {
-    // Works for buttons AND links
-    if (e && typeof e.preventDefault === 'function') e.preventDefault()
-    const { data } = await supabase.auth.getUser()
-    if (!data.user) {
-      gotoAuthOrSession()
-      return
-    }
-    // Logged in → keep your existing flow
-    window.location.href = '/emdr-session'
-  }
 
   return (
     <div className="min-h-screen">
@@ -199,7 +181,7 @@ export default function Home() {
               {user && isLoggedIn ? (
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
-                    onClick={handlePrimaryCta}
+                    onClick={gotoAuthOrSession}
                     size="sm" 
                     className="bg-white text-primary hover:bg-slate-50 px-6 py-3"
                   >
