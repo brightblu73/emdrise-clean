@@ -189,8 +189,8 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
                     onClick={gotoAuthOrSession}
-                    size="sm" 
-                    className="bg-white text-primary hover:bg-slate-50 px-6 py-3 whitespace-normal break-words text-center leading-snug"
+                    size="lg" 
+                    className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
                   >
                     Choose Therapist & Continue
                   </Button>
