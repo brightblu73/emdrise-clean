@@ -16,6 +16,11 @@ import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
 import EndorsementCarousel from "@/components/EndorsementCarousel";
 import { Logo } from "@/components/ui/logo";
 
+// Preconnect to video CDN
+const preconnectLinks = [
+  'https://jxhjghgectlpgrpwpkfd.supabase.co'
+];
+
 export default function Home() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
@@ -129,11 +134,39 @@ export default function Home() {
     }
   };
 
-  // Check Supabase authentication state
+  // Check Supabase authentication state + preload Script 1 videos
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setIsLoggedIn(!!session?.user))
-    return () => subscription.unsubscribe()
+    // Add preconnect links to head for faster video loading
+    preconnectLinks.forEach(href => {
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = href;
+      document.head.appendChild(link);
+    });
+
+    // Prefetch Script 1 videos based on selected therapist
+    const therapist = localStorage.getItem('selectedTherapist') || 'male';
+    const script1Url = therapist === 'female' 
+      ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script1-welcome.mp4'
+      : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script1-welcome.mp4';
+    
+    const prefetchLink = document.createElement('link');
+    prefetchLink.rel = 'prefetch';
+    prefetchLink.href = script1Url;
+    prefetchLink.as = 'video';
+    document.head.appendChild(prefetchLink);
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+      if (user) sessionStorage.setItem('validAuth', 'true');
+    });
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setIsLoggedIn(!!session?.user);
+      if (session?.user) sessionStorage.setItem('validAuth', 'true');
+    });
+    
+    return () => subscription.unsubscribe();
   }, []);
 
 

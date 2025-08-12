@@ -96,10 +96,29 @@ export default function EMDRSession() {
     }
   }, [currentSession?.id, currentSession?.currentScript, currentSession?.status]);
   
-  // Clean session initialization effect
+  // Optimized session initialization - no delays, cached auth
   useEffect(() => {
     let isMounted = true;
 
+    // Start session immediately without auth check if coming from home CTA
+    const hasValidAuth = sessionStorage.getItem('validAuth') === 'true';
+    
+    if (hasValidAuth) {
+      // Skip auth check, start immediately
+      const paused =
+        localStorage.getItem('emdrPauseFlag') === 'true' ||
+        !!localStorage.getItem('pausedEMDRSession');
+
+      if (paused) {
+        startSession();
+      } else {
+        startSession();
+      }
+      if (isMounted) setUiReady(true);
+      return;
+    }
+
+    // Fallback auth check for direct navigation
     (async () => {
       try {
         const { data } = await supabase.auth.getUser();
@@ -108,16 +127,17 @@ export default function EMDRSession() {
           return; 
         }
 
+        sessionStorage.setItem('validAuth', 'true');
+        
         const paused =
           localStorage.getItem('emdrPauseFlag') === 'true' ||
           !!localStorage.getItem('pausedEMDRSession');
 
         if (paused) {
-          await startSession(); // Hook handles resume logic and sets currentSession
+          startSession();
         } else {
-          await startSession(); // Start new session and sets currentSession
+          startSession();
         }
-        // Set UI ready immediately for faster Script 1 start
         if (isMounted) setUiReady(true);
       } catch (err) {
         console.error('Session init failed', err);
@@ -150,20 +170,14 @@ export default function EMDRSession() {
     }
   }, [currentSession, selectedTherapist, uiReady]);
 
-  // Scroll to top when script changes - with delay to ensure DOM updates
+  // Scroll to top immediately when script changes - no delay
   useEffect(() => {
     if (currentSession?.currentScript) {
-      // Use a small delay to ensure the DOM has fully updated
-      const scrollTimer = setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        // Also scroll the main container to ensure we're at the very top
-        const mainContainer = document.querySelector('.min-h-screen');
-        if (mainContainer) {
-          mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      }, 100);
-      
-      return () => clearTimeout(scrollTimer);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      const mainContainer = document.querySelector('.min-h-screen');
+      if (mainContainer) {
+        mainContainer.scrollTo({ top: 0, behavior: 'instant' });
+      }
     }
   }, [currentSession?.currentScript]);
 

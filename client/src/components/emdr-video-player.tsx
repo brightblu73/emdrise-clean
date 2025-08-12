@@ -29,6 +29,8 @@ export default function EMDRVideoPlayer({
   const [duration, setDuration] = useState(0);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showSkeleton, setShowSkeleton] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -58,6 +60,8 @@ export default function EMDRVideoPlayer({
     const handleLoadedData = () => {
       console.log("Video loaded successfully:", videoUrl);
       setVideoError(null);
+      setIsLoading(false);
+      setShowSkeleton(false);
     };
 
     const handleError = (e: any) => {
@@ -96,12 +100,20 @@ export default function EMDRVideoPlayer({
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
+      setIsLoading(true);
       // Set preload for faster loading
       video.preload = 'metadata';
       video.load(); // Force reload the video source
       console.log("Video reloaded with URL:", videoUrl);
+      
+      // Show skeleton only if loading takes too long
+      const skeletonTimer = setTimeout(() => {
+        if (isLoading) setShowSkeleton(true);
+      }, 250);
+      
+      return () => clearTimeout(skeletonTimer);
     }
-  }, [videoUrl]);
+  }, [videoUrl, isLoading]);
 
   // Preload Script 1 video on mount for faster session start
   useEffect(() => {
@@ -198,8 +210,18 @@ export default function EMDRVideoPlayer({
                 </Button>
               )}
 
+              {/* Loading skeleton - only shown if loading exceeds 250ms */}
+              {showSkeleton && (
+                <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-primary-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading video...</p>
+                  </div>
+                </div>
+              )}
+
               {/* Play overlay for initial interaction */}
-              {!hasUserInteracted && (
+              {!hasUserInteracted && !isLoading && (
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                   <Button
                     onClick={togglePlay}
