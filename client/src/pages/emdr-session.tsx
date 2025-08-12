@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useEMDRSession } from "@/hooks/use-emdr-session";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "../state/AuthProvider";
 import EMDRVideoPlayer from "@/components/emdr-video-player";
 import BilateralStimulation from "@/components/bilateral-stimulation";
 import BLSOptionBox from "@/components/BLSOptionBox";

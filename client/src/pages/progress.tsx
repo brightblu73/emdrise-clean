@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "../state/AuthProvider";
 import { Calendar, TrendingUp, Target, Brain, Clock, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 
@@ -29,15 +29,18 @@ export default function ProgressPage() {
   const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState("all");
 
-  const { data: sessions = [], isLoading } = useQuery({
+  const { data: sessionsData, isLoading } = useQuery({
     queryKey: ['/api/sessions'],
     enabled: !!user,
   });
 
-  const { data: targets = [] } = useQuery({
+  const { data: targetsData } = useQuery({
     queryKey: ['/api/targets'],
     enabled: !!user,
   });
+
+  const sessions = (sessionsData as SessionData[]) || [];
+  const targets = (targetsData as SessionData[]) || [];
 
   if (!user) {
     return (
@@ -54,7 +57,7 @@ export default function ProgressPage() {
     );
   }
 
-  const completedSessions = sessions.filter((s: SessionData) => s.status === 'complete');
+  const completedSessions = sessions.filter((s) => s.status === 'complete');
   const totalProcessingTime = completedSessions.reduce((acc: number, session: SessionData) => {
     if (session.startedAt && session.completedAt) {
       const start = new Date(session.startedAt);

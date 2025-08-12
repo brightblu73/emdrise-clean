@@ -5,11 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "../state/AuthProvider";
 import { Eye, Brain, Sprout, Clock, Play, Heart, CheckCircle, Volume2, Apple, Mail } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { signInWithGoogle, checkRedirectResult } from "@/lib/firebase";
-import { supabase } from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabase';
 import { gotoAuthOrSession } from '@/utils/gotoAuthOrSession'
 import mariaPortrait from "@/assets/maria-headshot.jpg";
 import alistairPortrait from "@/assets/alistair-headshot.jpg";
@@ -18,7 +17,7 @@ import EndorsementCarousel from "@/components/EndorsementCarousel";
 import { Logo } from "@/components/ui/logo";
 
 export default function Home() {
-  const { user, refetchUser } = useAuth();
+  const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [isVisualBLSActive, setIsVisualBLSActive] = useState(false);
   const [isAudioBLSActive, setIsAudioBLSActive] = useState(false);
@@ -111,49 +110,24 @@ export default function Home() {
 
 
 
+  // Google Sign In with Supabase (simplified)
   const handleGoogleSignIn = async () => {
     try {
-      const user = await signInWithGoogle();
-      
-      if (user) {
-        console.log('Google sign in successful:', user);
-        console.log('User info:', {
-          email: user.email,
-          name: user.displayName,
-          photoURL: user.photoURL
-        });
-        
-        refetchUser();
-        setIsLoginModalOpen(false);
-        setLocation("/emdr-session");
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/emdr-session`
+        }
+      });
+      if (error) {
+        console.error('Google sign in error:', error);
+        alert(error.message);
       }
-      // If user is null, it means redirect was triggered
     } catch (error) {
       console.error('Google sign in failed:', error);
-      
-      // Show user-friendly error message
-      const errorMessage = (error as Error).message;
-      if (errorMessage.includes('Domain not authorized')) {
-        alert('This domain is not authorized for Google Sign In. Please use email sign in for now.');
-      } else {
-        alert('Sign in failed. Please try email sign in.');
-      }
+      alert('Sign in failed. Please try email sign in.');
     }
   };
-
-  // Check for redirect result on component mount
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-      const user = await checkRedirectResult();
-      if (user) {
-        console.log('Google sign in successful (redirect):', user);
-        refetchUser();
-        setLocation("/emdr-session");
-      }
-    };
-    
-    handleRedirectResult();
-  }, [refetchUser, setLocation]);
 
   // Check Supabase authentication state
   useEffect(() => {

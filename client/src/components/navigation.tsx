@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase } from '@/lib/supabase';
 import { Link, useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -15,37 +14,19 @@ import {
   DropdownMenuSubTrigger
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from '../state/AuthProvider';
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { Heart, Menu, User, LogOut, TrendingUp, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 
 export default function Navigation() {
-  const { user, refetchUser } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [supabaseUser, setSupabaseUser] = useState<null | { id: string }>(null);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setSupabaseUser(data.user ?? null))
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSupabaseUser(session?.user ?? null)
-    })
-    return () => { sub.subscription.unsubscribe() }
-  }, []);
 
-  const logoutMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/logout"),
-    onSuccess: () => {
-      refetchUser();
-      toast({
-        title: "Signed out",
-        description: "You have been successfully signed out.",
-      });
-    },
-  });
+
 
   const navItems = [
     { href: "/", label: "Home", icon: Brain },
@@ -59,14 +40,10 @@ export default function Navigation() {
     return false;
   };
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
+
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    localStorage.clear();
-    sessionStorage.clear();
+    await signOut();
     window.location.href = '/';
   };
 
@@ -195,7 +172,7 @@ export default function Navigation() {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                {supabaseUser ? (
+                {user ? (
                   <Button 
                     variant="ghost"
                     onClick={handleSignOut}
@@ -317,7 +294,7 @@ export default function Navigation() {
                     </>
                   ) : (
                     <div className="space-y-3">
-                      {supabaseUser ? (
+                      {user ? (
                         <Button 
                           variant="outline" 
                           className="w-full"
