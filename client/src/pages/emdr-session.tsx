@@ -96,47 +96,38 @@ export default function EMDRSession() {
     }
   }, [currentSession?.id, currentSession?.currentScript, currentSession?.status]);
   
-  // Auto-start session if therapist is selected and user is authenticated
+  // Clean session initialization effect
   useEffect(() => {
-    async function initializeSession() {
-      // Check Supabase auth first
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        window.location.href = '/auth';
-        return;
-      }
-      
-      const isFromHomepage = !currentSession; // If no current session, we're coming from homepage
-      if (!isFromHomepage) return; // Already have session
-      
-      // Simple detection using the pause flag
-      const pauseFlag = localStorage.getItem('emdrPauseFlag');
-      const pausedSession = localStorage.getItem('pausedEMDRSession');
-      const hasPausedSession = pauseFlag === 'true' || pausedSession;
-      
-      console.log("Checking for paused session - pauseFlag:", pauseFlag, "pausedSession:", !!pausedSession);
-      
-      if (selectedTherapist && user) {
-        try {
-          if (hasPausedSession) {
-            console.log("Found paused session, triggering startSession to resume at Script 5a");
-            await startSession();
-          } else {
-            console.log("Auto-starting new session with therapist:", selectedTherapist);
-            await startSession();
-          }
-          // After successful session creation, enable UI
-          setUiReady(true);
-        } catch (error) {
-          console.error("Failed to start session:", error);
+    let isMounted = true;
+
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (!data?.user) { 
+          window.location.href = '/auth'; 
+          return; 
         }
+
+        const paused =
+          localStorage.getItem('emdrPauseFlag') === 'true' ||
+          !!localStorage.getItem('pausedEMDRSession');
+
+        if (paused) {
+          await startSession(); // Hook handles resume logic and sets currentSession
+        } else {
+          await startSession(); // Start new session and sets currentSession
+        }
+      } catch (err) {
+        console.error('Session init failed', err);
+        window.location.href = '/';
+        return;
+      } finally {
+        if (isMounted) setUiReady(true);
       }
-    }
-    
-    if (selectedTherapist && !currentSession && !isLoading && !isStartingSession && user) {
-      initializeSession();
-    }
-  }, [selectedTherapist, currentSession, isLoading, isStartingSession, user]);
+    })();
+
+    return () => { isMounted = false; };
+  }, []);
 
   // Use the therapist selected from localStorage, or default to Alistair if none selected
   useEffect(() => {
@@ -478,9 +469,7 @@ export default function EMDRSession() {
   // Render gate - show loading until session is ready
   if (!uiReady || !currentSession) {
     return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <p>Loading session…</p>
-      </div>
+      <div className="py-24 text-center text-xl">Loading session…</div>
     );
   }
 

@@ -10,7 +10,7 @@ import { Eye, Brain, Sprout, Clock, Play, Heart, CheckCircle, Volume2, Apple, Ma
 import { useState, useRef, useEffect } from "react";
 import { signInWithGoogle, checkRedirectResult } from "@/lib/firebase";
 import { supabase } from '@/lib/supabaseClient'
-import { gotoAuthOrSession } from '@/lib/auth-helpers'
+import { gotoAuthOrSession } from '@/lib/authNav'
 import mariaPortrait from "@/assets/maria-headshot.jpg";
 import alistairPortrait from "@/assets/alistair-headshot.jpg";
 import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";

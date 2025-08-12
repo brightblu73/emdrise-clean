@@ -1,0 +1,95 @@
+TASK: Reinstate session workflow for CTAs and /emdr-session.
+
+1) Create helper: client/src/lib/authNav.ts
+------------------------------------------------
+export async function gotoAuthOrSession() {
+  try {
+    // @ts-ignore – supabase client is already available in the app
+    const { data } = await supabase.auth.getUser();
+    if (!data?.user) {
+      window.location.href = '/auth';
+    } else {
+      // always land on the player route; flag that we came from a CTA
+      window.location.href = '/emdr-session?from=home';
+    }
+  } catch (e) {
+    console.error('gotoAuthOrSession failed', e);
+    window.location.href = '/auth';
+  }
+}
+
+2) Wire both CTAs to the helper (no direct '/auth' links):
+----------------------------------------------------------
+File: client/src/pages/home.tsx
+- Import { gotoAuthOrSession } from '@/lib/authNav';
+- For BOTH buttons (“Start Your 7‑Day Free Trial” and “Continue Your Journey”)
+  replace their onClick with:  onClick={gotoAuthOrSession}
+
+3) Fix /emdr-session to always start/render the real session (no interstitial):
+-------------------------------------------------------------------------------
+File: client/src/pages/emdr-session.tsx
+- At top add:
+  import { useEffect, useState } from 'react';
+
+- Inside component add state:
+  const [uiReady, setUiReady] = useState(false);
+  const [currentSession, setCurrentSession] = useState<any>(null);
+
+- Ensure these functions RETURN the session object:
+  // startSession(): Promise<Session>
+  // resumeSession(): Promise<Session>
+
+- Replace any “Starting your EMDR session…” interstitial render with:
+  if (!uiReady) return <div className="py-24 text-center text-xl">Loading session…</div>;
+  return <EMDRPlayer session={currentSession} />;
+
+- Replace the existing mount effects with ONE effect that:
+  1) checks auth, 2) resumes-or-starts, 3) sets state, 4) shows player.
+
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      try {
+        // @ts-ignore – supabase client exists
+        const { data } = await supabase.auth.getUser();
+        if (!data?.user) { window.location.href = '/auth'; return; }
+
+        const paused =
+          localStorage.getItem('emdrPauseFlag') === 'true' ||
+          !!localStorage.getItem('pausedEMDRSession');
+
+        let session = null;
+        if (paused) {
+          session = await resumeSession();     // MUST return { currentScript, ... }
+        } else {
+          session = await startSession();      // MUST return { currentScript, ... }
+        }
+
+        if (!isMounted) return;
+        setCurrentSession(session);
+      } catch (err) {
+        console.error('Session init failed', err);
+        window.location.href = '/';
+        return;
+      } finally {
+        if (isMounted) setUiReady(true);
+      }
+    })();
+
+    return () => { isMounted = false; };
+  }, []);
+
+4) Make sure Sign Out truly resets auth & local state:
+------------------------------------------------------
+File: client/src/components/navigation.tsx (or where Sign Out lives)
+Replace the handler with:
+  await supabase.auth.signOut();
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = '/';
+
+5) DO NOT auto-redirect to /emdr-session from /auth on login.
+All navigation into a session must come from the homepage CTAs via gotoAuthOrSession().
+
+END TASK

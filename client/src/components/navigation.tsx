@@ -64,13 +64,10 @@ export default function Navigation() {
   };
 
   const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } finally {
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.href = '/auth';
-    }
+    await supabase.auth.signOut();
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = '/';
   };
 
   return (

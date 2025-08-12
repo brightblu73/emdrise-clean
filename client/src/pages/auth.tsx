@@ -37,7 +37,7 @@ export default function Auth() {
       if (data.user) {
         loginUser(data.user);
       }
-      setLocation("/emdr-session");
+      setLocation("/");
     },
     onError: (error: any) => {
       console.error("Auth page login failed:", error.message || "Invalid email or password");
@@ -50,7 +50,7 @@ export default function Auth() {
       apiRequest("POST", "/api/register", data),
     onSuccess: () => {
       refetchUser();
-      setLocation("/emdr-session");
+      setLocation("/");
     },
     onError: (error: any) => {
       console.error("Registration failed:", error.message || "Please try again");
@@ -62,7 +62,7 @@ export default function Auth() {
     if (e) e.preventDefault()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { console.error(error); alert(error.message); return }
-    window.location.href = '/emdr-session'
+    window.location.href = '/'
   }
 
   async function handleEmailSignUp(e?: React.FormEvent) {
