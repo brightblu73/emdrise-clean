@@ -24,7 +24,14 @@ export default function Auth() {
       alert(error.message);
       return;
     }
-    setLocation("/emdr-session");
+    
+    // Post-auth routing rule: check if therapist selected
+    const selectedTherapist = localStorage.getItem('selectedTherapist');
+    if (selectedTherapist) {
+      setLocation("/emdr-session");
+    } else {
+      setLocation("/"); // Go to home to pick therapist first
+    }
   }
 
   async function handleSignUp(e: React.FormEvent) {
@@ -48,7 +55,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/emdr-session`
+          redirectTo: `${window.location.origin}/auth-callback`
         }
       });
       if (error) {

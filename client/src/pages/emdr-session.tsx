@@ -61,7 +61,7 @@ export default function EMDRSession() {
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(null);
   const [isSetupPhase, setIsSetupPhase] = useState(false);
   const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
-  const [uiReady, setUiReady] = useState(false);
+  const [uiReady, setUiReady] = useState(false); // Optimized for fast Script 1 start
 
   // Client-side fix to prevent duplicate EMDR script blocks
   useEffect(() => {
@@ -117,12 +117,12 @@ export default function EMDRSession() {
         } else {
           await startSession(); // Start new session and sets currentSession
         }
+        // Set UI ready immediately for faster Script 1 start
+        if (isMounted) setUiReady(true);
       } catch (err) {
         console.error('Session init failed', err);
         window.location.href = '/';
         return;
-      } finally {
-        if (isMounted) setUiReady(true);
       }
     })();
 

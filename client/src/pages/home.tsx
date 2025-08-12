@@ -157,9 +157,9 @@ export default function Home() {
                   <Button 
                     onClick={gotoAuthOrSession}
                     size="sm" 
-                    className="bg-white text-primary hover:bg-slate-50 px-6 py-3"
+                    className="bg-white text-primary hover:bg-slate-50 px-6 py-3 whitespace-normal break-words text-center leading-snug"
                   >
-                    Select Your Therapist & Continue Your Journey
+                    Choose Therapist & Continue
                   </Button>
                 </div>
               ) : (
@@ -177,9 +177,9 @@ export default function Home() {
                     onClick={gotoAuthOrSession}
                     variant="outline"
                     size="lg" 
-                    className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary"
+                    className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary whitespace-normal break-words text-center leading-snug"
                   >
-                    Select Your Therapist & Continue Your Journey
+                    Choose Therapist & Continue
                   </Button>
 
                   <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
