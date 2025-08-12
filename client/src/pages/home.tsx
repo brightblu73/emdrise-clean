@@ -285,11 +285,8 @@ export default function Home() {
                     </DialogContent>
                   </Dialog>
 
-                  {!selectedTherapist && (
-                    <p className="text-sm text-blue-200 text-center">Select a therapist below to continue</p>
-                  )}
                   <div className="text-sm text-blue-200 text-center">
-                    ✓ 7-day free trial • ✓ £12.99/month after trial • ✓ Cancel anytime
+                    ✓ 7-day free trial • £12.99/month after trial • ✓ Cancel anytime
                   </div>
                 </div>
               )}
