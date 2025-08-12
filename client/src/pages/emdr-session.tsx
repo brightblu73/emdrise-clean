@@ -15,6 +15,7 @@ import CalmPlaceSetup from "@/components/calm-place-setup";
 import TargetMemorySetup from "@/components/target-memory-setup";
 import { Brain, ArrowRight, Clock, RotateCcw, Save, Star, ArrowLeft, Home, Volume2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { supabase } from '@/lib/supabaseClient';
 
 export default function EMDRSession() {
   const { user } = useAuth();
@@ -131,13 +132,42 @@ export default function EMDRSession() {
     }
   }, []);
 
-  // Redirect to login if user is not authenticated - simplified logic
+  // Redirect to login if user is not authenticated - Supabase check
   useEffect(() => {
-    if (!user && !isLoading) {
-      console.log("User not authenticated, redirecting to auth");
-      setLocation('/auth');
+    let isMounted = true;
+    let redirected = false;
+
+    async function ensureAuth() {
+      // 1) Check existing session (fast path)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!isMounted) return;
+      if (session?.user) return; // user is present → allow page to continue
+
+      // 2) Wait briefly for hydration via onAuthStateChange (preview can be slow)
+      const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
+        if (!isMounted) return;
+        if (s?.user) {
+          // user appeared → stop listening and continue on this page
+          sub.subscription.unsubscribe();
+        }
+      });
+
+      // 3) Fallback after ~1.2s: if still no session, THEN go to /auth
+      setTimeout(async () => {
+        if (!isMounted || redirected) return;
+        const { data: { session: s2 } } = await supabase.auth.getSession();
+        if (!s2?.user) {
+          redirected = true;
+          window.location.href = '/auth';
+        } else {
+          sub.subscription.unsubscribe();
+        }
+      }, 1200);
     }
-  }, [user, isLoading, setLocation]);
+
+    ensureAuth();
+    return () => { isMounted = false; };
+  }, []);
 
   // Scroll to top when script changes - with delay to ensure DOM updates
   useEffect(() => {
