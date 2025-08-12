@@ -518,7 +518,7 @@ export default function EMDRSession() {
         {/* Remove main header completely - page titles shown in video component only per amendments */}
 
         {/* Navigation Bar - Back to Previous Step for all scripts except Script 1 */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 hidden md:hidden">
           {currentSession && (currentSession.currentScript > 1 || String(currentSession.currentScript) === "5a") ? (
             <Button 
               onClick={goBackToPreviousScript}
@@ -544,7 +544,7 @@ export default function EMDRSession() {
         {!currentSession ? (
           <div className="space-y-8">
             <div className="text-center">
-              <Card className="max-w-2xl mx-auto">
+              <Card className="max-w-2xl mx-auto opacity-0 pointer-events-none select-none">
                 <CardContent className="p-8">
                   <Brain className="h-12 w-12 text-primary-green mx-auto mb-4 animate-pulse" />
                   <p className="text-lg text-slate-600">
