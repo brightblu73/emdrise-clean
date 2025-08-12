@@ -61,7 +61,7 @@ export default function EMDRSession() {
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(null);
   const [isSetupPhase, setIsSetupPhase] = useState(false);
   const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
-  const [bypassInterstitial, setBypassInterstitial] = useState(true);
+  const [uiReady, setUiReady] = useState(false);
 
   // Client-side fix to prevent duplicate EMDR script blocks
   useEffect(() => {
@@ -98,48 +98,43 @@ export default function EMDRSession() {
   
   // Auto-start session if therapist is selected and user is authenticated
   useEffect(() => {
-    const isFromHomepage = !currentSession; // If no current session, we're coming from homepage
-    
-    // Simple detection using the pause flag
-    const pauseFlag = localStorage.getItem('emdrPauseFlag');
-    const pausedSession = localStorage.getItem('pausedEMDRSession');
-    const hasPausedSession = pauseFlag === 'true' || pausedSession;
-    
-    console.log("Checking for paused session - pauseFlag:", pauseFlag, "pausedSession:", !!pausedSession);
-    
-    if (hasPausedSession && selectedTherapist && user && isFromHomepage) {
-      console.log("Found paused session, triggering startSession to resume at Script 5a");
-      setBypassInterstitial(true); // Immediately bypass interstitial
-      startSession();
+    async function initializeSession() {
+      // Check Supabase auth first
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        window.location.href = '/auth';
+        return;
+      }
       
-      // Safety fallback to ensure session loads
-      let forced = false;
-      setTimeout(() => {
-        if (forced) return;
-        if (!currentSession) {
-          forced = true;
-          console.log("Safety fallback: forcing session to start again");
-          startSession();
+      const isFromHomepage = !currentSession; // If no current session, we're coming from homepage
+      if (!isFromHomepage) return; // Already have session
+      
+      // Simple detection using the pause flag
+      const pauseFlag = localStorage.getItem('emdrPauseFlag');
+      const pausedSession = localStorage.getItem('pausedEMDRSession');
+      const hasPausedSession = pauseFlag === 'true' || pausedSession;
+      
+      console.log("Checking for paused session - pauseFlag:", pauseFlag, "pausedSession:", !!pausedSession);
+      
+      if (selectedTherapist && user) {
+        try {
+          if (hasPausedSession) {
+            console.log("Found paused session, triggering startSession to resume at Script 5a");
+            await startSession();
+          } else {
+            console.log("Auto-starting new session with therapist:", selectedTherapist);
+            await startSession();
+          }
+          // After successful session creation, enable UI
+          setUiReady(true);
+        } catch (error) {
+          console.error("Failed to start session:", error);
         }
-      }, 800);
-      return;
+      }
     }
     
-    if (selectedTherapist && !currentSession && !isLoading && !isStartingSession && user && !hasPausedSession) {
-      console.log("Auto-starting new session with therapist:", selectedTherapist);
-      setBypassInterstitial(true); // Immediately bypass interstitial
-      startSession();
-      
-      // Safety fallback
-      let forced = false;
-      setTimeout(() => {
-        if (forced) return;
-        if (!currentSession) {
-          forced = true;
-          console.log("Safety fallback: forcing session to start again");
-          startSession();
-        }
-      }, 800);
+    if (selectedTherapist && !currentSession && !isLoading && !isStartingSession && user) {
+      initializeSession();
     }
   }, [selectedTherapist, currentSession, isLoading, isStartingSession, user]);
 
@@ -157,42 +152,12 @@ export default function EMDRSession() {
     }
   }, []);
 
-  // Redirect to login if user is not authenticated - Supabase check
+  // Set UI ready when currentSession is available
   useEffect(() => {
-    let isMounted = true;
-    let redirected = false;
-
-    async function ensureAuth() {
-      // 1) Check existing session (fast path)
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!isMounted) return;
-      if (session?.user) return; // user is present → allow page to continue
-
-      // 2) Wait briefly for hydration via onAuthStateChange (preview can be slow)
-      const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
-        if (!isMounted) return;
-        if (s?.user) {
-          // user appeared → stop listening and continue on this page
-          sub.subscription.unsubscribe();
-        }
-      });
-
-      // 3) Fallback after ~1.2s: if still no session, THEN go to /auth
-      setTimeout(async () => {
-        if (!isMounted || redirected) return;
-        const { data: { session: s2 } } = await supabase.auth.getSession();
-        if (!s2?.user) {
-          redirected = true;
-          window.location.href = '/auth';
-        } else {
-          sub.subscription.unsubscribe();
-        }
-      }, 1200);
+    if (currentSession && selectedTherapist && !uiReady) {
+      setUiReady(true);
     }
-
-    ensureAuth();
-    return () => { isMounted = false; };
-  }, []);
+  }, [currentSession, selectedTherapist, uiReady]);
 
   // Scroll to top when script changes - with delay to ensure DOM updates
   useEffect(() => {
@@ -492,11 +457,11 @@ export default function EMDRSession() {
   };
 
   const requiresRatings = false; // No generic ratings needed - custom interfaces handle their own
-  const allowsBLS = currentSession && [4, 5, 6, 7, 8].includes(currentSession.currentScript); // Keep as numbers for this variable
+  const allowsBLS = currentSession && [4, 5, 6, 7, 8].includes(currentSession?.currentScript); // Keep as numbers for this variable
   
   // Memoize currentScriptInfo to prevent unnecessary re-renders
   const currentScriptInfo = useMemo(() => {
-    return currentSession ? getScriptInfo(currentSession.currentScript) : null;
+    return currentSession ? getScriptInfo(currentSession?.currentScript) : null;
   }, [currentSession?.currentScript, selectedTherapist]);
 
   if (isLoading) {
@@ -510,8 +475,14 @@ export default function EMDRSession() {
     );
   }
 
-  // Skip authentication check for now - move directly to therapist selection
-  // The user should always see therapist selection first, regardless of auth status
+  // Render gate - show loading until session is ready
+  if (!uiReady || !currentSession) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <p>Loading session…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
@@ -520,7 +491,7 @@ export default function EMDRSession() {
 
         {/* Navigation Bar - Back to Previous Step for all scripts except Script 1 */}
         <div className="flex items-center justify-between mb-6">
-          {currentSession && (currentSession.currentScript > 1 || String(currentSession.currentScript) === "5a") ? (
+          {currentSession && (currentSession?.currentScript > 1 || String(currentSession?.currentScript) === "5a") ? (
             <Button 
               onClick={goBackToPreviousScript}
               disabled={updateCurrentScript?.isPending}
@@ -541,47 +512,8 @@ export default function EMDRSession() {
           )}
         </div>
 
-        {/* Always show EMDR session player - no interstitial */}
+        {/* EMDR session player */}
         <div className="space-y-8 emdr-script">
-          {/* Show immediate player when no session but bypass is enabled */}
-          {!currentSession && bypassInterstitial && selectedTherapist && (
-            <div className="space-y-6">
-              {(() => {
-                const pauseFlag = localStorage.getItem('emdrPauseFlag');
-                const pausedSession = localStorage.getItem('pausedEMDRSession');
-                const hasPausedSession = pauseFlag === 'true' || pausedSession;
-                
-                const fakeScript = hasPausedSession ? '5a' : 1;
-                const therapistPrefix = selectedTherapist === 'female' ? 'maria' : 'alistair';
-                
-                const fakeScriptInfo = fakeScript === '5a' ? {
-                  title: "Continue Reprocessing After an Incomplete Session",
-                  description: "Resume reprocessing from where you left off in your previous session",
-                  videoUrl: therapistPrefix === 'maria' 
-                    ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5a-resume.mp4'
-                    : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5a-resume.mp4'
-                } : {
-                  title: "Welcome & Introduction to EMDR",
-                  description: "Your therapist introduces EMDR therapy and what to expect in your session.",
-                  videoUrl: therapistPrefix === 'maria' 
-                    ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script1-welcome.mp4'
-                    : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script1-welcome.mp4'
-                };
-                
-                return (
-                  <EMDRVideoPlayer
-                    videoUrl={fakeScriptInfo.videoUrl}
-                    title={fakeScriptInfo.title}
-                    description={fakeScriptInfo.description}
-                    onVideoComplete={() => setIsVideoCompleted(true)}
-                    isVideoCompleted={isVideoCompleted}
-                    onClose={() => {}}
-                  />
-                );
-              })()}
-            </div>
-          )}
-          
           {/* Setup Phase - Special handling for Scripts 1, 2, 3 */}
           {(currentScriptInfo?.needsSetup && currentSession?.currentScript === 1) && (
               <div className="space-y-6">
