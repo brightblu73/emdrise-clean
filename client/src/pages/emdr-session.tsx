@@ -61,7 +61,7 @@ export default function EMDRSession() {
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(null);
   const [isSetupPhase, setIsSetupPhase] = useState(false);
   const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
-  const [bypassInterstitial, setBypassInterstitial] = useState(false);
+  const [bypassInterstitial, setBypassInterstitial] = useState(true);
 
   // Client-side fix to prevent duplicate EMDR script blocks
   useEffect(() => {
@@ -541,50 +541,34 @@ export default function EMDRSession() {
           )}
         </div>
 
-        {/* Force direct access to EMDR session - bypass therapist selection */}
-        {!currentSession && !bypassInterstitial ? (
-          <div className="space-y-8">
-            <div className="text-center">
-              <Card className="max-w-2xl mx-auto">
-                <CardContent className="p-8">
-                  <Brain className="h-12 w-12 text-primary-green mx-auto mb-4 animate-pulse" />
-                  <p className="text-lg text-slate-600">
-                    Starting your EMDR session with {selectedTherapist === 'female' ? 'Maria' : 'Alistair'}...
-                  </p>
-                  {isStartingSession && (
-                    <p className="text-sm text-slate-500 mt-2">Please wait while we prepare your session...</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        ) : bypassInterstitial && !currentSession ? (
-          /* Show player interface immediately while session loads */
-          <div className="space-y-8 emdr-script">
-            {(() => {
-              const pauseFlag = localStorage.getItem('emdrPauseFlag');
-              const pausedSession = localStorage.getItem('pausedEMDRSession');
-              const hasPausedSession = pauseFlag === 'true' || pausedSession;
-              
-              const fakeScript = hasPausedSession ? '5a' : 1;
-              const therapistPrefix = selectedTherapist === 'female' ? 'maria' : 'alistair';
-              
-              const fakeScriptInfo = fakeScript === '5a' ? {
-                title: "Continue Reprocessing After an Incomplete Session",
-                description: "Resume reprocessing from where you left off in your previous session",
-                videoUrl: therapistPrefix === 'maria' 
-                  ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5a-resume.mp4'
-                  : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5a-resume.mp4'
-              } : {
-                title: "Welcome & Introduction to EMDR",
-                description: "Your therapist introduces EMDR therapy and what to expect in your session.",
-                videoUrl: therapistPrefix === 'maria' 
-                  ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script1-welcome.mp4'
-                  : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script1-welcome.mp4'
-              };
-              
-              return (
-                <div className="space-y-6">
+        {/* Always show EMDR session player - no interstitial */}
+        <div className="space-y-8 emdr-script">
+          {/* Show immediate player when no session but bypass is enabled */}
+          {!currentSession && bypassInterstitial && selectedTherapist && (
+            <div className="space-y-6">
+              {(() => {
+                const pauseFlag = localStorage.getItem('emdrPauseFlag');
+                const pausedSession = localStorage.getItem('pausedEMDRSession');
+                const hasPausedSession = pauseFlag === 'true' || pausedSession;
+                
+                const fakeScript = hasPausedSession ? '5a' : 1;
+                const therapistPrefix = selectedTherapist === 'female' ? 'maria' : 'alistair';
+                
+                const fakeScriptInfo = fakeScript === '5a' ? {
+                  title: "Continue Reprocessing After an Incomplete Session",
+                  description: "Resume reprocessing from where you left off in your previous session",
+                  videoUrl: therapistPrefix === 'maria' 
+                    ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5a-resume.mp4'
+                    : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5a-resume.mp4'
+                } : {
+                  title: "Welcome & Introduction to EMDR",
+                  description: "Your therapist introduces EMDR therapy and what to expect in your session.",
+                  videoUrl: therapistPrefix === 'maria' 
+                    ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script1-welcome.mp4'
+                    : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script1-welcome.mp4'
+                };
+                
+                return (
                   <EMDRVideoPlayer
                     videoUrl={fakeScriptInfo.videoUrl}
                     title={fakeScriptInfo.title}
@@ -593,18 +577,13 @@ export default function EMDRSession() {
                     isVideoCompleted={isVideoCompleted}
                     onClose={() => {}}
                   />
-                  
-                  <div className="text-center">
-                    <p className="text-slate-600">Session is loading, please wait...</p>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        ) : (
-          <div className="space-y-8 emdr-script">
-            {/* Setup Phase - Special handling for Scripts 1, 2, 3 */}
-            {currentScriptInfo?.needsSetup && currentSession.currentScript === 1 && (
+                );
+              })()}
+            </div>
+          )}
+          
+          {/* Setup Phase - Special handling for Scripts 1, 2, 3 */}
+          {(currentScriptInfo?.needsSetup && currentSession?.currentScript === 1) && (
               <div className="space-y-6">
                 {/* Introduction Video */}
                 <EMDRVideoPlayer
@@ -1722,8 +1701,7 @@ export default function EMDRSession() {
               </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
-    </div>
-  );
+    );
 }
