@@ -175,7 +175,7 @@ export default function Home() {
     if (e && typeof e.preventDefault === 'function') e.preventDefault()
     const { data } = await supabase.auth.getUser()
     if (!data.user) {
-      window.location.href = '/auth'
+      gotoAuthOrSession()
       return
     }
     // Logged in → keep your existing flow
