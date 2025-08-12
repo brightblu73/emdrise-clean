@@ -16,8 +16,6 @@ import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
 import EndorsementCarousel from "@/components/EndorsementCarousel";
 import { Logo } from "@/components/ui/logo";
 
-
-
 export default function Home() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
@@ -133,17 +131,9 @@ export default function Home() {
 
   // Check Supabase authentication state
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setIsLoggedIn(!!user);
-      if (user) sessionStorage.setItem('validAuth', 'true');
-    });
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setIsLoggedIn(!!session?.user);
-      if (session?.user) sessionStorage.setItem('validAuth', 'true');
-    });
-    
-    return () => subscription.unsubscribe();
+    supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setIsLoggedIn(!!session?.user))
+    return () => subscription.unsubscribe()
   }, []);
 
 
@@ -166,8 +156,8 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
                     onClick={gotoAuthOrSession}
-                    size="lg" 
-                    className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
+                    size="sm" 
+                    className="bg-white text-primary hover:bg-slate-50 px-6 py-3 whitespace-normal break-words text-center leading-snug"
                   >
                     Choose Therapist & Continue
                   </Button>

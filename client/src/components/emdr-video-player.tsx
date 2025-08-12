@@ -29,7 +29,6 @@ export default function EMDRVideoPlayer({
   const [duration, setDuration] = useState(0);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
-  const [videoReady, setVideoReady] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -56,29 +55,15 @@ export default function EMDRVideoPlayer({
       setIsPlaying(false);
     };
 
-    const handleCanPlay = () => {
-      console.log("Video can play:", videoUrl);
-      setVideoError(null);
-      setVideoReady(true);
-    };
-
     const handleLoadedData = () => {
       console.log("Video loaded successfully:", videoUrl);
       setVideoError(null);
-      setVideoReady(true);
-    };
-
-    const handleLoadedMetadata = () => {
-      console.log("Video metadata loaded:", videoUrl);
-      setVideoError(null);
-      setVideoReady(true);
     };
 
     const handleError = (e: any) => {
       console.error("Video load error:", e);
       console.error("Video URL:", videoUrl);
       setVideoError(`Failed to load video: ${videoUrl}`);
-      setVideoReady(false);
     };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
@@ -86,9 +71,7 @@ export default function EMDRVideoPlayer({
     video.addEventListener("ended", handleEnded);
     video.addEventListener("play", handlePlay);
     video.addEventListener("pause", handlePause);
-    video.addEventListener("canplay", handleCanPlay);
     video.addEventListener("loadeddata", handleLoadedData);
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
     video.addEventListener("error", handleError);
 
     return () => {
@@ -97,33 +80,47 @@ export default function EMDRVideoPlayer({
       video.removeEventListener("ended", handleEnded);
       video.removeEventListener("play", handlePlay);
       video.removeEventListener("pause", handlePause);
-      video.removeEventListener("canplay", handleCanPlay);
       video.removeEventListener("loadeddata", handleLoadedData);
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
       video.removeEventListener("error", handleError);
     };
   }, [onVideoComplete]);
 
   // Auto-play after user interaction
   useEffect(() => {
-    if (hasUserInteracted && autoPlay && videoRef.current && videoReady) {
+    if (hasUserInteracted && autoPlay && videoRef.current) {
       videoRef.current.play().catch(console.error);
     }
-  }, [hasUserInteracted, autoPlay, videoReady]);
+  }, [hasUserInteracted, autoPlay]);
 
-  // Reset video ready state when URL changes
+  // Force video reload when URL changes + preload for faster start
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-      setVideoReady(false);
+      // Set preload for faster loading
+      video.preload = 'metadata';
       video.load(); // Force reload the video source
       console.log("Video reloaded with URL:", videoUrl);
     }
   }, [videoUrl]);
 
+  // Preload Script 1 video on mount for faster session start
+  useEffect(() => {
+    if (videoUrl && videoUrl.includes('script1')) {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'video';
+      link.href = videoUrl;
+      document.head.appendChild(link);
+      
+      return () => {
+        document.head.removeChild(link);
+      };
+    }
+  }, [videoUrl]);
+
   const togglePlay = () => {
     const video = videoRef.current;
-    if (!video || !videoReady) return;
+    if (!video) return;
 
     if (!hasUserInteracted) {
       setHasUserInteracted(true);
@@ -174,45 +171,20 @@ export default function EMDRVideoPlayer({
               <p className="text-slate-600">{description}</p>
             </div>
             
-            <div className="relative rounded-lg overflow-hidden aspect-[9/16] bg-white max-w-sm mx-auto">
-              {!videoReady ? (
-                /* Loading state - minimal loader */
-                <div className="absolute inset-0 bg-white flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-8 h-8 border-2 border-primary-green border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                    <p className="text-slate-600 text-sm">Loading session...</p>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <video
-                    ref={videoRef}
-                    className="w-full h-full object-cover"
-                    preload="metadata"
-                    playsInline
-                    muted={isMuted}
-                    crossOrigin="anonymous"
-                  >
-                    <source src={videoUrl} type="video/mp4" />
-                    <p className="text-white text-center p-8">
-                      Your browser does not support the video tag. Please update your browser or try a different one.
-                    </p>
-                  </video>
-
-                  {/* Play overlay for initial interaction */}
-                  {!hasUserInteracted && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                      <Button
-                        onClick={togglePlay}
-                        size="lg"
-                        className="bg-white text-black hover:bg-gray-100 rounded-full p-4"
-                      >
-                        <Play className="h-8 w-8" />
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
+            <div className="relative rounded-lg overflow-hidden aspect-[9/16] bg-black max-w-sm mx-auto">
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                preload="metadata"
+                playsInline
+                muted={isMuted}
+                crossOrigin="anonymous"
+              >
+                <source src={videoUrl} type="video/mp4" />
+                <p className="text-white text-center p-8">
+                  Your browser does not support the video tag. Please update your browser or try a different one.
+                </p>
+              </video>
 
               {/* Close Button - Top Right */}
               {onClose && (
@@ -220,10 +192,23 @@ export default function EMDRVideoPlayer({
                   onClick={onClose}
                   variant="ghost"
                   size="sm"
-                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full z-10"
+                  className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
                 >
                   <X className="h-5 w-5" />
                 </Button>
+              )}
+
+              {/* Play overlay for initial interaction */}
+              {!hasUserInteracted && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                  <Button
+                    onClick={togglePlay}
+                    size="lg"
+                    className="bg-white text-black hover:bg-gray-100 rounded-full p-4"
+                  >
+                    <Play className="h-8 w-8" />
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -243,21 +228,19 @@ export default function EMDRVideoPlayer({
           </div>
 
           {/* Simplified Controls - Only main play button and close per amendments */}
-          {videoReady && (
-            <div className="flex items-center justify-center">
-              <Button
-                onClick={togglePlay}
-                className="bg-primary-green hover:bg-primary-green/90"
-              >
-                {isPlaying ? (
-                  <Pause className="h-5 w-5 mr-2" />
-                ) : (
-                  <Play className="h-5 w-5 mr-2" />
-                )}
-                {isPlaying ? "Pause" : "Play"}
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center justify-center">
+            <Button
+              onClick={togglePlay}
+              className="bg-primary-green hover:bg-primary-green/90"
+            >
+              {isPlaying ? (
+                <Pause className="h-5 w-5 mr-2" />
+              ) : (
+                <Play className="h-5 w-5 mr-2" />
+              )}
+              {isPlaying ? "Pause" : "Play"}
+            </Button>
+          </div>
 
           {/* Error Status */}
           {videoError && (

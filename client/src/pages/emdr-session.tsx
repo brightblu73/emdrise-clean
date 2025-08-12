@@ -96,7 +96,7 @@ export default function EMDRSession() {
     }
   }, [currentSession?.id, currentSession?.currentScript, currentSession?.status]);
   
-  // Clean session initialization
+  // Clean session initialization effect
   useEffect(() => {
     let isMounted = true;
 
@@ -113,10 +113,11 @@ export default function EMDRSession() {
           !!localStorage.getItem('pausedEMDRSession');
 
         if (paused) {
-          startSession();
+          await startSession(); // Hook handles resume logic and sets currentSession
         } else {
-          startSession();
+          await startSession(); // Start new session and sets currentSession
         }
+        // Set UI ready immediately for faster Script 1 start
         if (isMounted) setUiReady(true);
       } catch (err) {
         console.error('Session init failed', err);
@@ -149,14 +150,20 @@ export default function EMDRSession() {
     }
   }, [currentSession, selectedTherapist, uiReady]);
 
-  // Scroll to top immediately when script changes - no delay
+  // Scroll to top when script changes - with delay to ensure DOM updates
   useEffect(() => {
     if (currentSession?.currentScript) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      const mainContainer = document.querySelector('.min-h-screen');
-      if (mainContainer) {
-        mainContainer.scrollTo({ top: 0, behavior: 'instant' });
-      }
+      // Use a small delay to ensure the DOM has fully updated
+      const scrollTimer = setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Also scroll the main container to ensure we're at the very top
+        const mainContainer = document.querySelector('.min-h-screen');
+        if (mainContainer) {
+          mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 100);
+      
+      return () => clearTimeout(scrollTimer);
     }
   }, [currentSession?.currentScript]);
 
