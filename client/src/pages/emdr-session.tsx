@@ -542,7 +542,7 @@ export default function EMDRSession() {
 
         {/* Force direct access to EMDR session - bypass therapist selection */}
         {!currentSession ? (
-          <div className="hidden space-y-8">
+          <div className="space-y-8">
             <div className="text-center">
               <Card className="max-w-2xl mx-auto">
                 <CardContent className="p-8">
