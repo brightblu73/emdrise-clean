@@ -63,6 +63,16 @@ export default function Navigation() {
     logoutMutation.mutate();
   };
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/auth';
+    }
+  };
+
   return (
     <nav className="bg-card shadow-sm border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -178,8 +188,7 @@ export default function Navigation() {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem 
-                      onClick={handleLogout}
-                      disabled={logoutMutation.isPending}
+                      onClick={handleSignOut}
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Sign Out
@@ -192,10 +201,7 @@ export default function Navigation() {
                 {supabaseUser ? (
                   <Button 
                     variant="ghost"
-                    onClick={async () => { 
-                      await supabase.auth.signOut(); 
-                      window.location.href = '/auth' 
-                    }}
+                    onClick={handleSignOut}
                   >
                     Sign out
                   </Button>
@@ -303,10 +309,9 @@ export default function Navigation() {
                           variant="ghost" 
                           className="w-full justify-start text-slate-700"
                           onClick={() => {
-                            handleLogout();
+                            handleSignOut();
                             setIsMobileMenuOpen(false);
                           }}
-                          disabled={logoutMutation.isPending}
                         >
                           <LogOut className="h-4 w-4 mr-2" />
                           Sign Out
@@ -319,9 +324,8 @@ export default function Navigation() {
                         <Button 
                           variant="outline" 
                           className="w-full"
-                          onClick={async () => { 
-                            await supabase.auth.signOut(); 
-                            window.location.href = '/auth';
+                          onClick={() => {
+                            handleSignOut();
                             setIsMobileMenuOpen(false);
                           }}
                         >
