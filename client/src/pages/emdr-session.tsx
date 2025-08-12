@@ -96,29 +96,10 @@ export default function EMDRSession() {
     }
   }, [currentSession?.id, currentSession?.currentScript, currentSession?.status]);
   
-  // Optimized session initialization - no delays, cached auth
+  // Clean session initialization
   useEffect(() => {
     let isMounted = true;
 
-    // Start session immediately without auth check if coming from home CTA
-    const hasValidAuth = sessionStorage.getItem('validAuth') === 'true';
-    
-    if (hasValidAuth) {
-      // Skip auth check, start immediately
-      const paused =
-        localStorage.getItem('emdrPauseFlag') === 'true' ||
-        !!localStorage.getItem('pausedEMDRSession');
-
-      if (paused) {
-        startSession();
-      } else {
-        startSession();
-      }
-      if (isMounted) setUiReady(true);
-      return;
-    }
-
-    // Fallback auth check for direct navigation
     (async () => {
       try {
         const { data } = await supabase.auth.getUser();
@@ -127,8 +108,6 @@ export default function EMDRSession() {
           return; 
         }
 
-        sessionStorage.setItem('validAuth', 'true');
-        
         const paused =
           localStorage.getItem('emdrPauseFlag') === 'true' ||
           !!localStorage.getItem('pausedEMDRSession');
