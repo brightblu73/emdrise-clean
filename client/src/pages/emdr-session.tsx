@@ -109,12 +109,36 @@ export default function EMDRSession() {
     if (hasPausedSession && selectedTherapist && user && isFromHomepage) {
       console.log("Found paused session, triggering startSession to resume at Script 5a");
       startSession();
+      
+      // Safety redirect fallback to ensure we reach the real player
+      let forced = false;
+      setTimeout(() => {
+        if (forced) return;
+        // If we still aren't showing the real session content after 1200ms, force it.
+        if (!currentSession || currentSession.currentScript === null || currentSession.currentScript === undefined) {
+          forced = true;
+          console.log("Safety redirect: forcing session to start");
+          startSession();
+        }
+      }, 1200);
       return;
     }
     
     if (selectedTherapist && !currentSession && !isLoading && !isStartingSession && user && !hasPausedSession) {
       console.log("Auto-starting new session with therapist:", selectedTherapist);
       startSession();
+      
+      // Safety redirect fallback to ensure we reach the real player
+      let forced = false;
+      setTimeout(() => {
+        if (forced) return;
+        // If we still aren't showing the real session content after 1200ms, force it.
+        if (!currentSession || currentSession.currentScript === null || currentSession.currentScript === undefined) {
+          forced = true;
+          console.log("Safety redirect: forcing session to start");
+          startSession();
+        }
+      }, 1200);
     }
   }, [selectedTherapist, currentSession, isLoading, isStartingSession, user]);
 
