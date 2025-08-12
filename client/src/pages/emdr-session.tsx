@@ -61,6 +61,7 @@ export default function EMDRSession() {
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(null);
   const [isSetupPhase, setIsSetupPhase] = useState(false);
   const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
+  const [bypassInterstitial, setBypassInterstitial] = useState(false);
 
   // Client-side fix to prevent duplicate EMDR script blocks
   useEffect(() => {
@@ -108,37 +109,37 @@ export default function EMDRSession() {
     
     if (hasPausedSession && selectedTherapist && user && isFromHomepage) {
       console.log("Found paused session, triggering startSession to resume at Script 5a");
+      setBypassInterstitial(true); // Immediately bypass interstitial
       startSession();
       
-      // Safety redirect fallback to ensure we reach the real player
+      // Safety fallback to ensure session loads
       let forced = false;
       setTimeout(() => {
         if (forced) return;
-        // If we still aren't showing the real session content after 1200ms, force it.
-        if (!currentSession || currentSession.currentScript === null || currentSession.currentScript === undefined) {
+        if (!currentSession) {
           forced = true;
-          console.log("Safety redirect: forcing session to start");
+          console.log("Safety fallback: forcing session to start again");
           startSession();
         }
-      }, 1200);
+      }, 800);
       return;
     }
     
     if (selectedTherapist && !currentSession && !isLoading && !isStartingSession && user && !hasPausedSession) {
       console.log("Auto-starting new session with therapist:", selectedTherapist);
+      setBypassInterstitial(true); // Immediately bypass interstitial
       startSession();
       
-      // Safety redirect fallback to ensure we reach the real player
+      // Safety fallback
       let forced = false;
       setTimeout(() => {
         if (forced) return;
-        // If we still aren't showing the real session content after 1200ms, force it.
-        if (!currentSession || currentSession.currentScript === null || currentSession.currentScript === undefined) {
+        if (!currentSession) {
           forced = true;
-          console.log("Safety redirect: forcing session to start");
+          console.log("Safety fallback: forcing session to start again");
           startSession();
         }
-      }, 1200);
+      }, 800);
     }
   }, [selectedTherapist, currentSession, isLoading, isStartingSession, user]);
 
@@ -541,7 +542,7 @@ export default function EMDRSession() {
         </div>
 
         {/* Force direct access to EMDR session - bypass therapist selection */}
-        {!currentSession ? (
+        {!currentSession && !bypassInterstitial ? (
           <div className="space-y-8">
             <div className="text-center">
               <Card className="max-w-2xl mx-auto">
@@ -556,6 +557,49 @@ export default function EMDRSession() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        ) : bypassInterstitial && !currentSession ? (
+          /* Show player interface immediately while session loads */
+          <div className="space-y-8 emdr-script">
+            {(() => {
+              const pauseFlag = localStorage.getItem('emdrPauseFlag');
+              const pausedSession = localStorage.getItem('pausedEMDRSession');
+              const hasPausedSession = pauseFlag === 'true' || pausedSession;
+              
+              const fakeScript = hasPausedSession ? '5a' : 1;
+              const therapistPrefix = selectedTherapist === 'female' ? 'maria' : 'alistair';
+              
+              const fakeScriptInfo = fakeScript === '5a' ? {
+                title: "Continue Reprocessing After an Incomplete Session",
+                description: "Resume reprocessing from where you left off in your previous session",
+                videoUrl: therapistPrefix === 'maria' 
+                  ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5a-resume.mp4'
+                  : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5a-resume.mp4'
+              } : {
+                title: "Welcome & Introduction to EMDR",
+                description: "Your therapist introduces EMDR therapy and what to expect in your session.",
+                videoUrl: therapistPrefix === 'maria' 
+                  ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script1-welcome.mp4'
+                  : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script1-welcome.mp4'
+              };
+              
+              return (
+                <div className="space-y-6">
+                  <EMDRVideoPlayer
+                    videoUrl={fakeScriptInfo.videoUrl}
+                    title={fakeScriptInfo.title}
+                    description={fakeScriptInfo.description}
+                    onVideoComplete={() => setIsVideoCompleted(true)}
+                    isVideoCompleted={isVideoCompleted}
+                    onClose={() => {}}
+                  />
+                  
+                  <div className="text-center">
+                    <p className="text-slate-600">Session is loading, please wait...</p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         ) : (
           <div className="space-y-8 emdr-script">
