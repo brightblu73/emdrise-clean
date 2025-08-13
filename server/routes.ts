@@ -300,6 +300,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUser(user.id, { stripeCustomerId: customer.id });
       }
 
+      console.log('Creating subscription with price ID:', process.env.STRIPE_PRICE_ID);
+      
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{
