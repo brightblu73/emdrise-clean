@@ -1,35 +1,35 @@
-// Video mapping for therapist videos stored in the web app's public folder
+// Video mapping for therapist videos stored in Supabase  
+// For mobile app, we'll use the known Supabase URL directly since import.meta.env isn't available
+const BASE = 'https://jxhjghgectlpgrpwpkfd.supabase.co';
 type ScriptNumber = 1 | 2 | 3 | 4 | 5 | '5a' | 6 | 7 | 8 | 9 | 10;
 
 export const getVideoSource = (therapist: 'maria' | 'alistair', scriptNumber: number | string) => {
-  // Mobile app will access videos from the web server
-  const baseUrl = 'http://localhost:5000';
   const videoMap: Record<'maria' | 'alistair', Record<ScriptNumber, string>> = {
     maria: {
-      1: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script1-welcome.mp4',
-      2: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script2-calmplace.mp4',
-      3: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script3-target.mp4',
-      4: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script4-reprocessing.mp4',
-      5: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5-reprocessing-continued.mp4',
-      '5a': 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5a-continue-reprocessing.mp4',
-      6: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script6-installation.mp4',
-      7: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script7-installation-continued.mp4',
-      8: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script8-body-scan.mp4',
-      9: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script9-calm-place.mp4',
-      10: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script10-aftercare.mp4'
+      1: `${BASE}/storage/v1/object/public/videos//maria-script1-welcome.mp4`,
+      2: `${BASE}/storage/v1/object/public/videos//maria-script2-calmplace.mp4`,
+      3: `${BASE}/storage/v1/object/public/videos//maria-script3-target.mp4`,
+      4: `${BASE}/storage/v1/object/public/videos//maria-script4-reprocessing.mp4`,
+      5: `${BASE}/storage/v1/object/public/videos//maria-script5-reprocessing-continued.mp4`,
+      '5a': `${BASE}/storage/v1/object/public/videos//maria-script5a-continue-reprocessing.mp4`,
+      6: `${BASE}/storage/v1/object/public/videos//maria-script6-installation.mp4`,
+      7: `${BASE}/storage/v1/object/public/videos//maria-script7-installation-continued.mp4`,
+      8: `${BASE}/storage/v1/object/public/videos//maria-script8-body-scan.mp4`,
+      9: `${BASE}/storage/v1/object/public/videos//maria-script9-calm-place.mp4`,
+      10: `${BASE}/storage/v1/object/public/videos//maria-script10-aftercare.mp4`
     },
     alistair: {
-      1: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script1-welcome.mp4',
-      2: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script2-calmplace.mp4',
-      3: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script3-target.mp4',
-      4: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script4-reprocessing.mp4',
-      5: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5-reprocessing-continued.mp4',
-      '5a': 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5a-continue-reprocessing.mp4',
-      6: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script6-installation.mp4',
-      7: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script7-installation-continued.mp4',
-      8: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script8-body-scan.mp4',
-      9: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script9-calm-place.mp4',
-      10: 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script10-aftercare.mp4'
+      1: `${BASE}/storage/v1/object/public/videos//alistair-script1-welcome.mp4`,
+      2: `${BASE}/storage/v1/object/public/videos//alistair-script2-calmplace.mp4`,
+      3: `${BASE}/storage/v1/object/public/videos//alistair-script3-target.mp4`,
+      4: `${BASE}/storage/v1/object/public/videos//alistair-script4-reprocessing.mp4`,
+      5: `${BASE}/storage/v1/object/public/videos//alistair-script5-reprocessing-continued.mp4`,
+      '5a': `${BASE}/storage/v1/object/public/videos//alistair-script5a-continue-reprocessing.mp4`,
+      6: `${BASE}/storage/v1/object/public/videos//alistair-script6-installation.mp4`,
+      7: `${BASE}/storage/v1/object/public/videos//alistair-script7-installation-continued.mp4`,
+      8: `${BASE}/storage/v1/object/public/videos//alistair-script8-body-scan.mp4`,
+      9: `${BASE}/storage/v1/object/public/videos//alistair-script9-calm-place.mp4`,
+      10: `${BASE}/storage/v1/object/public/videos//alistair-script10-aftercare.mp4`
     }
   };
 
