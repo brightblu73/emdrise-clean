@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Environment variables are swapped - fixing the assignment
-const supabaseUrl = import.meta.env.VITE_SUPABASE_ANON_KEY?.replace(/['"]/g, '') || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_URL?.replace(/['"]/g, '') || '';
+// Get environment variables correctly
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.replace(/['"]/g, '') || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.replace(/['"]/g, '') || '';
 
 // Clean up URL (remove trailing slash if present)
 const cleanUrl = supabaseUrl.replace(/\/$/, '');
