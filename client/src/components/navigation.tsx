@@ -16,7 +16,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from '../state/AuthProvider';
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Menu, User, LogOut, TrendingUp, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail } from "lucide-react";
+import { Heart, Menu, User, LogOut, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 
 export default function Navigation() {
@@ -31,7 +31,6 @@ export default function Navigation() {
   const navItems = [
     { href: "/", label: "Home", icon: Brain },
     { href: "/emdr-session", label: "Therapy Session", icon: Heart },
-    { href: "/progress", label: "Progress", icon: TrendingUp },
   ];
 
   const isActive = (path: string) => {
@@ -105,13 +104,6 @@ export default function Navigation() {
                       {user.email}
                     </div>
                     <DropdownMenuSeparator />
-
-                    <Link href="/progress">
-                      <DropdownMenuItem>
-                        <TrendingUp className="h-4 w-4 mr-2" />
-                        Progress
-                      </DropdownMenuItem>
-                    </Link>
 
                     <Link href="/resources">
                       <DropdownMenuItem>
