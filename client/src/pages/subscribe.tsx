@@ -72,9 +72,23 @@ export default function Subscribe() {
 
   useEffect(() => {
     if (user && user.subscriptionStatus === 'trial') {
-      // Trial users get immediate access, redirect to preparation
-      window.location.href = "/preparation";
-      return;
+      // Create subscription setup for when trial expires
+      apiRequest("POST", "/api/get-or-create-subscription")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.clientSecret) {
+            setClientSecret(data.clientSecret);
+          }
+          setIsLoading(false);
+        })
+        .catch(() => {
+          setIsLoading(false);
+          toast({
+            title: "Setup Error",
+            description: "Unable to prepare payment setup. Please try again.",
+            variant: "destructive",
+          });
+        });
     } else {
       setIsLoading(false);
     }

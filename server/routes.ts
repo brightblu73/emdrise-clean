@@ -218,6 +218,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  // Stripe payment route for one-time payments
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      const { amount } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "gbp", // Changed to GBP for UK pricing
+      });
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
   // Subscription routes
   app.post('/api/create-subscription', async (req, res) => {
     if (!req.isAuthenticated()) {
@@ -244,6 +260,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       message: 'Trial access confirmed',
       subscriptionStatus: 'trial'
     });
+  });
+
+  // Full Stripe subscription endpoint
+  app.post('/api/get-or-create-subscription', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    let user = req.user!;
+
+    if (user.stripeSubscriptionId) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        res.send({
+          subscriptionId: subscription.id,
+          clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+        });
+        return;
+      } catch (error) {
+        console.error('Error retrieving subscription:', error);
+      }
+    }
+    
+    if (!user.email) {
+      throw new Error('No user email on file');
+    }
+
+    try {
+      let customer;
+      if (user.stripeCustomerId) {
+        customer = await stripe.customers.retrieve(user.stripeCustomerId);
+      } else {
+        customer = await stripe.customers.create({
+          email: user.email,
+          name: user.username,
+        });
+        // Update user with Stripe customer ID
+        await storage.updateUser(user.id, { stripeCustomerId: customer.id });
+      }
+
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price: process.env.STRIPE_PRICE_ID || 'price_1Rvk0XIM2Jemf1le0GSfooRm',
+        }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Update user with subscription ID
+      await storage.updateUser(user.id, { 
+        stripeCustomerId: customer.id,
+        stripeSubscriptionId: subscription.id 
+      });
+  
+      res.send({
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+      });
+    } catch (error: any) {
+      console.error('Subscription creation error:', error);
+      return res.status(400).send({ error: { message: error.message } });
+    }
   });
 
   // Protected middleware

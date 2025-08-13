@@ -13,6 +13,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, updates: Partial<InsertUser>): Promise<User>;
   updateUserStripeInfo(id: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User>;
   updateUserSubscriptionStatus(id: number, status: string): Promise<User>;
   updateUserTrialEndDate?(id: number, trialEndDate: Date): Promise<User>;
@@ -84,6 +85,15 @@ export class DatabaseStorage implements IStorage {
         trialEndsAt,
         subscriptionStatus: "trial"
       })
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
       .returning();
     return user;
   }
