@@ -191,14 +191,7 @@ export default function Navigation() {
               <SheetContent side="right" className="w-80 overflow-y-auto p-0 bg-gradient-to-br from-blue-100 via-blue-50 to-green-100">
                 <div className="flex flex-col min-h-full">
                   {/* Header with branding */}
-                  <div className="bg-gradient-to-r from-primary/20 via-primary-green/20 to-secondary-blue/20 p-6 border-b border-primary/30">
-                    <Link href="/" className="flex items-center space-x-3 mb-4">
-                      <Logo variant="mobile" />
-                    </Link>
-                    <div className="text-center">
-                      <h3 className="text-lg font-semibold text-primary-green mb-1">EMDRise</h3>
-                      <p className="text-sm text-secondary-blue/80">Healing Through Movement</p>
-                    </div>
+                  <div className="bg-gradient-to-r from-primary/20 via-primary-green/20 to-secondary-blue/20 py-4 border-b border-primary/30">
                   </div>
 
                   {user ? (
