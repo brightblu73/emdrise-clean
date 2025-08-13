@@ -188,127 +188,214 @@ export default function Navigation() {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 overflow-y-auto">
+              <SheetContent side="right" className="w-80 overflow-y-auto p-0 bg-gradient-to-br from-blue-50 via-white to-green-50">
                 <div className="flex flex-col min-h-full">
-                  {/* Mobile Logo */}
-                  <Link href="/" className="flex items-center space-x-2 mb-8">
-                    <Logo variant="mobile" />
-                  </Link>
+                  {/* Header with branding */}
+                  <div className="bg-gradient-to-r from-primary/10 via-primary-green/10 to-secondary-blue/10 p-6 border-b border-primary/20">
+                    <Link href="/" className="flex items-center space-x-3 mb-4">
+                      <Logo variant="mobile" />
+                    </Link>
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold text-slate-800 mb-1">EMDRise</h3>
+                      <p className="text-sm text-slate-600">Healing Through Movement</p>
+                    </div>
+                  </div>
 
                   {user ? (
                     <>
-                      {/* User Info */}
-                      <div className="mb-6 p-4 bg-slate-50 rounded-lg">
-                        <p className="font-medium text-slate-800">{user.username}</p>
-                        <p className="text-sm text-slate-600">{user.email}</p>
+                      {/* User Info Card */}
+                      <div className="m-4 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-primary/20 shadow-sm">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-green rounded-full flex items-center justify-center">
+                            <User className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-800">{user.username}</p>
+                            <p className="text-sm text-slate-600">{user.email}</p>
+                          </div>
+                        </div>
                         {user.subscriptionStatus === 'trial' && (
-                          <Badge variant="secondary" className="mt-2">
+                          <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200">
                             Trial: {user.trialEndsAt ? 
                               Math.ceil((new Date(user.trialEndsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) 
                               : 0} days left
                           </Badge>
                         )}
                         {user.subscriptionStatus === 'active' && (
-                          <Badge variant="default" className="mt-2 bg-primary-green">
-                            Premium
+                          <Badge variant="default" className="bg-gradient-to-r from-primary-green to-green-600 text-white border-0">
+                            ✓ Premium Active
                           </Badge>
                         )}
                       </div>
 
                       {/* Navigation Links */}
-                      <div className="flex-1 space-y-2 overflow-y-auto pb-4">
-                        {navItems.map((item) => (
+                      <div className="flex-1 px-4 space-y-3 overflow-y-auto pb-4">
+                        <div className="mb-2">
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3 px-2">Navigation</p>
+                        </div>
+                        {navItems.map((item, index) => (
                           <Link key={item.href} href={item.href}>
                             <Button 
                               variant="ghost" 
-                              className={`w-full justify-start ${isActive(item.href) ? 'text-primary bg-primary/10' : 'text-slate-700'}`}
+                              className={`w-full justify-start h-12 rounded-xl transition-all duration-200 ${
+                                isActive(item.href) 
+                                  ? 'bg-gradient-to-r from-primary/15 to-primary-green/15 text-primary border border-primary/30 shadow-sm' 
+                                  : 'text-slate-700 hover:bg-white/70 hover:text-primary hover:shadow-sm'
+                              }`}
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
-                              <item.icon className="h-4 w-4 mr-2" />
-                              {item.label}
+                              <div className={`p-2 rounded-lg mr-3 ${
+                                isActive(item.href) 
+                                  ? 'bg-primary/20' 
+                                  : 'bg-slate-100'
+                              }`}>
+                                <item.icon className="h-4 w-4" />
+                              </div>
+                              <span className="font-medium">{item.label}</span>
                             </Button>
                           </Link>
                         ))}
 
-                        {/* Contact Section in Mobile */}
-                        <a href="mailto:support@emdrise.com">
-                          <Button 
-                            variant="ghost" 
-                            className="w-full justify-start text-slate-700"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                          >
-                            <Mail className="h-4 w-4 mr-2" />
-                            Contact
-                          </Button>
-                        </a>
+                        {/* Support Section */}
+                        <div className="pt-6">
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3 px-2">Support</p>
+                          <a href="mailto:support@emdrise.com">
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start h-12 rounded-xl text-slate-700 hover:bg-white/70 hover:text-primary hover:shadow-sm transition-all duration-200"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              <div className="p-2 rounded-lg mr-3 bg-slate-100">
+                                <Mail className="h-4 w-4" />
+                              </div>
+                              <span className="font-medium">Contact</span>
+                            </Button>
+                          </a>
+                        </div>
 
-                        {/* Legal Section in Mobile */}
+                        {/* Legal Section */}
                         <div className="pt-4">
-                          <p className="text-sm font-medium text-slate-500 mb-2 px-3">Legal</p>
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3 px-2">Legal</p>
                           <Link href="/terms-of-use">
                             <Button 
                               variant="ghost" 
-                              className="w-full justify-start text-slate-600"
+                              className="w-full justify-start h-10 rounded-lg text-slate-600 hover:bg-white/50 hover:text-slate-800 transition-all duration-200"
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
-                              <FileText className="h-4 w-4 mr-2" />
-                              Terms of Use
+                              <FileText className="h-3 w-3 mr-3" />
+                              <span className="text-sm">Terms of Use</span>
                             </Button>
                           </Link>
                           <Link href="/privacy-policy">
                             <Button 
                               variant="ghost" 
-                              className="w-full justify-start text-slate-600"
+                              className="w-full justify-start h-10 rounded-lg text-slate-600 hover:bg-white/50 hover:text-slate-800 transition-all duration-200"
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
-                              <Eye className="h-4 w-4 mr-2" />
-                              Privacy Policy
+                              <Eye className="h-3 w-3 mr-3" />
+                              <span className="text-sm">Privacy Policy</span>
                             </Button>
                           </Link>
                         </div>
 
                       </div>
 
-                      {/* Logout */}
-                      <div className="mt-auto pt-4 border-t border-slate-200">
+                      {/* Logout Button */}
+                      <div className="p-4 border-t border-primary/20 bg-gradient-to-r from-slate-50/50 to-blue-50/50">
                         <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-slate-700"
+                          variant="outline" 
+                          className="w-full justify-center h-12 rounded-xl border-slate-300 text-slate-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-200"
                           onClick={() => {
                             handleSignOut();
                             setIsMobileMenuOpen(false);
                           }}
                         >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sign Out
+                          <LogOut className="h-4 w-4 mr-3" />
+                          <span className="font-medium">Sign Out</span>
                         </Button>
                       </div>
                     </>
                   ) : (
-                    <div className="space-y-3">
-                      {user ? (
-                        <Button 
-                          variant="outline" 
-                          className="w-full"
-                          onClick={() => {
-                            handleSignOut();
-                            setIsMobileMenuOpen(false);
-                          }}
-                        >
-                          Sign out
-                        </Button>
-                      ) : (
+                    <>
+                      {/* Welcome Message for Logged Out Users */}
+                      <div className="px-4 py-6">
+                        <div className="text-center bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-primary/20">
+                          <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-green rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Heart className="h-8 w-8 text-white" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-slate-800 mb-2">Welcome to EMDRise</h3>
+                          <p className="text-sm text-slate-600 mb-4">Professional EMDR therapy for healing and growth</p>
+                          <div className="text-xs text-primary font-medium">
+                            ✓ 7-day free trial • £12.99/month after trial • ✓ Cancel anytime
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Login/Register Section */}
+                      <div className="px-4 space-y-4">
                         <Link href="/auth">
                           <Button 
-                            variant="outline" 
-                            className="w-full"
+                            className="w-full h-12 bg-gradient-to-r from-primary to-primary-green hover:from-primary/90 hover:to-primary-green/90 text-white rounded-xl font-medium transition-all duration-200"
                             onClick={() => setIsMobileMenuOpen(false)}
                           >
-                            Sign In
+                            Start Your Free Trial
                           </Button>
                         </Link>
-                      )}
-                    </div>
+                      </div>
+
+                      {/* Quick Info Section */}
+                      <div className="px-4 py-6 space-y-4">
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">About EMDR</h4>
+                          <div className="bg-white/50 rounded-lg p-4 border border-slate-200">
+                            <p className="text-sm text-slate-700 leading-relaxed">
+                              EMDR (Eye Movement Desensitization and Reprocessing) is a proven therapy for trauma, anxiety, and emotional healing.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Contact for logged out users */}
+                        <div className="pt-4">
+                          <a href="mailto:support@emdrise.com">
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start h-12 rounded-xl text-slate-700 hover:bg-white/70 hover:text-primary hover:shadow-sm transition-all duration-200"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              <div className="p-2 rounded-lg mr-3 bg-slate-100">
+                                <Mail className="h-4 w-4" />
+                              </div>
+                              <span className="font-medium">Contact Support</span>
+                            </Button>
+                          </a>
+                        </div>
+
+                        {/* Legal for logged out users */}
+                        <div className="pt-2">
+                          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3 px-2">Legal</p>
+                          <Link href="/terms-of-use">
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start h-10 rounded-lg text-slate-600 hover:bg-white/50 hover:text-slate-800 transition-all duration-200"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              <FileText className="h-3 w-3 mr-3" />
+                              <span className="text-sm">Terms of Use</span>
+                            </Button>
+                          </Link>
+                          <Link href="/privacy-policy">
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start h-10 rounded-lg text-slate-600 hover:bg-white/50 hover:text-slate-800 transition-all duration-200"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                              <Eye className="h-3 w-3 mr-3" />
+                              <span className="text-sm">Privacy Policy</span>
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </>
                   )}
                 </div>
               </SheetContent>
