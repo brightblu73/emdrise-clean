@@ -1,0 +1,170 @@
+# PHASE 1 – STEP 3 (paste-ready): Ensure Sign Out fully logs out everywhere
+
+set -e
+
+echo "1) Create a central logout helper..."
+apply_patch << 'PATCH'
+*** Begin Patch
+*** Add File: client/src/lib/auth.ts
++import { supabase } from '../lib/supabase';
++
++/**
++ * Fully sign out the current user.
++ * - Calls Supabase signOut (clears tokens + stops refresh)
++ * - Clears any app-local cache
++ */
++export async function logout(): Promise<void> {
++  try {
++    await supabase.auth.signOut();
++  } catch (e) {
++    console.error('Supabase signOut error', e);
++  }
++  try {
++    localStorage.removeItem('emdriseSession');
++    sessionStorage.removeItem('emdriseSession');
++  } catch {}
++}
++
++/**
++ * Install a global listener so SIGNED_OUT in one tab updates others.
++ * Optionally redirect caller decides route after resolve.
++ */
++export function installAuthListener(onSignOut?: () => void) {
++  const { data } = supabase.auth.onAuthStateChange((event) => {
++    if (event === 'SIGNED_OUT') {
++      onSignOut?.();
++    }
++  });
++  return () => data.subscription.unsubscribe();
++}
+*** End Patch
+PATCH
+
+# Fallback path if your lib lives directly under src/lib
+if [ ! -f client/src/lib/auth.ts ]; then
+apply_patch << 'PATCH'
+*** Begin Patch
+*** Add File: src/lib/auth.ts
++import { supabase } from './supabase';
++export async function logout(): Promise<void> {
++  try { await supabase.auth.signOut(); } catch (e) { console.error('Supabase signOut error', e); }
++  try { localStorage.removeItem('emdriseSession'); sessionStorage.removeItem('emdriseSession'); } catch {}
++}
++export function installAuthListener(onSignOut?: () => void) {
++  const { data } = supabase.auth.onAuthStateChange((event) => { if (event === 'SIGNED_OUT') onSignOut?.(); });
++  return () => data.subscription.unsubscribe();
++}
+*** End Patch
+PATCH
+fi
+
+echo "2) Wire the hamburger menu 'Sign Out' to the central helper..."
+# Find the menu file that renders "Sign Out"
+MENU_FILE="$(grep -RIl --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.vercel 'Sign Out' || true)"
+if [ -z "$MENU_FILE" ]; then
+  echo "❌ Could not find a file containing 'Sign Out'. Tell me the path of your menu component and I’ll update."
+  exit 0
+fi
+
+# Inject import + a robust handler and ensure click uses it
+node <<'NODE'
+const fs = require('fs');
+const path = require('path');
+
+const files = (process.env.MENU_FILE_LIST || '').split('\n').filter(Boolean);
+function ensureSignOutWiring(file) {
+  let s = fs.readFileSync(file, 'utf8');
+
+  // Add import if missing (works for TS/JS)
+  if (!/from ['"](?:\.\.\/)?(?:src\/)?lib\/auth['"]/.test(s)) {
+    // figure relative import root
+    const importLine = s.includes('tsx') || s.includes('jsx')
+      ? `import { logout } from '${file.includes('client/src') ? '@/lib/auth' : './lib/auth'}';\n`
+      : `import { logout } from '${file.includes('client/src') ? '../lib/auth' : './lib/auth'}';\n`;
+    // place after first import
+    s = s.replace(/(^\s*import .+\n)/, `$1${importLine}`);
+    if (!/logout/.test(s)) s = importLine + s; // if no import lines matched, prepend
+  }
+
+  // Create a handler if not present
+  if (!/handleSignOut\s*=/.test(s)) {
+    s = s.replace(
+      /(function\s+\w+\s*\(|const\s+\w+\s*=\s*\(|export\s+default\s+function\s+\w*\s*\()/,
+      `const handleSignOut = async () => { await logout(); try { document.querySelectorAll('video').forEach(v=>v.pause()); document.querySelectorAll('audio').forEach(a=>a.pause()); } catch {} window.location.assign('/'); };\n$1`
+    );
+  }
+
+  // Ensure the Sign Out control uses the handler (covers <button> and menu <a>)
+  s = s.replace(/(<button[^>]*>\s*Sign Out\s*<\/button>)/g, `<button onClick={handleSignOut}>Sign Out</button>`);
+  s = s.replace(/(<a[^>]*>\s*Sign Out\s*<\/a>)/g, `<a onClick={e => { e.preventDefault?.(); handleSignOut(); }} href="#">Sign Out</a>`);
+
+  fs.writeFileSync(file, s, 'utf8');
+  console.log('Patched:', file);
+}
+
+// Build candidate list (first match is enough)
+let out = require('child_process').execSync("grep -RIl --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.vercel 'Sign Out'").toString().trim().split('\n').filter(Boolean);
+out.slice(0, 3).forEach(ensureSignOutWiring); // patch up to 3 matches safely
+NODE
+
+echo "3) Add a global auth listener to redirect on SIGNED_OUT..."
+# Try common app entry files
+for CAND in client/src/main.tsx client/src/main.ts src/main.tsx src/main.ts client/src/App.tsx src/App.tsx; do
+  if [ -f "$CAND" ]; then
+apply_patch <<PATCH
+*** Begin Patch
+*** Update File: $CAND
+@@
++// Install global sign-out listener (multi-tab safety)
++import { installAuthListener } from '${CAND#client/src/}' | sed 's/.*//'
+*** End Patch
+PATCH
+  fi
+done
+
+# The above generic patch can't compute relative import in apply_patch.
+# Use a Node script to add the listener + correct import path robustly.
+node <<'NODE'
+const fs = require('fs');
+const path = require('path');
+
+const candidates = [
+  'client/src/main.tsx','client/src/main.ts',
+  'src/main.tsx','src/main.ts',
+  'client/src/App.tsx','src/App.tsx'
+].filter(f => fs.existsSync(f));
+
+function relImport(from, to) {
+  let rel = path.relative(path.dirname(from), to).replace(/\\/g,'/');
+  if (!rel.startsWith('.')) rel = './' + rel;
+  return rel.replace(/\.tsx?$/,'');
+}
+
+for (const file of candidates) {
+  let s = fs.readFileSync(file, 'utf8');
+  const authPaths = ['client/src/lib/auth.ts','src/lib/auth.ts'].filter(p => fs.existsSync(p));
+  const authPath = authPaths[0];
+  if (!authPath) continue;
+  const importPath = relImport(file, authPath);
+
+  if (!new RegExp(`from ['"]${importPath.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}['"]`).test(s)) {
+    s = s.replace(/(^\s*import .+\n)/, `$1import { installAuthListener } from '${importPath}';\n`);
+    if (!/installAuthListener\(/.test(s)) {
+      s = s.replace(/(createRoot\([^]*?\);\s*|ReactDOM\.createRoot\([^]*?\);\s*)/, `$1\ntry {\n  installAuthListener(() => { window.location.assign('/'); });\n} catch (e) { console.warn('Auth listener not installed:', e); }\n`);
+      if (!/installAuthListener\(/.test(s)) {
+        s += `\ntry { installAuthListener(() => { window.location.assign('/'); }); } catch (e) { console.warn('Auth listener not installed:', e); }\n`;
+      }
+    }
+    fs.writeFileSync(file, s, 'utf8');
+    console.log('Listener installed in:', file);
+  }
+}
+NODE
+
+echo "4) Restart dev server..."
+restart
+
+echo "✅ Step 3 applied. Please test:"
+echo " - Log in, open two tabs, click Sign Out in one: both should return to homepage."
+echo " - After logout, refresh: you should remain logged out."
+echo " - If media is playing, it should stop on logout."
