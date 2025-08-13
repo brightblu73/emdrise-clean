@@ -18,7 +18,7 @@ import { useAuth } from '../state/AuthProvider';
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Menu, User, LogOut, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
-import { logout } from '@/lib/auth';
+import { logout, redirectAfterLogout } from '@/lib/auth';
 
 export default function Navigation() {
   const { user, signOut } = useAuth();
@@ -44,11 +44,7 @@ export default function Navigation() {
 
   const handleSignOut = async () => {
     await logout();
-    try {
-      document.querySelectorAll('video').forEach(v => v.pause());
-      document.querySelectorAll('audio').forEach(a => a.pause());
-    } catch {}
-    window.location.assign('/');
+    redirectAfterLogout();
   };
 
   return (

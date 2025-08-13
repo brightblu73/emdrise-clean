@@ -1,0 +1,106 @@
+# PHASE 1 – STEP 3 (follow-up): Use dev-safe redirect after logout
+# - In dev: send users to /homepage
+# - In production: send users to /
+
+set -e
+
+# 1) Add helpers in auth.ts (client/src/lib/auth.ts or src/lib/auth.ts)
+for FILE in "client/src/lib/auth.ts" "src/lib/auth.ts"; do
+  if [ -f "$FILE" ]; then
+    apply_patch <<PATCH
+*** Begin Patch
+*** Update File: $FILE
+@@
+ export async function logout(): Promise<void> {
+   try {
+     await supabase.auth.signOut();
+   } catch (e) {
+     console.error('Supabase signOut error', e);
+   }
+   try {
+     localStorage.removeItem('emdriseSession');
+     sessionStorage.removeItem('emdriseSession');
+   } catch {}
+ }
+ 
++// Decide where to land after logout (dev vs prod)
++export function getPostLogoutUrl(): string {
++  try {
++    // Vite-style env detection
++    // In dev, avoid Replit root screen by using an internal SPA route
++    // Adjust '/homepage' if your public home route has a different path
++    // e.g. '/home' or '/app'
++    // Production keeps '/'.
++    // @ts-ignore
++    const isDev = typeof import !== 'undefined' && import.meta && import.meta.env && import.meta.env.DEV;
++    return isDev ? '/homepage' : '/';
++  } catch {
++    return '/';
++  }
++}
++
++export function redirectAfterLogout() {
++  const url = getPostLogoutUrl();
++  try {
++    // Stop any media before leaving
++    document.querySelectorAll('video').forEach(v => v.pause());
++    document.querySelectorAll('audio').forEach(a => a.pause());
++  } catch {}
++  window.location.assign(url);
++}
+*** End Patch
+PATCH
+  fi
+done
+
+# 2) Replace any direct window.location.assign('/') calls on sign-out with redirectAfterLogout()
+node <<'NODE'
+const fs = require('fs');
+const path = require('path');
+
+function listFiles(dir) {
+  let out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (['node_modules','.vercel','dist','.git'].includes(entry.name)) continue;
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) out = out.concat(listFiles(p));
+    else if (/\.(t|j)sx?$/.test(entry.name)) out.push(p);
+  }
+  return out;
+}
+
+const root = process.cwd();
+const files = listFiles(root);
+
+for (const f of files) {
+  let s = fs.readFileSync(f, 'utf8');
+  if (s.includes("window.location.assign('/')")) {
+    // Ensure import for redirectAfterLogout exists
+    const relToAuth = (()=>{
+      const candidates = ['client/src/lib/auth.ts','src/lib/auth.ts'].filter(p=>fs.existsSync(p));
+      if (!candidates.length) return null;
+      let rel = path.relative(path.dirname(f), candidates[0]).replace(/\\/g,'/').replace(/\.tsx?$/,'').replace(/\.js$/,'');
+      if (!rel.startsWith('.')) rel = './' + rel;
+      return rel;
+    })();
+    if (relToAuth && !new RegExp(`redirectAfterLogout\\s*}\\s*from\\s*['"]${relToAuth}['"]`).test(s)) {
+      if (/^\s*import .+/m.test(s)) {
+        s = s.replace(/(^\s*import .+\n)/, `$1import { redirectAfterLogout } from '${relToAuth}';\n`);
+      } else {
+        s = `import { redirectAfterLogout } from '${relToAuth}';\n` + s;
+      }
+    }
+    s = s.replace("window.location.assign('/')", 'redirectAfterLogout()');
+    fs.writeFileSync(f, s, 'utf8');
+    console.log('Patched redirect in:', f);
+  }
+}
+NODE
+
+# 3) Restart dev server
+restart
+
+echo "✅ Redirect updated. Please test:"
+echo "1) Log in, start a video, then Sign Out -> you should land on /homepage (dev) and media should stop."
+echo "2) Open two tabs, Sign Out in one -> both tabs should end up on /homepage."
+echo "3) Confirm you remain logged out after refresh."
