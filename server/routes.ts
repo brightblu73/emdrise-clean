@@ -339,7 +339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         throw new Error('Server not configured (price id)');
       }
       
-      console.log('Creating subscription with price ID:', price);
+      console.log('[stripe] creating subscription', { price, trial_period_days: 7, meta: 'user_id' });
       
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,

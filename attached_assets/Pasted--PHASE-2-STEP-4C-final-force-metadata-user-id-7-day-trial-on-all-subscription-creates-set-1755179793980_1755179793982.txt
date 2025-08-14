@@ -1,0 +1,98 @@
+# PHASE 2 – STEP 4C (final): force metadata.user_id + 7‑day trial on all subscription creates
+
+set -e
+
+# 1) Ensure BOTH code paths include user_id + trial days:
+#    - stripe.checkout.sessions.create(...)  -> subscription_data.trial_period_days + metadata.user_id
+#    - stripe.subscriptions.create(...)      -> trial_period_days + metadata.user_id
+
+node <<'NODE'
+const fs = require('fs'), path = require('path');
+
+function walk(dir){
+  const skip = new Set(['node_modules','dist','.vercel','.git','.cache']);
+  const out=[];
+  for(const e of fs.readdirSync(dir,{withFileTypes:true})){
+    if(skip.has(e.name)) continue;
+    const p = path.join(dir,e.name);
+    if(e.isDirectory()) out.push(...walk(p));
+    else if(/\.(t|j)sx?$/.test(e.name)) out.push(p);
+  }
+  return out;
+}
+
+const files = walk(process.cwd());
+let patched=0;
+
+function ensureCheckoutSessionParams(code){
+  // add subscription_data.trial_period_days: 7 if missing
+  if (code.includes('checkout.sessions.create')) {
+    // metadata.user_id
+    if (!/metadata:\s*\{\s*user_id/.test(code)) {
+      code = code.replace(/(checkout\.sessions\.create\(\{\s*[^}]*?)(\n\s*\}\);)/s,
+        (_,a,b)=> a + `\n      ,metadata: { user_id }` + b);
+    }
+    // subscription_data.trial_period_days
+    if (!/subscription_data\s*:\s*\{[^}]*trial_period_days\s*:\s*7/.test(code)) {
+      if (/subscription_data\s*:\s*\{/.test(code)) {
+        code = code.replace(/subscription_data\s*:\s*\{([^}]*)\}/s,
+          (_,inner)=> `subscription_data: { ${inner.trim().replace(/,\s*$/,'')}, trial_period_days: 7 }`);
+      } else {
+        code = code.replace(/(checkout\.sessions\.create\(\{\s*[^}]*?)(\n\s*\}\);)/s,
+          (_,a,b)=> a + `\n      ,subscription_data: { trial_period_days: 7 }` + b);
+      }
+    }
+  }
+  return code;
+}
+
+function ensureSubCreateParams(code){
+  // stripe.subscriptions.create({ … })
+  if (code.includes('stripe.subscriptions.create')) {
+    // metadata.user_id
+    if (!/metadata:\s*\{\s*user_id/.test(code)) {
+      code = code.replace(/stripe\.subscriptions\.create\(\{\s*([^}]*)\}\)/s,
+        (_,inner)=> `stripe.subscriptions.create({ ${inner.trim().replace(/,\s*$/,'')}, metadata: { user_id } })`);
+    }
+    // trial_period_days: 7
+    if (!/trial_period_days\s*:\s*7/.test(code)) {
+      code = code.replace(/stripe\.subscriptions\.create\(\{\s*([^}]*)\}\)/s,
+        (_,inner)=> inner.includes('metadata:')
+          ? `stripe.subscriptions.create({ ${inner.trim().replace(/,\s*$/,'')}, trial_period_days: 7 })`
+          : `stripe.subscriptions.create({ ${inner.trim().replace(/,\s*$/,'')}, trial_period_days: 7 })`);
+    }
+  }
+  return code;
+}
+
+for (const f of files) {
+  let s = fs.readFileSync(f,'utf8'); const o = s;
+  if (!/stripe\.(subscriptions|checkout\.sessions)\.create/.test(s)) continue;
+  s = ensureCheckoutSessionParams(s);
+  s = ensureSubCreateParams(s);
+  if (s !== o) { fs.writeFileSync(f,s,'utf8'); console.log('Patched:', f); patched++; }
+}
+console.log('Total patched files:', patched);
+NODE
+
+# 2) Add a tiny one-time log so we can see what’s sent (safe)
+apply_patch <<'PATCH'
+*** Begin Patch
+*** Update File: server/index.ts
+@@
+   try {
+     // Fail fast IF malformed AFTER normalization
+     const price = readPriceId();
+@@
+-    const session = await stripe.checkout.sessions.create({
++    console.log('[stripe] creating checkout session', { price, trial_period_days: 7, meta: 'user_id' });
++    const session = await stripe.checkout.sessions.create({
+*** End Patch
+PATCH
+
+# 3) Restart
+restart
+
+echo "✅ Done. Now click your 'Start Free Trial' again and watch the Console."
+echo "You should see a log for creating checkout session and, in Stripe (subscription page), 'Trialing until' in 7 days."
+echo "In the subscription's Metadata panel, you should see user_id."
