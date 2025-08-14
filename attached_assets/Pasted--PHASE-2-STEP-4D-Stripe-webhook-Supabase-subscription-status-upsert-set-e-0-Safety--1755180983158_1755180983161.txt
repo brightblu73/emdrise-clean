@@ -1,0 +1,161 @@
+# PHASE 2 – STEP 4D: Stripe webhook → Supabase subscription status upsert
+
+set -e
+
+# 0) Safety: ensure dependencies exist (stripe already present; add if missing)
+jq -r '.dependencies.stripe' package.json >/dev/null 2>&1 || npm i stripe
+
+# 1) Add/patch the webhook handler in server/index.ts
+apply_patch <<'PATCH'
+*** Begin Patch
+*** Update File: server/index.ts
+@@
+ import express from 'express';
+ import cors from 'cors';
++import Stripe from 'stripe';
++import { createClient } from '@supabase/supabase-js';
+ 
+ const app = express();
+ app.use(cors({ origin: true }));
+-app.use(express.json());
++// Stripe webhooks need raw body for signature verification:
++app.use(
++  '/api/stripe-webhook',
++  express.raw({ type: 'application/json' })
++);
++// JSON for everything else:
++app.use(express.json());
+ 
+ function readPriceId() {
+   // Some env UIs accidentally include spaces/newlines or quotes when pasting.
+   // Clean it up defensively before validating/using.
+   let v = process.env.STRIPE_PRICE_ID || "";
+   // strip wrapping quotes/backticks and whitespace
+   v = v.trim().replace(/^['"`]|['"`]$/g, "");
+   // common paste artifact: backticks around values (from code blocks)
+   v = v.replace(/^`|`$/g, "");
+   return v;
+ }
+ 
++// --- Admin Supabase client for webhooks (service role required) ---
++const supabaseAdmin = createClient(
++  process.env.VITE_SUPABASE_URL as string,
++  process.env.SUPABASE_SERVICE_ROLE_KEY as string,
++  { auth: { persistSession: false } }
++);
++
++// --- Stripe client (server-side secret key) ---
++const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
++  apiVersion: '2024-06-20',
++});
++
++// Helper: upsert subscription status into Supabase
++async function upsertSubscriptionStatus(params: {
++  user_id?: string | null;
++  stripe_customer_id?: string | null;
++  stripe_subscription_id?: string | null;
++  status?: string | null;
++  current_period_end?: number | null;
++  trial_end?: number | null;
++  cancel_at?: number | null;
++}) {
++  try {
++    const payload = {
++      user_id: params.user_id ?? null,
++      stripe_customer_id: params.stripe_customer_id ?? null,
++      stripe_subscription_id: params.stripe_subscription_id ?? null,
++      status: params.status ?? null,
++      current_period_end: params.current_period_end
++        ? new Date(params.current_period_end * 1000).toISOString()
++        : null,
++      trial_end: params.trial_end
++        ? new Date(params.trial_end * 1000).toISOString()
++        : null,
++      cancel_at: params.cancel_at
++        ? new Date(params.cancel_at * 1000).toISOString()
++        : null,
++      updated_at: new Date().toISOString(),
++    };
++    // Assumes a table: subscription_status (user_id text PK or unique)
++    const { error } = await supabaseAdmin
++      .from('subscription_status')
++      .upsert(payload, { onConflict: 'user_id' });
++    if (error) console.error('[supabase upsert error]', error);
++  } catch (e) {
++    console.error('[supabase upsert exception]', e);
++  }
++}
++
++// --- Stripe Webhook endpoint ---
++app.post('/api/stripe-webhook', async (req, res) => {
++  const sig = req.headers['stripe-signature'];
++  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
++  if (!sig || !webhookSecret) {
++    console.error('[webhook] missing signature or secret');
++    return res.status(400).send('Missing signature or secret');
++  }
++  let event: Stripe.Event;
++  try {
++    event = stripe.webhooks.constructEvent(req.body, sig as string, webhookSecret);
++  } catch (err: any) {
++    console.error('[webhook] signature verification failed', err?.message);
++    return res.status(400).send(`Webhook Error: ${err.message}`);
++  }
++
++  try {
++    switch (event.type) {
++      case 'checkout.session.completed': {
++        const s = event.data.object as Stripe.Checkout.Session;
++        const subscriptionId = (s.subscription as string) || null;
++        const customerId = (s.customer as string) || null;
++        const userId = s.metadata?.user_id || null;
++        // fetch subscription for more fields
++        if (subscriptionId) {
++          const sub = await stripe.subscriptions.retrieve(subscriptionId);
++          await upsertSubscriptionStatus({
++            user_id: userId,
++            stripe_customer_id: customerId,
++            stripe_subscription_id: subscriptionId,
++            status: sub.status,
++            current_period_end: sub.current_period_end,
++            trial_end: sub.trial_end,
++            cancel_at: sub.cancel_at,
++          });
++        }
++        break;
++      }
++      case 'customer.subscription.created':
++      case 'customer.subscription.updated':
++      case 'customer.subscription.deleted': {
++        const sub = event.data.object as Stripe.Subscription;
++        // user_id can be on the subscription metadata (we attach it when creating)
++        const userId =
++          (sub.metadata && (sub.metadata as any).user_id) || null;
++        await upsertSubscriptionStatus({
++          user_id: userId,
++          stripe_customer_id: (sub.customer as string) || null,
++          stripe_subscription_id: sub.id,
++          status: sub.status,
++          current_period_end: sub.current_period_end,
++          trial_end: sub.trial_end,
++          cancel_at: sub.cancel_at,
++        });
++        break;
++      }
++      case 'invoice.payment_succeeded':
++      case 'invoice.payment_failed':
++      case 'customer.subscription.trial_will_end':
++        // Optional: you could log or notify here if desired.
++        break;
++      default:
++        // ignore other events
++        break;
++    }
++    res.json({ received: true });
++  } catch (e) {
++    console.error('[webhook handler error]', e);
++    res.status(500).send('Webhook handler error');
++  }
++});
+*** End Patch
+PATCH
