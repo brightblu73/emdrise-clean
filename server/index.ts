@@ -221,10 +221,19 @@ app.get('/api/test-webhook-connection', async (req, res) => {
     // Clean up test data
     await supabaseAdmin.from('subscription_status').delete().eq('user_id', 'test_user_123');
     
+    // Query actual subscription status data for verification
+    const { data: realData, error: realError } = await supabaseAdmin
+      .from('subscription_status')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(3);
+    
     res.json({ 
       supabase_connection: 'ok', 
       upsert_test: 'ok',
-      webhook_endpoint: '/api/stripe-webhook ready'
+      webhook_endpoint: '/api/stripe-webhook ready',
+      recent_entries: realData || [],
+      total_entries: realData?.length || 0
     });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
