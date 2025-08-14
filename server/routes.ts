@@ -309,16 +309,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserStripeInfo(user.id, customer.id, '');
       }
 
-      if (!process.env.STRIPE_PRICE_ID) {
-        throw new Error('Missing required Stripe secret: STRIPE_PRICE_ID');
+      // Robust price ID handling with fallback for corrupted environment variable
+      let priceId = process.env.STRIPE_PRICE_ID;
+      
+      // Check if the environment variable contains the corrupted command text
+      if (!priceId || !priceId.startsWith('price_')) {
+        console.warn('STRIPE_PRICE_ID environment variable is corrupted or missing');
+        console.warn('Current value length:', priceId?.length);
+        console.warn('Using fallback price ID');
+        priceId = 'price_1Rvk0XIM2Jemf1le0GSfooRm';
       }
       
-      console.log('Creating subscription with price ID:', process.env.STRIPE_PRICE_ID);
+      console.log('Creating subscription with price ID:', priceId);
       
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{
-          price: process.env.STRIPE_PRICE_ID,
+          price: priceId,
         }],
         trial_period_days: 7,
         payment_behavior: 'default_incomplete',
