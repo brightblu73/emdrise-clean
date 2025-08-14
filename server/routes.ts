@@ -38,7 +38,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({
       has_secret: !!process.env.STRIPE_SECRET_KEY,
       has_price: !!process.env.STRIPE_PRICE_ID,
-      has_publishable: !!process.env.STRIPE_PUBLISHABLE_KEY
+      has_publishable: !!process.env.VITE_STRIPE_PUBLIC_KEY,
+      price_format_ok: !!(process.env.STRIPE_PRICE_ID && /^price_[A-Za-z0-9]+$/.test(process.env.STRIPE_PRICE_ID))
     });
   });
 
@@ -229,6 +230,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe payment route for one-time payments
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
+      // Fail fast if env is missing or clearly malformed
+      const priceId = process.env.STRIPE_PRICE_ID;
+      if (!priceId || !/^price_[A-Za-z0-9]+$/.test(priceId)) {
+        console.error('Invalid or missing STRIPE_PRICE_ID env');
+        return res.status(500).json({ error: 'Server not configured (price id)' });
+      }
+
       const { amount } = req.body;
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
@@ -309,15 +317,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserStripeInfo(user.id, customer.id, '');
       }
 
-      // Robust price ID handling with fallback for corrupted environment variable
-      let priceId = process.env.STRIPE_PRICE_ID;
-      
-      // Check if the environment variable contains the corrupted command text
-      if (!priceId || !priceId.startsWith('price_')) {
-        console.warn('STRIPE_PRICE_ID environment variable is corrupted or missing');
-        console.warn('Current value length:', priceId?.length);
-        console.warn('Using fallback price ID');
-        priceId = 'price_1Rvk0XIM2Jemf1le0GSfooRm';
+      // Fail fast if env is missing or clearly malformed
+      const priceId = process.env.STRIPE_PRICE_ID;
+      if (!priceId || !/^price_[A-Za-z0-9]+$/.test(priceId)) {
+        console.error('Invalid or missing STRIPE_PRICE_ID env');
+        throw new Error('Server not configured (price id)');
       }
       
       console.log('Creating subscription with price ID:', priceId);

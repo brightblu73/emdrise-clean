@@ -1,0 +1,77 @@
+# PHASE 2 – STEP 4C (lockdown): remove any Stripe price "fallback" and fail fast if env is invalid
+
+set -e
+
+# 1) Ensure the correct Price ID is in Secrets (safe to overwrite)
+replit secrets set STRIPE_PRICE_ID price_1Rvk0XIM2Jemf1le0GSfooRm
+
+# 2) Remove any code-level fallback like:
+#    process.env.STRIPE_PRICE_ID || 'price_...'
+#    or custom "fallback price" variables
+node <<'NODE'
+const fs = require('fs'), path = require('path');
+function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>{
+  if(['node_modules','dist','.vercel','.git','.cache'].includes(e.name))return[];
+  const p=path.join(d,e.name);
+  return e.isDirectory()?walk(p):/\.(t|j)sx?$/.test(e.name)?[p]:[];
+});}
+let patched=0;
+for(const f of walk(process.cwd())){
+  let s=fs.readFileSync(f,'utf8'); const o=s;
+  // kill fallback patterns
+  s=s.replace(/process\.env\.STRIPE_PRICE_ID\s*\|\|\s*['"`]price_[A-Za-z0-9]+['"`]/g,'process.env.STRIPE_PRICE_ID');
+  // remove any "fallbackPrice" assignments that use a hard-coded price
+  s=s.replace(/const\s+fallbackPrice\s*=\s*['"`]price_[A-Za-z0-9]+['"`]\s*;?/g,'');
+  // if a helper returns fallback price string, make it throw instead
+  s=s.replace(/return\s*['"`]price_[A-Za-z0-9]+['"`]\s*;?/g,'throw new Error("Missing STRIPE_PRICE_ID");');
+  if(s!==o){fs.writeFileSync(f,s,'utf8');console.log('Patched:',f);patched++;}
+}
+console.log('Total patched files:',patched);
+NODE
+
+# 3) Add/strengthen a strict config guard in the checkout endpoint
+apply_patch << 'PATCH'
+*** Begin Patch
+*** Update File: server/index.ts
+@@
+ app.post('/api/create-checkout-session', async (req, res) => {
+   try {
+-    if (!process.env.STRIPE_PRICE_ID) {
+-      console.error('Missing STRIPE_PRICE_ID env');
+-      return res.status(500).json({ error: 'Server not configured (price id)' });
+-    }
++    // Fail fast if env is missing or clearly malformed
++    const price = process.env.STRIPE_PRICE_ID;
++    if (!price || !/^price_[A-Za-z0-9]+$/.test(price)) {
++      console.error('Invalid or missing STRIPE_PRICE_ID env');
++      return res.status(500).json({ error: 'Server not configured (price id)' });
++    }
+@@
+-      line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
++      line_items: [{ price, quantity: 1 }],
+*** End Patch
+PATCH
+
+# 4) (Optional) Extend health endpoint to show a basic validity check (no secrets leaked)
+apply_patch << 'PATCH'
+*** Begin Patch
+*** Update File: server/index.ts
+@@
+ app.get('/api/health/stripe', (req, res) => {
+   res.json({
+     has_secret: !!process.env.STRIPE_SECRET_KEY,
+     has_price: !!process.env.STRIPE_PRICE_ID,
+-    has_publishable: !!process.env.STRIPE_PUBLISHABLE_KEY
++    has_publishable: !!process.env.STRIPE_PUBLISHABLE_KEY,
++    price_format_ok: !!(process.env.STRIPE_PRICE_ID && /^price_[A-Za-z0-9]+$/.test(process.env.STRIPE_PRICE_ID))
+   });
+ });
+*** End Patch
+PATCH
+
+# 5) Restart server to apply changes
+restart
+
+echo "✅ Fallback removed and strict env validation enabled."
+echo "Open /api/health/stripe in the preview and confirm:"
+echo "{ has_secret: true, has_price: true, price_format_ok: true }"
