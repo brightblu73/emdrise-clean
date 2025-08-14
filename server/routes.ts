@@ -33,6 +33,14 @@ declare global {
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health/env check (does not leak secrets)
+  app.get('/api/health/stripe', (req, res) => {
+    res.json({
+      has_secret: !!process.env.STRIPE_SECRET_KEY,
+      has_price: !!process.env.STRIPE_PRICE_ID,
+      has_publishable: !!process.env.STRIPE_PUBLISHABLE_KEY
+    });
+  });
 
   // Session configuration - simplified for Replit environment
   app.use(session({
@@ -301,18 +309,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserStripeInfo(user.id, customer.id, '');
       }
 
-      // Note: Using hardcoded price ID temporarily due to corrupted STRIPE_PRICE_ID environment variable
-      // TODO: Fix STRIPE_PRICE_ID in Replit Secrets (should be: price_1Rvk0XIM2Jemf1le0GSfooRm)
-      const priceId = process.env.STRIPE_PRICE_ID?.startsWith('price_') 
-        ? process.env.STRIPE_PRICE_ID 
-        : 'price_1Rvk0XIM2Jemf1le0GSfooRm';
+      if (!process.env.STRIPE_PRICE_ID) {
+        throw new Error('Missing required Stripe secret: STRIPE_PRICE_ID');
+      }
       
-      console.log('Creating subscription with price ID:', priceId);
+      console.log('Creating subscription with price ID:', process.env.STRIPE_PRICE_ID);
       
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{
-          price: priceId,
+          price: process.env.STRIPE_PRICE_ID,
         }],
         trial_period_days: 7,
         payment_behavior: 'default_incomplete',
