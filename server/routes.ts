@@ -13,7 +13,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-05-28.basil",
+  apiVersion: "2025-07-30.basil",
 });
 
 declare global {
@@ -273,9 +273,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (user.stripeSubscriptionId) {
       try {
         const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        const latestInvoice = subscription.latest_invoice as any;
         res.send({
           subscriptionId: subscription.id,
-          clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+          clientSecret: latestInvoice?.payment_intent?.client_secret,
         });
         return;
       } catch (error) {
@@ -297,29 +298,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: user.username,
         });
         // Update user with Stripe customer ID
-        await storage.updateUser(user.id, { stripeCustomerId: customer.id });
+        await storage.updateUserStripeInfo(user.id, customer.id, '');
       }
 
-      console.log('Creating subscription with price ID:', process.env.STRIPE_PRICE_ID);
+      // Use correct price ID - STRIPE_PRICE_ID environment variable contains incorrect value
+      const priceId = 'price_1Rvk0XIM2Jemf1le0GSfooRm';
+      console.log('Creating subscription with price ID:', priceId);
       
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{
-          price: process.env.STRIPE_PRICE_ID || 'price_1Rvk0XIM2Jemf1le0GSfooRm',
+          price: priceId,
         }],
         payment_behavior: 'default_incomplete',
         expand: ['latest_invoice.payment_intent'],
       });
 
       // Update user with subscription ID
-      await storage.updateUser(user.id, { 
-        stripeCustomerId: customer.id,
-        stripeSubscriptionId: subscription.id 
-      });
+      await storage.updateUserStripeInfo(user.id, customer.id, subscription.id);
   
+      const latestInvoice = subscription.latest_invoice as any;
       res.send({
         subscriptionId: subscription.id,
-        clientSecret: subscription.latest_invoice?.payment_intent?.client_secret,
+        clientSecret: latestInvoice?.payment_intent?.client_secret,
       });
     } catch (error: any) {
       console.error('Subscription creation error:', error);
