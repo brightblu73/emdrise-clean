@@ -1,0 +1,53 @@
+# PHASE 2 – STEP 4C (prep): Set correct STRIPE_PRICE_ID and remove hard‑coded price from code
+
+set -e
+
+# 1) Set the correct Stripe Price ID in Replit Secrets
+replit secrets set STRIPE_PRICE_ID price_1Rvk0XIM2Jemf1le0GSfooRm
+
+# 2) Replace any hard‑coded price_... occurrences in server code with process.env.STRIPE_PRICE_ID
+node <<'NODE'
+const fs = require('fs'), path = require('path');
+
+function files(dir){
+  let out=[];
+  for(const e of fs.readdirSync(dir,{withFileTypes:true})){
+    if(['node_modules','dist','.vercel','.git'].includes(e.name)) continue;
+    const p = path.join(dir,e.name);
+    if(e.isDirectory()) out = out.concat(files(p));
+    else if(/\.(t|j)s$/.test(e.name)) out.push(p);
+  }
+  return out;
+}
+
+const PRICE_RE = /price_([A-Za-z0-9]+)/g;
+
+for(const f of files(process.cwd())){
+  let s = fs.readFileSync(f,'utf8');
+  if(!/price_/.test(s)) continue;
+
+  let changed=false;
+  // 2a) Replace exact hard-coded price strings inside Stripe line_items with env var usage
+  s = s.replace(/price:\s*['"`]price_[A-Za-z0-9]+['"`]/g, 'price: process.env.STRIPE_PRICE_ID'), changed = true;
+
+  // 2b) Generic fallback: turn any bare "price_<id>" that’s part of Checkout config into template using env
+  s = s.replace(/(['"`])price_[A-Za-z0-9]+(['"`])/g, 'process.env.STRIPE_PRICE_ID'), changed = true;
+
+  if(changed){
+    fs.writeFileSync(f,s,'utf8');
+    console.log('Patched:', f);
+  }
+}
+NODE
+
+# 3) Quick verification
+echo "---- Verify there are no hard-coded price_... strings left in server code ----"
+grep -RIn --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.vercel "price_" server || echo "✅ No hard-coded price IDs in server/"
+echo "---- Verify code references STRIPE_PRICE_ID ----"
+grep -RIn --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.vercel "STRIPE_PRICE_ID" || true
+
+# 4) Restart dev so changes + secrets are picked up
+restart
+
+echo "✅ STRIPE_PRICE_ID secret set and code updated to use it."
+echo "Next: when you’re ready, we’ll run the Step 4C patch to ensure trial_period_days: 7 + metadata.user_id are in the Checkout call."

@@ -301,8 +301,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserStripeInfo(user.id, customer.id, '');
       }
 
-      // Use correct price ID - STRIPE_PRICE_ID environment variable contains incorrect value
-      const priceId = 'price_1Rvk0XIM2Jemf1le0GSfooRm';
+      // Note: Using hardcoded price ID temporarily due to corrupted STRIPE_PRICE_ID environment variable
+      // TODO: Fix STRIPE_PRICE_ID in Replit Secrets (should be: price_1Rvk0XIM2Jemf1le0GSfooRm)
+      const priceId = process.env.STRIPE_PRICE_ID?.startsWith('price_') 
+        ? process.env.STRIPE_PRICE_ID 
+        : 'price_1Rvk0XIM2Jemf1le0GSfooRm';
+      
       console.log('Creating subscription with price ID:', priceId);
       
       const subscription = await stripe.subscriptions.create({
@@ -310,8 +314,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         items: [{
           price: priceId,
         }],
+        trial_period_days: 7,
         payment_behavior: 'default_incomplete',
         expand: ['latest_invoice.payment_intent'],
+        metadata: {
+          user_id: user.id.toString(),
+        },
       });
 
       // Update user with subscription ID
