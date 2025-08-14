@@ -1,0 +1,74 @@
+# Normalize STRIPE_PRICE_ID at runtime (trim quotes/whitespace) and expose debug info
+
+apply_patch <<'PATCH'
+*** Begin Patch
+*** Update File: server/index.ts
+@@
+-const app = express();
++const app = express();
+ app.use(cors({ origin: true }));
+ app.use(express.json());
+ 
++function readPriceId() {
++  // Some env UIs accidentally include spaces/newlines or quotes when pasting.
++  // Clean it up defensively before validating/using.
++  let v = process.env.STRIPE_PRICE_ID || "";
++  // strip wrapping quotes/backticks and whitespace
++  v = v.trim().replace(/^['"`]|['"`]$/g, "");
++  // common paste artifact: backticks around values (from code blocks)
++  v = v.replace(/^`|`$/g, "");
++  return v;
++}
++
+*** End Patch
+PATCH
+
+apply_patch <<'PATCH'
+*** Begin Patch
+*** Update File: server/index.ts
+@@
+-app.get('/api/health/stripe', (req, res) => {
+-  res.json({
+-    has_secret: !!process.env.STRIPE_SECRET_KEY,
+-    has_price: !!process.env.STRIPE_PRICE_ID,
+-    has_publishable: !!process.env.STRIPE_PUBLISHABLE_KEY,
+-    price_format_ok: !!(process.env.STRIPE_PRICE_ID && /^price_[A-Za-z0-9]+$/.test(process.env.STRIPE_PRICE_ID))
+-  });
+-});
++app.get('/api/health/stripe', (req, res) => {
++  const price = readPriceId();
++  res.json({
++    has_secret: !!process.env.STRIPE_SECRET_KEY,
++    has_price: !!price,
++    has_publishable: !!process.env.STRIPE_PUBLISHABLE_KEY,
++    price_format_ok: /^price_[A-Za-z0-9]+$/.test(price),
++    // extra debug (safe): show length and first/last 4 chars only
++    price_len: price.length,
++    price_preview: price ? `${price.slice(0,4)}…${price.slice(-4)}` : ""
++  });
++});
+*** End Patch
+PATCH
+
+apply_patch <<'PATCH'
+*** Begin Patch
+*** Update File: server/index.ts
+@@
+ app.post('/api/create-checkout-session', async (req, res) => {
+   try {
+-    // Fail fast if env is missing or clearly malformed
+-    const price = process.env.STRIPE_PRICE_ID;
++    // Fail fast IF malformed AFTER normalization
++    const price = readPriceId();
+     if (!price || !/^price_[A-Za-z0-9]+$/.test(price)) {
+       console.error('Invalid or missing STRIPE_PRICE_ID env');
+       return res.status(500).json({ error: 'Server not configured (price id)' });
+     }
+@@
+-      line_items: [{ price, quantity: 1 }],
++      line_items: [{ price, quantity: 1 }],
+*** End Patch
+PATCH
+
+restart
+echo "✅ Normalization added. Now do a quick manual check in the preview at /api/health/stripe"

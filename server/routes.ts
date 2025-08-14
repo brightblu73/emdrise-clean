@@ -32,14 +32,29 @@ declare global {
 
 
 
+function readPriceId() {
+  // Some env UIs accidentally include spaces/newlines or quotes when pasting.
+  // Clean it up defensively before validating/using.
+  let v = process.env.STRIPE_PRICE_ID || "";
+  // strip wrapping quotes/backticks and whitespace
+  v = v.trim().replace(/^['"`]|['"`]$/g, "");
+  // common paste artifact: backticks around values (from code blocks)
+  v = v.replace(/^`|`$/g, "");
+  return v;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health/env check (does not leak secrets)
   app.get('/api/health/stripe', (req, res) => {
+    const price = readPriceId();
     res.json({
       has_secret: !!process.env.STRIPE_SECRET_KEY,
-      has_price: !!process.env.STRIPE_PRICE_ID,
+      has_price: !!price,
       has_publishable: !!process.env.VITE_STRIPE_PUBLIC_KEY,
-      price_format_ok: !!(process.env.STRIPE_PRICE_ID && /^price_[A-Za-z0-9]+$/.test(process.env.STRIPE_PRICE_ID))
+      price_format_ok: /^price_[A-Za-z0-9]+$/.test(price),
+      // extra debug (safe): show length and first/last 4 chars only
+      price_len: price.length,
+      price_preview: price ? `${price.slice(0,4)}…${price.slice(-4)}` : ""
     });
   });
 
@@ -230,9 +245,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe payment route for one-time payments
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
-      // Fail fast if env is missing or clearly malformed
-      const priceId = process.env.STRIPE_PRICE_ID;
-      if (!priceId || !/^price_[A-Za-z0-9]+$/.test(priceId)) {
+      // Fail fast IF malformed AFTER normalization
+      const price = readPriceId();
+      if (!price || !/^price_[A-Za-z0-9]+$/.test(price)) {
         console.error('Invalid or missing STRIPE_PRICE_ID env');
         return res.status(500).json({ error: 'Server not configured (price id)' });
       }
@@ -317,19 +332,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserStripeInfo(user.id, customer.id, '');
       }
 
-      // Fail fast if env is missing or clearly malformed
-      const priceId = process.env.STRIPE_PRICE_ID;
-      if (!priceId || !/^price_[A-Za-z0-9]+$/.test(priceId)) {
+      // Fail fast IF malformed AFTER normalization
+      const price = readPriceId();
+      if (!price || !/^price_[A-Za-z0-9]+$/.test(price)) {
         console.error('Invalid or missing STRIPE_PRICE_ID env');
         throw new Error('Server not configured (price id)');
       }
       
-      console.log('Creating subscription with price ID:', priceId);
+      console.log('Creating subscription with price ID:', price);
       
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{
-          price: priceId,
+          price: price,
         }],
         trial_period_days: 7,
         payment_behavior: 'default_incomplete',

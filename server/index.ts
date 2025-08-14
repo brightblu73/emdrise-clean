@@ -6,6 +6,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+function readPriceId() {
+  // Some env UIs accidentally include spaces/newlines or quotes when pasting.
+  // Clean it up defensively before validating/using.
+  let v = process.env.STRIPE_PRICE_ID || "";
+  // strip wrapping quotes/backticks and whitespace
+  v = v.trim().replace(/^['"`]|['"`]$/g, "");
+  // common paste artifact: backticks around values (from code blocks)
+  v = v.replace(/^`|`$/g, "");
+  return v;
+}
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
