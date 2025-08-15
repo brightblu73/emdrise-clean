@@ -17,7 +17,7 @@ export function Logo({ variant = 'header', className = '', showText = true }: Lo
       case 'hero':
         return { height: '128px', width: 'auto' };
       case 'header':
-        return { height: '80px', width: 'auto' };
+        return { height: '100px', width: 'auto' };
       case 'mobile':
         return { height: '48px', width: 'auto' };
       case 'footer':
@@ -32,7 +32,7 @@ export function Logo({ variant = 'header', className = '', showText = true }: Lo
       case 'hero':
         return { display: 'flex', alignItems: 'center', padding: '16px' };
       case 'header':
-        return { display: 'flex', alignItems: 'center', paddingLeft: '16px', height: '60px' };
+        return { display: 'flex', alignItems: 'center', paddingLeft: '16px', height: '80px' };
       case 'mobile':
         return { display: 'flex', alignItems: 'center', paddingLeft: '12px', height: '50px' };
       case 'footer':
