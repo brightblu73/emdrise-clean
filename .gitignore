@@ -18,4 +18,6 @@ cache/
 .env
 .env.*
 attached_assets/
-attached_assets/
+.replit/secrets
+*.pem
+*.key

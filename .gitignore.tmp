@@ -1,0 +1,21 @@
+node_modules/
+.replit/
+*.log
+.env
+dist/
+build/
+cache/
+*.sqlite
+*.db
+*.mp4
+*.zip
+*.tar
+*.gz
+*.DS_Store
+
+# env
+.env.*
+attached_assets/
+.replit/secrets
+*.pem
+*.key
