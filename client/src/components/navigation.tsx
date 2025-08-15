@@ -318,7 +318,7 @@ export default function Navigation() {
                       <div className="px-4 py-6">
                         <div className="text-center bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-primary/30 shadow-lg">
                           <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-green rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                            <Heart className="h-8 w-8 text-white" />
+                            <Brain className="h-8 w-8 text-white" />
                           </div>
                           <h3 className="text-lg font-semibold text-primary-green mb-2">Welcome to EMDRise</h3>
                           <p className="text-sm text-secondary-blue/90 mb-4">Professional EMDR therapy for healing and growth</p>
@@ -342,15 +342,6 @@ export default function Navigation() {
 
                       {/* Quick Info Section */}
                       <div className="px-4 py-6 space-y-4">
-                        <div className="space-y-3">
-                          <h4 className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3">About EMDR</h4>
-                          <div className="bg-gradient-to-r from-white/70 to-white/50 rounded-lg p-4 border border-primary/20 shadow-sm">
-                            <p className="text-sm text-secondary-blue leading-relaxed">
-                              EMDR (Eye Movement Desensitization and Reprocessing) is a proven therapy for trauma, anxiety, and emotional healing.
-                            </p>
-                          </div>
-                        </div>
-
                         {/* Contact for logged out users */}
                         <div className="pt-4">
                           <a href="mailto:support@emdrise.com">
