@@ -379,23 +379,23 @@ export default function Home() {
             <CardContent className="text-center space-y-4">
               <div className="space-y-3 text-left">
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
+                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
                   <span className="text-sm">Complete eight phase EMDR protocol</span>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
+                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
                   <span className="text-sm">Professional EMDR therapist led video guidance</span>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
+                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
                   <span className="text-sm">Multiple bilateral stimulation options</span>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
+                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
                   <span className="text-sm">Guided memory processing and calm place visualization</span>
                 </div>
                 <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
+                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
                   <span className="text-sm">Therapeutic grounding resources and aftercare support</span>
                 </div>
               </div>
