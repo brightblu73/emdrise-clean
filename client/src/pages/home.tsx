@@ -396,7 +396,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
-                  <span className="text-sm">Therapeutic resources and support</span>
+                  <span className="text-sm">Therapeutic grounding resources and aftercare support</span>
                 </div>
               </div>
               <div className="pt-4">
