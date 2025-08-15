@@ -416,7 +416,7 @@ export default function Home() {
                     </Button>
                   </Link>
                 )} */}
-                <p className="text-xs text-slate-500 mt-2">No credit card required for trial</p>
+
               </div>
             </CardContent>
           </Card>
