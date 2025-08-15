@@ -384,7 +384,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
-                  <span className="text-sm">Professional therapist video guidance</span>
+                  <span className="text-sm">Professional EMDR therapist led video guidance</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
