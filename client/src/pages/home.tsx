@@ -392,7 +392,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
-                  <span className="text-sm">Session notes and progress tracking</span>
+                  <span className="text-sm">Guided memory processing and calm place visualization</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3" />
