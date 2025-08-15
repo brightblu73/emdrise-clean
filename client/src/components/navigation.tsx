@@ -31,7 +31,7 @@ export default function Navigation() {
 
   const navItems = [
     { href: "/", label: "Home", icon: Brain },
-    { href: "/emdr-session", label: "Therapy Session", icon: Heart },
+    { href: "/emdr-session", label: "Therapy Session", icon: Brain },
   ];
 
   const isActive = (path: string) => {
