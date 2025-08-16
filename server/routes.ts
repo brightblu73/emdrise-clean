@@ -224,6 +224,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Supabase-compatible whoami endpoint
+  app.get('/api/whoami', async (req, res) => {
+    try {
+      const auth = req.headers.authorization || '';
+      const token = auth.split(' ')[1];
+      if (!token) return res.status(401).json({ error: 'No token' });
+
+      // For EMDRise, we're using session-based auth with Passport, not Supabase JWT
+      // This endpoint is provided for compatibility but routes to session auth
+      if (req.isAuthenticated()) {
+        res.json({ uid: req.user!.id.toString(), email: req.user!.email });
+      } else {
+        res.status(401).json({ error: 'Invalid token' });
+      }
+    } catch (e) {
+      res.status(500).json({ error: 'whoami failed', details: String(e) });
+    }
+  });
+
   // Development helper endpoint to clear test users
   if (process.env.NODE_ENV === 'development') {
     app.delete("/api/clear-test-users", async (req, res) => {
