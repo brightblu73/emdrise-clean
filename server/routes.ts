@@ -68,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       secure: false, 
       httpOnly: false, // Allow JS access for debugging in Replit
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'none' // More permissive for Replit iframe environment
+      sameSite: 'lax' // Lax for development testing
     }
   }));
 
@@ -682,6 +682,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
+  });
+
+  // Temporary debug route for testing browser session auth
+  app.get('/__dev/auth', (_req, res) => {
+    const debugHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auth Debug</title>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    pre { background: #f5f5f5; padding: 10px; margin: 10px 0; white-space: pre-wrap; }
+    button { padding: 10px 20px; margin: 10px 0; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Auth Debug</h1>
+  
+  <button id="testSub">Test Subscription</button>
+  
+  <script>
+    // Test whoami on load
+    fetch('/api/whoami', { credentials: 'include' })
+      .then(async r => {
+        const ct = r.headers.get('content-type') || '';
+        const body = ct.includes('application/json') ? await r.json() : await r.text();
+        document.body.insertAdjacentHTML('beforeend',
+          \`<pre id="whoami">WHOAMI status: \${r.status}\\ncontent-type: \${ct}\\nbody:\\n\${typeof body === 'string' ? body : JSON.stringify(body, null, 2)}</pre>\`);
+      })
+      .catch(e => document.body.insertAdjacentHTML('beforeend', \`<pre>WHOAMI error: \${e}</pre>\`));
+
+    // Test subscription button
+    document.getElementById('testSub').addEventListener('click', () => {
+      fetch('/api/get-or-create-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      })
+      .then(async r => {
+        const ct = r.headers.get('content-type') || '';
+        const body = ct.includes('application/json') ? await r.json() : await r.text();
+        document.body.insertAdjacentHTML('beforeend',
+          \`<pre id="sub">SUB status: \${r.status}\\ncontent-type: \${ct}\\nbody:\\n\${typeof body === 'string' ? body : JSON.stringify(body, null, 2)}</pre>\`);
+      })
+      .catch(e => document.body.insertAdjacentHTML('beforeend', \`<pre>SUB error: \${e}</pre>\`));
+    });
+  </script>
+</body>
+</html>`;
+    res.type('html').send(debugHtml);
   });
 
   const httpServer = createServer(app);
