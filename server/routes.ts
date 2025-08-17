@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertSessionSchema, insertTargetSchema, insertCalmPlaceSchema, insertResourceSchema, insertBilateralSessionSchema, insertScriptProgressionSchema } from "@shared/schema";
@@ -7,6 +7,7 @@ import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import Stripe from "stripe";
+import { createClient } from '@supabase/supabase-js';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -28,6 +29,83 @@ declare global {
       trialEndsAt?: Date | null;
     }
   }
+}
+
+declare module 'express-session' {
+  interface SessionData {
+    user?: Express.User;
+    access_token?: string;
+  }
+}
+
+// Initialize Supabase admin client for JWT verification
+const supabaseUrl = 'https://jxhjghgectlpgrpwpkfd.supabase.co';
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+
+const supabaseAdmin = createClient(
+  supabaseUrl,
+  serviceRoleKey,
+  { auth: { persistSession: false } }
+);
+
+// Supabase JWT verification middleware
+async function verifySupabaseJWT(req: Request, res: Response, next: NextFunction) {
+  try {
+    let token: string | null = null;
+
+    // 1. Check Authorization header (Bearer token)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+
+    // 2. Check for access_token in cookies
+    if (!token && req.cookies?.access_token) {
+      token = req.cookies.access_token;
+    }
+
+    // 3. Check for sb-access-token in cookies (Supabase default)
+    if (!token && req.cookies?.['sb-access-token']) {
+      token = req.cookies['sb-access-token'];
+    }
+
+    // 4. Check session storage for access_token
+    if (!token && req.session?.access_token) {
+      token = req.session.access_token;
+    }
+
+    if (token) {
+      // Verify the JWT with Supabase
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      
+      if (user && !error) {
+        // Store user in req.user for Express compatibility
+        req.user = {
+          id: parseInt(user.id) || 0, // Convert UUID to number for Express compatibility
+          username: user.user_metadata?.username || user.email?.split('@')[0] || '',
+          email: user.email || '',
+          stripeCustomerId: user.user_metadata?.stripeCustomerId || null,
+          stripeSubscriptionId: user.user_metadata?.stripeSubscriptionId || null,
+          subscriptionStatus: user.user_metadata?.subscriptionStatus || 'trial',
+          trialEndsAt: user.user_metadata?.trialEndsAt ? new Date(user.user_metadata.trialEndsAt) : null,
+        };
+
+        // Also store in session for persistence
+        if (req.session) {
+          req.session.user = req.user;
+          req.session.access_token = token;
+        }
+
+        console.log('Supabase JWT verified for user:', user.email);
+      } else {
+        console.log('Invalid Supabase JWT token:', error?.message || 'Unknown error');
+      }
+    }
+  } catch (error) {
+    console.error('Error verifying Supabase JWT:', error);
+  }
+  
+  next(); // Always continue to next middleware, even if auth fails
 }
 
 
@@ -83,7 +161,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       session: req.session || {},
       user: req.user || null,
       sessionID: req.sessionID || null,
-      rawCookies: req.get('Cookie') || null
+      rawCookies: req.get('Cookie') || null,
+      jwtSources: {
+        authHeader: req.headers.authorization ? 'present' : 'missing',
+        cookieAccessToken: req.cookies?.access_token ? 'present' : 'missing',
+        cookieSupabaseToken: req.cookies?.['sb-access-token'] ? 'present' : 'missing',
+        sessionAccessToken: req.session?.access_token ? 'present' : 'missing'
+      }
     });
   });
 
@@ -102,6 +186,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     })
   );
+
+  // Add Supabase JWT verification middleware early in the chain
+  app.use(verifySupabaseJWT);
 
   app.use(passport.initialize());
   app.use(passport.session());
