@@ -75,6 +75,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Full session dump for debugging
+  app.get('/api/session-dump', (req, res) => {
+    res.json({
+      headers: req.headers,
+      cookies: req.cookies || {},
+      session: req.session || {},
+      user: req.user || null,
+      sessionID: req.sessionID || null,
+      rawCookies: req.get('Cookie') || null
+    });
+  });
+
   // Trust proxy for session persistence
   app.set('trust proxy', 1);
 
