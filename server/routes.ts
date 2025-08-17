@@ -58,19 +58,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Session configuration - simplified for Replit environment
-  app.use(session({
-    secret: process.env.SESSION_SECRET || "heal-emdr-secret",
-    resave: true, // Force session save for Replit
-    saveUninitialized: true, // Save uninitialized sessions
-    name: 'connect.sid',
-    cookie: { 
-      secure: false, 
-      httpOnly: false, // Allow JS access for debugging in Replit
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'none' // More permissive for Replit iframe environment
-    }
-  }));
+  // Trust proxy for session persistence
+  app.set('trust proxy', 1);
+
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || "dev-secret",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax"
+      }
+    })
+  );
 
   app.use(passport.initialize());
   app.use(passport.session());
