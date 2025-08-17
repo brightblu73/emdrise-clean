@@ -25,6 +25,10 @@ export default function Auth() {
       return;
     }
     
+    // Log access token immediately after successful login
+    const { data } = await supabase.auth.getSession();
+    console.log("Supabase access token:", data.session?.access_token);
+    
     // Post-auth routing rule: check if therapist selected
     const selectedTherapist = localStorage.getItem('selectedTherapist');
     if (selectedTherapist) {

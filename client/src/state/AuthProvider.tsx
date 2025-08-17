@@ -22,9 +22,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(data.session?.user ?? null);
       setLoading(false);
     })();
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+      
+      // Log access token when authentication state changes to SIGNED_IN
+      if (event === 'SIGNED_IN' && s?.access_token) {
+        console.log("Supabase access token:", s.access_token);
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, []);
