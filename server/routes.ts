@@ -59,7 +59,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Development auth debug route
-  app.get('/__dev/auth', (req, res) => {
+  app.get('/api/dev/auth', (req, res) => {
     const sessionUser = req.user || null;
     const subscriptionData = sessionUser ? {
       stripeCustomerId: sessionUser.stripeCustomerId,

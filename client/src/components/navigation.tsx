@@ -122,7 +122,7 @@ export default function Navigation() {
                       </DropdownMenuItem>
                     </a>
 
-                    <a href="/__dev/auth" target="_blank" rel="noopener noreferrer">
+                    <a href="/api/dev/auth" target="_blank" rel="noopener noreferrer">
                       <DropdownMenuItem>
                         <Eye className="h-4 w-4 mr-2" />
                         Debug Auth Check
@@ -275,7 +275,7 @@ export default function Navigation() {
                               <span className="font-medium">Contact</span>
                             </Button>
                           </a>
-                          <a href="/__dev/auth" target="_blank" rel="noopener noreferrer">
+                          <a href="/api/dev/auth" target="_blank" rel="noopener noreferrer">
                             <Button 
                               variant="ghost" 
                               className="w-full justify-start h-12 rounded-xl text-secondary-blue hover:bg-white/80 hover:text-primary-green hover:shadow-sm transition-all duration-200"
