@@ -439,15 +439,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       let customer;
+      
+      // First, check if user already has a Stripe customer ID
       if (user.stripeCustomerId) {
-        customer = await stripe.customers.retrieve(user.stripeCustomerId);
-      } else {
-        customer = await stripe.customers.create({
+        console.log('[stripe] Retrieving existing customer:', user.stripeCustomerId);
+        try {
+          customer = await stripe.customers.retrieve(user.stripeCustomerId);
+          console.log('[stripe] Successfully retrieved existing customer');
+        } catch (error) {
+          console.error('[stripe] Failed to retrieve customer, will create new one:', error);
+          customer = null; // Will create new customer below
+        }
+      }
+      
+      // If no customer ID or retrieval failed, check if a customer already exists by email
+      if (!customer) {
+        console.log('[stripe] Searching for existing customer by email:', user.email);
+        const existingCustomers = await stripe.customers.list({
           email: user.email,
-          name: user.username,
+          limit: 1
         });
-        // Update user with Stripe customer ID
-        await storage.updateUserStripeInfo(user.id, customer.id, '');
+        
+        if (existingCustomers.data.length > 0) {
+          customer = existingCustomers.data[0];
+          console.log('[stripe] Found existing customer by email:', customer.id);
+          // Update user record with the found customer ID
+          await storage.updateUserStripeInfo(user.id, customer.id, '');
+        } else {
+          console.log('[stripe] Creating new customer for:', user.email);
+          customer = await stripe.customers.create({
+            email: user.email,
+            name: user.username,
+          });
+          console.log('[stripe] Created new customer:', customer.id);
+          // Update user with new Stripe customer ID
+          await storage.updateUserStripeInfo(user.id, customer.id, '');
+        }
+      }
+
+      // Check if customer already has an active subscription
+      console.log('[stripe] Checking for existing subscriptions for customer:', customer.id);
+      const existingSubscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: 'all',
+        limit: 10
+      });
+      
+      // Look for active, trialing, or past_due subscriptions
+      const activeSubscription = existingSubscriptions.data.find(sub => 
+        ['active', 'trialing', 'past_due'].includes(sub.status)
+      );
+      
+      if (activeSubscription) {
+        console.log('[stripe] Found existing active subscription:', activeSubscription.id);
+        // Update user record with existing subscription
+        await storage.updateUserStripeInfo(user.id, customer.id, activeSubscription.id);
+        
+        const latestInvoice = activeSubscription.latest_invoice as any;
+        res.send({
+          subscriptionId: activeSubscription.id,
+          clientSecret: latestInvoice?.payment_intent?.client_secret,
+        });
+        return;
       }
 
       // Fail fast IF malformed AFTER normalization
@@ -457,7 +510,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         throw new Error('Server not configured (price id)');
       }
       
-      console.log('[stripe] creating subscription', { price, trial_period_days: 7, meta: 'user_id' });
+      console.log('[stripe] Creating new subscription', { 
+        customer: customer.id, 
+        price, 
+        trial_period_days: 7, 
+        meta: 'user_id:' + user.id 
+      });
       
       const subscription = await stripe.subscriptions.create({
         customer: customer.id,
@@ -472,6 +530,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       });
 
+      console.log('[stripe] Successfully created subscription:', subscription.id);
       // Update user with subscription ID
       await storage.updateUserStripeInfo(user.id, customer.id, subscription.id);
   
