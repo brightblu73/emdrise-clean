@@ -10,6 +10,7 @@ import { Eye, Brain, Sprout, Clock, Play, Heart, CheckCircle, Volume2, Apple, Ma
 import { useState, useRef, useEffect } from "react";
 import { supabase } from '@/lib/supabase';
 import { gotoAuthOrSession } from '@/utils/gotoAuthOrSession'
+import { apiRequest } from '@/lib/queryClient'
 import mariaPortrait from "@/assets/maria-headshot.jpg";
 import alistairPortrait from "@/assets/alistair-headshot.jpg";
 import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
@@ -33,6 +34,7 @@ export default function Home() {
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
@@ -96,6 +98,26 @@ export default function Home() {
 
 
 
+  // Missing handler functions removed - keeping the more complete implementation below
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsLoggingIn(true);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginFormData.email,
+        password: loginFormData.password
+      });
+      if (error) {
+        alert('Login failed: ' + error.message);
+        return;
+      }
+      setLocation('/emdr-session');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
   const handleStartFreeTrial = () => {
     if (!selectedTherapist) {
       alert("Please select a therapist before starting your EMDR journey.");
@@ -137,6 +159,58 @@ export default function Home() {
     return () => subscription.unsubscribe()
   }, []);
 
+  // Handle subscription flow for authenticated users
+  const handleSubscriptionFlow = async () => {
+    try {
+      // Check if user is authenticated
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (!currentUser) {
+        // User not authenticated, redirect to auth
+        setLocation('/auth');
+        return;
+      }
+
+      setIsCreatingSubscription(true);
+
+      // Call subscription endpoint
+      const response = await apiRequest('POST', '/api/get-or-create-subscription');
+      const data = await response.json();
+
+      if (data.subscriptionId) {
+        // Subscription created successfully, continue to EMDR session
+        setLocation('/emdr-session');
+      } else {
+        // Handle any subscription setup issues
+        console.error('Subscription creation failed:', data);
+        alert('Unable to set up subscription. Please try again.');
+      }
+    } catch (error) {
+      console.error('Subscription flow error:', error);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setIsCreatingSubscription(false);
+    }
+  };
+
+  // Enhanced auth or subscription handler
+  const handleStartTrial = async () => {
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (currentUser) {
+        // User is authenticated, proceed with subscription flow
+        await handleSubscriptionFlow();
+      } else {
+        // User not authenticated, redirect to auth
+        setLocation('/auth');
+      }
+    } catch (error) {
+      console.error('Start trial error:', error);
+      setLocation('/auth');
+    }
+  };
+
 
 
   return (
@@ -156,141 +230,108 @@ export default function Home() {
               {user && isLoggedIn ? (
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
-                    onClick={gotoAuthOrSession}
+                    onClick={handleSubscriptionFlow}
+                    disabled={isCreatingSubscription}
                     size="lg" 
                     className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
                   >
-                    Choose Therapist & Continue
+                    {isCreatingSubscription ? 'Setting up...' : 'Choose Therapist & Continue'}
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <Button 
-                    onClick={gotoAuthOrSession}
+                    onClick={handleStartTrial}
+                    disabled={isCreatingSubscription}
                     size="lg" 
                     className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
                   >
-                    Start Your 7-Day Free Trial
+                    {isCreatingSubscription ? 'Setting up your trial...' : 'Start Your 7-Day Free Trial'}
                   </Button>
 
                   {/* Login to Continue Journey CTA */}
                   <Button
-                    onClick={gotoAuthOrSession}
+                    onClick={handleStartTrial}
+                    disabled={isCreatingSubscription}
                     variant="outline"
                     size="lg" 
                     className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary whitespace-normal break-words text-center leading-snug"
                   >
-                    Choose Therapist & Continue
+                    {isCreatingSubscription ? 'Setting up...' : 'Choose Therapist & Continue'}
                   </Button>
-
-                  <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="outline"
-                        size="lg" 
-                        className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary"
-                        style={{ display: 'none' }}
-                      >
-                        Hidden Modal Trigger
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Select Your Therapist & Continue Your Journey</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        {/* Only show if Apple is supported */}
-                        {(() => {
-                          const showAppleSignIn = false;
-                          if (showAppleSignIn) {
-                            return (
-                              <Button 
-                                variant="outline" 
-                                className="w-full justify-start" 
-                                disabled
-                              >
-                                <Apple className="mr-2 h-4 w-4" />
-                                Sign in with Apple
-                              </Button>
-                            );
-                          }
-                          return null;
-                        })()}
-
-                        {/* Google Sign In - Currently unavailable */}
-                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-center mb-3">
-                          <p className="text-sm font-medium text-blue-800">Google Sign In Coming Soon</p>
-                          <p className="text-xs text-blue-600 mt-1">Use email sign in or the green TEST button below</p>
-                        </div>
-
-                        <div className="relative">
-                          <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t" />
-                          </div>
-                          <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-                          </div>
-                        </div>
-
-                        {/* Email Login Form */}
-                        <form onSubmit={async (e) => {
-  e.preventDefault();
-  try {
-    setIsLoggingIn(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: loginFormData.email,
-      password: loginFormData.password
-    });
-    if (error) {
-      alert('Login failed: ' + error.message);
-      return;
-    }
-    window.location.href = '/emdr-session';
-  } finally {
-    setIsLoggingIn(false);
-  }
-}} className="space-y-3">
-                          <div>
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                              id="email"
-                              type="email"
-                              value={loginFormData.email}
-                              onChange={(e) => setLoginFormData(prev => ({...prev, email: e.target.value}))}
-                              placeholder="Enter your email"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                              id="password"
-                              type="password"
-                              value={loginFormData.password}
-                              onChange={(e) => setLoginFormData(prev => ({...prev, password: e.target.value}))}
-                              placeholder="Enter your password"
-                              required
-                            />
-                          </div>
-                          <Button 
-                            type="submit"
-                            className="w-full"
-                            disabled={isLoggingIn}
-                          >
-                            {isLoggingIn ? "Signing In..." : "Sign In"}
-                          </Button>
-                        </form>
-
-
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-
-                  <div className="text-sm text-blue-200 text-center">
-                    ✓ 7-day free trial • £12.99/month after trial • ✓ Cancel anytime
-                  </div>
                 </div>
               )}
+
+              <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    size="lg" 
+                    className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary"
+                    style={{ display: 'none' }}
+                  >
+                    Hidden Modal Trigger
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Select Your Therapist & Continue Your Journey</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <form onSubmit={async (e) => {
+                      e.preventDefault();
+                      try {
+                        setIsLoggingIn(true);
+                        const { data, error } = await supabase.auth.signInWithPassword({
+                          email: loginFormData.email,
+                          password: loginFormData.password
+                        });
+                        if (error) {
+                          alert('Login failed: ' + error.message);
+                          return;
+                        }
+                        window.location.href = '/emdr-session';
+                      } finally {
+                        setIsLoggingIn(false);
+                      }
+                    }} className="space-y-3">
+                      <div>
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={loginFormData.email}
+                          onChange={(e) => setLoginFormData(prev => ({...prev, email: e.target.value}))}
+                          placeholder="Enter your email"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          value={loginFormData.password}
+                          onChange={(e) => setLoginFormData(prev => ({...prev, password: e.target.value}))}
+                          placeholder="Enter your password"
+                          required
+                        />
+                      </div>
+                      <Button 
+                        type="submit"
+                        className="w-full"
+                        disabled={isLoggingIn}
+                      >
+                        {isLoggingIn ? "Signing In..." : "Sign In"}
+                      </Button>
+                    </form>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              <div className="text-sm text-blue-200 text-center">
+                ✓ 7-day free trial • £12.99/month after trial • ✓ Cancel anytime
+              </div>
             </div>
             <div className="relative">
               <Card className="therapeutic-bg p-8 text-center">
@@ -401,22 +442,14 @@ export default function Home() {
                 </div>
               </div>
               <div className="pt-4">
-                {/* {!isLoggedIn && ( */}
-                  <Button 
-                    onClick={gotoAuthOrSession}
-                    className="w-full bg-primary hover:bg-primary/90"
-                    size="lg"
-                  >
-                    Start Your 7-Day Free Trial
-                  </Button>
-                {/* )}
-                {isLoggedIn && (
-                  <Link href="/emdr-session">
-                    <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
-                      Select Your Therapist & Continue Your Journey
-                    </Button>
-                  </Link>
-                )} */}
+                <Button 
+                  onClick={handleStartTrial}
+                  disabled={isCreatingSubscription}
+                  className="w-full bg-primary hover:bg-primary/90"
+                  size="lg"
+                >
+                  {isCreatingSubscription ? 'Setting up your trial...' : 'Start Your 7-Day Free Trial'}
+                </Button>
 
               </div>
             </CardContent>
