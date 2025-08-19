@@ -34,6 +34,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Temporary debugging useEffect to log session data
+  useEffect(() => {
+    const logSessionData = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        console.log("Session debug log:");
+        console.log("- Session data:", data.session);
+        console.log("- Access token present:", !!data.session?.access_token);
+        console.log("- User ID:", data.session?.user?.id);
+        console.log("- User email:", data.session?.user?.email);
+        if (error) {
+          console.log("- Session error:", error);
+        }
+      } catch (err) {
+        console.log("Session debug error:", err);
+      }
+    };
+
+    logSessionData();
+  }, [session]); // Re-run when session changes
+
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
