@@ -1,4 +1,5 @@
 import type { Express, Request, Response, NextFunction } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertSessionSchema, insertTargetSchema, insertCalmPlaceSchema, insertResourceSchema, insertBilateralSessionSchema, insertScriptProgressionSchema } from "@shared/schema";
@@ -411,8 +412,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Full Stripe subscription endpoint
-  app.post('/api/get-or-create-subscription', async (req, res) => {
+  // Stripe Checkout session endpoint for subscription with trial
+  app.post('/api/create-checkout-session', async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -422,12 +423,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (user.stripeSubscriptionId) {
       try {
         const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-        const latestInvoice = subscription.latest_invoice as any;
-        res.send({
-          subscriptionId: subscription.id,
-          clientSecret: latestInvoice?.payment_intent?.client_secret,
-        });
-        return;
+        if (['active', 'trialing', 'past_due'].includes(subscription.status)) {
+          console.log('[stripe] User already has active subscription:', subscription.id);
+          // User already has an active subscription, redirect to success
+          return res.json({
+            url: `${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://' + process.env.REPL_SLUG + '.' + process.env.REPL_OWNER + '.repl.co'}/emdr-session`
+          });
+        }
       } catch (error) {
         console.error('Error retrieving subscription:', error);
       }
@@ -495,54 +497,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Update user record with existing subscription
         await storage.updateUserStripeInfo(user.id, customer.id, activeSubscription.id);
         
-        const latestInvoice = activeSubscription.latest_invoice as any;
-        res.send({
-          subscriptionId: activeSubscription.id,
-          clientSecret: latestInvoice?.payment_intent?.client_secret,
+        // User already has an active subscription, redirect to success
+        return res.json({
+          url: `${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://' + process.env.REPL_SLUG + '.' + process.env.REPL_OWNER + '.repl.co'}/emdr-session`
         });
-        return;
       }
 
-      // Fail fast IF malformed AFTER normalization
+      // Get price ID
       const price = readPriceId();
       if (!price || !/^price_[A-Za-z0-9]+$/.test(price)) {
         console.error('Invalid or missing STRIPE_PRICE_ID env');
         throw new Error('Server not configured (price id)');
       }
+
+      // Create Stripe Checkout session
+      const baseUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:5000' 
+        : `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+
+      console.log('[stripe] Creating checkout session for customer:', customer.id);
       
-      console.log('[stripe] Creating new subscription', { 
-        customer: customer.id, 
-        price, 
-        trial_period_days: 7, 
-        meta: 'user_id:' + user.id 
-      });
-      
-      const subscription = await stripe.subscriptions.create({
+      const session = await stripe.checkout.sessions.create({
         customer: customer.id,
-        items: [{
-          price: price,
-        }],
-        trial_period_days: 7,
-        payment_behavior: 'default_incomplete',
-        expand: ['latest_invoice.payment_intent'],
-        metadata: {
-          user_id: user.id.toString(),
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: price,
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        subscription_data: {
+          trial_period_days: 7,
+          metadata: {
+            user_id: user.id.toString(),
+          },
+        },
+        success_url: `${baseUrl}/emdr-session?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/?cancelled=true`,
+        allow_promotion_codes: true,
+        billing_address_collection: 'auto',
+        customer_update: {
+          address: 'auto',
         },
       });
 
-      console.log('[stripe] Successfully created subscription:', subscription.id);
-      // Update user with subscription ID
-      await storage.updateUserStripeInfo(user.id, customer.id, subscription.id);
-  
-      const latestInvoice = subscription.latest_invoice as any;
-      res.send({
-        subscriptionId: subscription.id,
-        clientSecret: latestInvoice?.payment_intent?.client_secret,
+      console.log('[stripe] Created checkout session:', session.id);
+      
+      res.json({
+        url: session.url
       });
     } catch (error: any) {
-      console.error('Subscription creation error:', error);
+      console.error('Checkout session creation error:', error);
       return res.status(400).send({ error: { message: error.message } });
     }
+  });
+
+  // Webhook to handle successful Stripe Checkout sessions
+  app.post('/api/stripe-checkout-webhook', express.raw({type: 'application/json'}), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+      // In production, you should set this webhook secret in environment variables
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      if (webhookSecret) {
+        event = stripe.webhooks.constructEvent(req.body, sig as string, webhookSecret);
+      } else {
+        // For development, just parse the JSON body
+        event = JSON.parse(req.body.toString());
+      }
+    } catch (err: any) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    console.log('[stripe-webhook] Event type:', event.type);
+
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed':
+          const session = event.data.object;
+          console.log('[stripe-webhook] Checkout session completed:', session.id);
+          
+          if (session.mode === 'subscription' && session.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+            const customerId = session.customer as string;
+            
+            // Find user by customer ID and update subscription info
+            const customer = await stripe.customers.retrieve(customerId);
+            if (customer && !customer.deleted && customer.email) {
+              // Update user subscription status in database
+              console.log('[stripe-webhook] Updating subscription for customer:', customer.email);
+              // Note: You may need to implement a method to find user by email and update subscription
+            }
+          }
+          break;
+
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          const subscription = event.data.object;
+          console.log('[stripe-webhook] Subscription event:', event.type, subscription.id);
+          
+          if (subscription.metadata?.user_id) {
+            const userId = parseInt(subscription.metadata.user_id);
+            await storage.updateUserStripeInfo(userId, subscription.customer as string, subscription.id);
+            console.log('[stripe-webhook] Updated user subscription info for user:', userId);
+          }
+          break;
+
+        case 'customer.subscription.deleted':
+          const deletedSubscription = event.data.object;
+          console.log('[stripe-webhook] Subscription cancelled:', deletedSubscription.id);
+          
+          if (deletedSubscription.metadata?.user_id) {
+            const userId = parseInt(deletedSubscription.metadata.user_id);
+            await storage.updateUserSubscriptionStatus(userId, 'cancelled');
+            console.log('[stripe-webhook] Updated user subscription status to cancelled for user:', userId);
+          }
+          break;
+
+        default:
+          console.log('[stripe-webhook] Unhandled event type:', event.type);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error('[stripe-webhook] Error processing webhook:', error);
+      res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  });
+
+  // Handle successful checkout session return
+  app.get('/emdr-session', (req, res, next) => {
+    const sessionId = req.query.session_id as string;
+    
+    if (sessionId) {
+      console.log('[checkout-success] User returned from successful checkout:', sessionId);
+      // You can verify the session here if needed
+      // For now, just continue to the normal EMDR session route handling
+    }
+    
+    next(); // Continue to normal route handling
   });
 
   // Protected middleware

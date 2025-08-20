@@ -173,17 +173,17 @@ export default function Home() {
 
       setIsCreatingSubscription(true);
 
-      // Call subscription endpoint
-      const response = await apiRequest('POST', '/api/get-or-create-subscription');
+      // Call checkout session endpoint
+      const response = await apiRequest('POST', '/api/create-checkout-session');
       const data = await response.json();
 
-      if (data.subscriptionId) {
-        // Subscription created successfully, continue to EMDR session
-        setLocation('/emdr-session');
+      if (data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
       } else {
         // Handle any subscription setup issues
-        console.error('Subscription creation failed:', data);
-        alert('Unable to set up subscription. Please try again.');
+        console.error('Checkout session creation failed:', data);
+        alert('Unable to create checkout session. Please try again.');
       }
     } catch (error) {
       console.error('Subscription flow error:', error);
@@ -199,7 +199,7 @@ export default function Home() {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       if (currentUser) {
-        // User is authenticated, proceed with subscription flow
+        // User is authenticated, proceed with checkout flow
         await handleSubscriptionFlow();
       } else {
         // User not authenticated, redirect to auth
