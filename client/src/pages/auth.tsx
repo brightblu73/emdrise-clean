@@ -29,24 +29,28 @@ export default function Auth() {
     const { data } = await supabase.auth.getSession();
     console.log("Supabase access token:", data.session?.access_token);
     
-    // Post-auth routing rule: check if therapist selected
-    const selectedTherapist = localStorage.getItem('selectedTherapist');
-    if (selectedTherapist) {
-      setLocation("/emdr-session");
-    } else {
-      setLocation("/"); // Go to home to pick therapist first
-    }
+    // Post-auth routing: always go to homepage for subscribed users
+    setLocation("/");
   }
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth-callback`
+      }
+    });
     if (error) {
       console.error('Sign up error:', error);
       alert(error.message);
       return;
     }
-    alert('Check your email to confirm your account, then sign in.');
+    
+    if (data.user && !data.user.email_confirmed_at) {
+      alert('Check your email to verify your account. After verification, you\'ll be redirected to complete your trial setup.');
+    }
   }
 
 
@@ -136,7 +140,7 @@ export default function Auth() {
             </div>
 
             {/* Email and Password Form */}
-            <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -162,22 +166,30 @@ export default function Auth() {
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full emdr-gradient text-white"
-              >
-                Sign In
-              </Button>
-              
+              {/* Create Account / Start Free Trial - Move to top */}
               <Button 
                 type="button" 
-                variant="outline"
-                className="w-full"
+                className="w-full emdr-gradient text-white"
                 onClick={handleSignUp}
               >
                 Create Account / Start Free Trial
               </Button>
-            </form>
+
+              {/* Separator */}
+              <div className="text-center">
+                <p className="text-sm text-slate-600">Already have an account? Sign in below.</p>
+              </div>
+              
+              {/* Sign In Button */}
+              <Button 
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleLogin}
+              >
+                Sign In
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

@@ -35,6 +35,7 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
+  const [showTrialSuccessMessage, setShowTrialSuccessMessage] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
@@ -152,11 +153,25 @@ export default function Home() {
     }
   };
 
+  // Check URL parameters for trial success
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('trial_started') === 'true') {
+      setShowTrialSuccessMessage(true);
+      // Clear the URL parameter
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   // Check Supabase authentication state
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setIsLoggedIn(!!session?.user))
-    return () => subscription.unsubscribe()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   // Handle subscription flow for authenticated users
@@ -228,15 +243,22 @@ export default function Home() {
                 Led by a therapist-designed video guide. Walking with you step by step offering structure, support, and connection when you need it most.
               </p>
               {user && isLoggedIn ? (
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button 
-                    onClick={handleSubscriptionFlow}
-                    disabled={isCreatingSubscription}
-                    size="lg" 
-                    className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
-                  >
-                    {isCreatingSubscription ? 'Setting up...' : 'Choose Therapist & Continue'}
-                  </Button>
+                <div className="space-y-4">
+                  {showTrialSuccessMessage && (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+                      <p className="text-green-800 font-medium">🎉 Trial Started Successfully!</p>
+                      <p className="text-green-700 text-sm">Your 7-day free trial is now active. Start your EMDR journey below.</p>
+                    </div>
+                  )}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button 
+                      onClick={() => setLocation('/emdr-session')}
+                      size="lg" 
+                      className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
+                    >
+                      Choose Therapist & Continue Your Journey
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">

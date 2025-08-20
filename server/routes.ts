@@ -533,7 +533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             user_id: user.id.toString(),
           },
         },
-        success_url: `${baseUrl}/emdr-session?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${baseUrl}/?trial_started=true&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/?cancelled=true`,
         allow_promotion_codes: true,
         billing_address_collection: 'auto',
