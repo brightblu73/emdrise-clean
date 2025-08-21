@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "../state/AuthProvider";
 
 import { supabase } from '@/lib/supabase';
+import { apiRequest } from '@/lib/queryClient';
 import { Brain, Apple, Mail } from "lucide-react";
 
 export default function Auth() {
@@ -16,40 +17,94 @@ export default function Auth() {
   const [password, setPassword] = useState('');
 
   // Supabase authentication handlers
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    const { error } = await signInWithEmail(email, password);
-    if (error) {
-      console.error('Login error:', error);
-      alert(error.message);
+  async function handleLogin(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    
+    if (!email || !password) {
+      alert('Please enter both email and password');
       return;
     }
     
-    // Log access token immediately after successful login
-    const { data } = await supabase.auth.getSession();
-    console.log("Supabase access token:", data.session?.access_token);
+    console.log('Starting sign in process for:', email);
     
-    // Post-auth routing: always go to homepage for subscribed users
-    setLocation("/");
+    try {
+      const { error } = await signInWithEmail(email, password);
+      if (error) {
+        console.error('Login error:', error);
+        alert(error.message);
+        return;
+      }
+      
+      // Log access token immediately after successful login
+      const { data } = await supabase.auth.getSession();
+      console.log("Supabase access token:", data.session?.access_token);
+      
+      // Check if user has a subscription, if not redirect to auth-callback for Stripe setup
+      console.log('Login successful, checking subscription status...');
+      
+      // Small delay to ensure auth state is propagated
+      setTimeout(async () => {
+        try {
+          const response = await apiRequest('GET', '/api/subscription-status');
+          const subscriptionData = await response.json();
+          console.log('Subscription status:', subscriptionData);
+          
+          if (subscriptionData.hasActiveSubscription) {
+            // User has subscription, go to homepage
+            setLocation("/");
+          } else {
+            // User doesn't have subscription, redirect to auth-callback for Stripe setup
+            setLocation("/auth-callback");
+          }
+        } catch (error) {
+          console.error('Error checking subscription:', error);
+          // If subscription check fails, redirect to auth-callback to be safe
+          setLocation("/auth-callback");
+        }
+      }, 500);
+    } catch (error) {
+      console.error('Login exception:', error);
+      alert('Login failed. Please try again.');
+    }
   }
 
-  async function handleSignUp(e: React.FormEvent) {
-    e.preventDefault();
-    const { data, error } = await supabase.auth.signUp({ 
-      email, 
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth-callback`
-      }
-    });
-    if (error) {
-      console.error('Sign up error:', error);
-      alert(error.message);
+  async function handleSignUp(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    
+    if (!email || !password) {
+      alert('Please enter both email and password');
       return;
     }
     
-    if (data.user && !data.user.email_confirmed_at) {
-      alert('Check your email to verify your account. After verification, you\'ll be redirected to complete your trial setup.');
+    console.log('Starting sign up process for:', email);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth-callback`
+        }
+      });
+      
+      if (error) {
+        console.error('Sign up error:', error);
+        alert(error.message);
+        return;
+      }
+      
+      console.log('Sign up response:', data);
+      
+      if (data.user && !data.user.email_confirmed_at) {
+        alert('Check your email to verify your account. After verification, you\'ll be redirected to complete your trial setup.');
+      } else if (data.user && data.user.email_confirmed_at) {
+        // User is already confirmed, redirect to auth-callback to handle Stripe
+        console.log('User already confirmed, redirecting to auth-callback');
+        setLocation('/auth-callback');
+      }
+    } catch (error) {
+      console.error('Sign up exception:', error);
+      alert('Sign up failed. Please try again.');
     }
   }
 

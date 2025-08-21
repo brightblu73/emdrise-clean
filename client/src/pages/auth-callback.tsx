@@ -19,19 +19,35 @@ export default function AuthCallback() {
         }
 
         if (data.session) {
-          console.log('User authenticated successfully, redirecting to Stripe checkout...');
+          console.log('User authenticated successfully, checking subscription status...');
           
-          // User is now authenticated, redirect to Stripe checkout
+          // Check if user already has an active subscription
+          try {
+            const statusResponse = await apiRequest('GET', '/api/subscription-status');
+            const statusData = await statusResponse.json();
+            console.log('Subscription status in auth-callback:', statusData);
+            
+            if (statusData.hasActiveSubscription) {
+              console.log('User already has active subscription, redirecting to homepage');
+              setLocation('/?trial_started=true');
+              return;
+            }
+          } catch (error) {
+            console.error('Error checking subscription status:', error);
+          }
+          
+          // User doesn't have subscription, redirect to Stripe checkout
           try {
             const response = await apiRequest('POST', '/api/create-checkout-session');
             const checkoutData = await response.json();
             
             if (checkoutData.url) {
               // Redirect to Stripe Checkout
+              console.log('Redirecting to Stripe Checkout:', checkoutData.url);
               window.location.href = checkoutData.url;
             } else {
               // If user already has subscription, go to homepage
-              setLocation('/');
+              setLocation('/?trial_started=true');
             }
           } catch (error) {
             console.error('Error creating checkout session:', error);

@@ -553,6 +553,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check subscription status endpoint
+  app.get('/api/subscription-status', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    try {
+      const user = req.user;
+      let hasActiveSubscription = false;
+
+      if (user.stripeSubscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+          hasActiveSubscription = subscription.status === 'active' || subscription.status === 'trialing';
+        } catch (error) {
+          console.error('Error checking subscription status:', error);
+        }
+      }
+
+      res.json({ 
+        hasActiveSubscription,
+        subscriptionId: user.stripeSubscriptionId,
+        customerId: user.stripeCustomerId
+      });
+    } catch (error) {
+      console.error('Subscription status check error:', error);
+      res.status(500).json({ error: 'Failed to check subscription status' });
+    }
+  });
+
   // Webhook to handle successful Stripe Checkout sessions
   app.post('/api/stripe-checkout-webhook', express.raw({type: 'application/json'}), async (req, res) => {
     const sig = req.headers['stripe-signature'];
