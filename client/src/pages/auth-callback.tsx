@@ -22,48 +22,12 @@ export default function AuthCallback() {
         }
 
         if (data.session) {
-          console.log('User authenticated successfully, checking subscription status...');
-          setStatus('Checking your subscription...');
+          console.log('User authenticated successfully, redirecting to homepage...');
+          setStatus('Welcome back! Redirecting...');
           
-          // Check if user already has an active subscription
-          try {
-            const statusResponse = await apiRequest('GET', '/api/subscription-status');
-            const statusData = await statusResponse.json();
-            console.log('Subscription status in auth-callback:', statusData);
-            
-            if (statusData.hasActiveSubscription) {
-              console.log('User already has active subscription, redirecting to homepage');
-              setStatus('Welcome back! Redirecting...');
-              setTimeout(() => setLocation('/?trial_started=true'), 500);
-              return;
-            }
-          } catch (error) {
-            console.error('Error checking subscription status:', error);
-          }
-          
-          // User doesn't have subscription, redirect to Stripe checkout
-          setStatus('Setting up your trial...');
-          try {
-            const response = await apiRequest('POST', '/api/create-checkout-session');
-            const checkoutData = await response.json();
-            
-            if (checkoutData.url) {
-              // Redirect to Stripe Checkout
-              console.log('Redirecting to Stripe Checkout:', checkoutData.url);
-              setStatus('Redirecting to checkout...');
-              // Small delay to show status before redirect
-              setTimeout(() => {
-                window.location.href = checkoutData.url;
-              }, 800);
-            } else {
-              // If user already has subscription, go to homepage
-              setStatus('Finalizing setup...');
-              setTimeout(() => setLocation('/?trial_started=true'), 500);
-            }
-          } catch (error) {
-            console.error('Error creating checkout session:', error);
-            setLocation('/');
-          }
+          // Always redirect to homepage - let the homepage handle subscription status
+          // Only redirect to Stripe if user explicitly starts a trial flow
+          setTimeout(() => setLocation('/'), 500);
         } else {
           // No session, redirect to auth
           setLocation('/auth');

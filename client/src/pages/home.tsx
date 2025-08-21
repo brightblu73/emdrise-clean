@@ -35,8 +35,6 @@ export default function Home() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
   const [showTrialSuccessMessage, setShowTrialSuccessMessage] = useState(false);
-  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
-  const [hasActiveSubscription, setHasActiveSubscription] = useState<boolean | null>(null);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
@@ -164,29 +162,8 @@ export default function Home() {
     }
   }, []);
 
-  // Check subscription status when user authentication state changes
-  useEffect(() => {
-    const checkSubscriptionStatus = async () => {
-      if (!user || loading) {
-        setHasActiveSubscription(null);
-        return;
-      }
-      
-      setSubscriptionLoading(true);
-      try {
-        const response = await apiRequest('GET', '/api/subscription-status');
-        const statusData = await response.json();
-        setHasActiveSubscription(statusData.hasActiveSubscription);
-      } catch (error) {
-        console.error('Error checking subscription status:', error);
-        setHasActiveSubscription(false);
-      } finally {
-        setSubscriptionLoading(false);
-      }
-    };
-
-    checkSubscriptionStatus();
-  }, [user, loading]);
+  // No need to check subscription status on homepage
+  // Subscription check will happen in the EMDR session when needed
 
   // Handle subscription flow for authenticated users
   const handleSubscriptionFlow = async () => {
@@ -256,11 +233,11 @@ export default function Home() {
               <p className="text-xl mb-8 text-blue-100">
                 Led by a therapist-designed video guide. Walking with you step by step offering structure, support, and connection when you need it most.
               </p>
-              {loading || subscriptionLoading ? (
+              {loading ? (
                 <div className="flex justify-center">
                   <div className="animate-spin w-8 h-8 border-4 border-white border-t-transparent rounded-full"></div>
                 </div>
-              ) : user && hasActiveSubscription ? (
+              ) : user ? (
                 <div className="space-y-4">
                   {showTrialSuccessMessage && (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
