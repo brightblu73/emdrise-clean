@@ -15,45 +15,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!mounted) return;
-      setSession(data.session ?? null);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    })();
+    
+    const initializeAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!mounted) return;
+        setSession(data.session ?? null);
+        setUser(data.session?.user ?? null);
+      } catch (error) {
+        console.error('Error getting session:', error);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    initializeAuth();
+    
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      if (!mounted) return;
       setSession(s);
       setUser(s?.user ?? null);
+      setLoading(false);
       
       // Log access token when authentication state changes to SIGNED_IN
       if (event === 'SIGNED_IN' && s?.access_token) {
         console.log("Supabase access token:", s.access_token);
       }
     });
-    return () => sub.subscription.unsubscribe();
+    
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
-  // Temporary debugging useEffect to log session data
+  // Reduced debugging - only log when session changes occur
   useEffect(() => {
-    const logSessionData = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        console.log("Session debug log:");
-        console.log("- Session data:", data.session);
-        console.log("- Access token present:", !!data.session?.access_token);
-        console.log("- User ID:", data.session?.user?.id);
-        console.log("- User email:", data.session?.user?.email);
-        if (error) {
-          console.log("- Session error:", error);
-        }
-      } catch (err) {
-        console.log("Session debug error:", err);
-      }
-    };
-
-    logSessionData();
-  }, [session]); // Re-run when session changes
+    if (session?.user) {
+      console.log("Session debug log:");
+      console.log("- Session data:", session);
+      console.log("- Access token present:", !!session?.access_token);
+      console.log("- User ID:", session?.user?.id);
+      console.log("- User email:", session?.user?.email);
+    } else if (!loading) {
+      console.log("Session debug log:");
+      console.log("- Session data:", null);
+      console.log("- Access token present:", false);
+      console.log("- User ID:", null);
+      console.log("- User email:", null);
+    }
+  }, [session, loading]); // Only log when session or loading state changes
 
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true);

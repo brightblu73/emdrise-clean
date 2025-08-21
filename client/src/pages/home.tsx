@@ -19,7 +19,7 @@ import { Logo } from "@/components/ui/logo";
 import { AuthTest } from "@/components/AuthTest";
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
   const [isVisualBLSActive, setIsVisualBLSActive] = useState(false);
   const [isAudioBLSActive, setIsAudioBLSActive] = useState(false);
@@ -32,10 +32,11 @@ export default function Home() {
     // Get saved therapist from localStorage
     return (localStorage.getItem('selectedTherapist') as 'female' | 'male') || null;
   });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
   const [showTrialSuccessMessage, setShowTrialSuccessMessage] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState<boolean | null>(null);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
@@ -163,16 +164,29 @@ export default function Home() {
     }
   }, []);
 
-  // Check Supabase authentication state
+  // Check subscription status when user authentication state changes
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setIsLoggedIn(!!user);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setIsLoggedIn(!!session?.user);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+    const checkSubscriptionStatus = async () => {
+      if (!user || loading) {
+        setHasActiveSubscription(null);
+        return;
+      }
+      
+      setSubscriptionLoading(true);
+      try {
+        const response = await apiRequest('GET', '/api/subscription-status');
+        const statusData = await response.json();
+        setHasActiveSubscription(statusData.hasActiveSubscription);
+      } catch (error) {
+        console.error('Error checking subscription status:', error);
+        setHasActiveSubscription(false);
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    checkSubscriptionStatus();
+  }, [user, loading]);
 
   // Handle subscription flow for authenticated users
   const handleSubscriptionFlow = async () => {
@@ -242,7 +256,11 @@ export default function Home() {
               <p className="text-xl mb-8 text-blue-100">
                 Led by a therapist-designed video guide. Walking with you step by step offering structure, support, and connection when you need it most.
               </p>
-              {user && isLoggedIn ? (
+              {loading || subscriptionLoading ? (
+                <div className="flex justify-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-white border-t-transparent rounded-full"></div>
+                </div>
+              ) : user && hasActiveSubscription ? (
                 <div className="space-y-4">
                   {showTrialSuccessMessage && (
                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
