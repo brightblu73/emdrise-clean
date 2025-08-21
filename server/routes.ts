@@ -503,7 +503,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // User already has an active subscription, redirect to homepage with success message
         const baseUrl = 'https://14facb85-f01b-45d6-b44f-890bfbec4a96-00-t0829fmlj73n.picard.replit.dev';
         return res.json({
-          url: `${baseUrl}/home`
+          url: `${baseUrl}/`
         });
       }
 
@@ -535,8 +535,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             user_id: user.id.toString(),
           },
         },
-        success_url: `${baseUrl}/home`,
-        cancel_url: `${baseUrl}/home`,
+        success_url: `${baseUrl}/`,
+        cancel_url: `${baseUrl}/`,
         allow_promotion_codes: true,
         billing_address_collection: 'auto',
         customer_update: {
