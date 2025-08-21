@@ -270,6 +270,9 @@ export default function Home() {
                   >
                     {isCreatingSubscription ? 'Setting up your trial...' : 'Start Your 7-Day Free Trial'}
                   </Button>
+                  <div className="text-sm text-blue-200 text-center mt-2">
+                    ✓ 7-day free trial • £12.99/month after trial • ✓ Cancel anytime
+                  </div>
 
                   {/* Login to Continue Journey CTA */}
                   <p className="text-blue-100 text-sm text-center mb-2">
@@ -354,9 +357,7 @@ export default function Home() {
                 </DialogContent>
               </Dialog>
 
-              <div className="text-sm text-blue-200 text-center">
-                ✓ 7-day free trial • £12.99/month after trial • ✓ Cancel anytime
-              </div>
+
             </div>
             <div className="relative">
               <Card className="therapeutic-bg p-8 text-center">
