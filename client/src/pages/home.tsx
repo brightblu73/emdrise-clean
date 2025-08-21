@@ -281,9 +281,8 @@ export default function Home() {
                   <Button
                     onClick={handleStartTrial}
                     disabled={isCreatingSubscription}
-                    variant="outline"
                     size="lg" 
-                    className="w-full py-4 text-lg font-semibold bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary whitespace-normal break-words text-center leading-snug"
+                    className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
                   >
                     {isCreatingSubscription ? 'Setting up...' : 'Choose Therapist & Continue'}
                   </Button>
