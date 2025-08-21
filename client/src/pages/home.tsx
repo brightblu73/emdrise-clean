@@ -272,6 +272,9 @@ export default function Home() {
                   </Button>
 
                   {/* Login to Continue Journey CTA */}
+                  <p className="text-blue-100 text-sm text-center mb-2">
+                    Already signed up? Log in and continue your journey after selecting your therapist.
+                  </p>
                   <Button
                     onClick={handleStartTrial}
                     disabled={isCreatingSubscription}
