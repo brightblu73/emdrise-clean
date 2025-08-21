@@ -9,6 +9,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import Stripe from "stripe";
 import { createClient } from '@supabase/supabase-js';
+import { handleRevenueCatWebhook, verifyRevenueCatWebhook } from './revenuecat-webhook';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
@@ -584,6 +585,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to check subscription status' });
     }
   });
+
+  // RevenueCat webhook to handle iOS/Android subscription events
+  app.post('/api/revenuecat-webhook', express.json(), verifyRevenueCatWebhook, handleRevenueCatWebhook);
 
   // Webhook to handle successful Stripe Checkout sessions
   app.post('/api/stripe-checkout-webhook', express.raw({type: 'application/json'}), async (req, res) => {

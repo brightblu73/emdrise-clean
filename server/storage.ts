@@ -15,7 +15,13 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User>;
   updateUserStripeInfo(id: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User>;
-  updateUserSubscriptionStatus(id: number, status: string): Promise<User>;
+  updateUserSubscriptionStatus(userId: string, subscriptionData: {
+    hasActiveSubscription: boolean;
+    subscriptionId: string;
+    customerId: string;
+    productId?: string;
+    expirationDate?: Date | null;
+  }): Promise<void>;
   updateUserTrialEndDate?(id: number, trialEndDate: Date): Promise<User>;
   getUserByStripeCustomerId(customerId: string): Promise<User | undefined>;
   
@@ -108,13 +114,25 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUserSubscriptionStatus(id: number, status: string): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({ subscriptionStatus: status })
-      .where(eq(users.id, id))
-      .returning();
-    return user;
+  async updateUserSubscriptionStatus(userId: string, subscriptionData: {
+    hasActiveSubscription: boolean;
+    subscriptionId: string;
+    customerId: string;
+    productId?: string;
+    expirationDate?: Date | null;
+  }): Promise<void> {
+    // First try to find user by Supabase user ID (string format)
+    const user = await this.getUserByEmail(userId);
+    if (user) {
+      await db
+        .update(users)
+        .set({ 
+          subscriptionStatus: subscriptionData.hasActiveSubscription ? 'active' : 'expired',
+          stripeCustomerId: subscriptionData.customerId,
+          stripeSubscriptionId: subscriptionData.subscriptionId,
+        })
+        .where(eq(users.id, user.id));
+    }
   }
 
   async updateUserTrialEndDate(id: number, trialEndDate: Date): Promise<User> {
