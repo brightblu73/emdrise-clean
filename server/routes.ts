@@ -501,11 +501,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserStripeInfo(user.id, customer.id, activeSubscription.id);
         
         // User already has an active subscription, redirect to homepage with success message
-        const baseUrl = process.env.NODE_ENV === 'development' 
-          ? 'http://localhost:5000' 
-          : `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+        const baseUrl = 'https://14facb85-f01b-45d6-b44f-890bfbec4a96-00-t0829fmlj73n.picard.replit.dev';
         return res.json({
-          url: `${baseUrl}?trial_started=true`
+          url: `${baseUrl}/home?trial_started=true`
         });
       }
 
@@ -517,9 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create Stripe Checkout session
-      const baseUrl = process.env.NODE_ENV === 'development' 
-        ? 'http://localhost:5000' 
-        : `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+      const baseUrl = 'https://14facb85-f01b-45d6-b44f-890bfbec4a96-00-t0829fmlj73n.picard.replit.dev';
 
       console.log('[stripe] Creating checkout session for customer:', customer.id);
       
@@ -539,8 +535,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             user_id: user.id.toString(),
           },
         },
-        success_url: `${baseUrl}?trial_started=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/?cancelled=true`,
+        success_url: `${baseUrl}/home?trial_started=true&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/home?cancelled=true`,
         allow_promotion_codes: true,
         billing_address_collection: 'auto',
         customer_update: {
