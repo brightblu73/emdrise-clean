@@ -39,28 +39,12 @@ export default function Auth() {
       const { data } = await supabase.auth.getSession();
       console.log("Supabase access token:", data.session?.access_token);
       
-      // Check if user has a subscription, if not redirect to auth-callback for Stripe setup
-      console.log('Login successful, checking subscription status...');
+      // Always redirect logged-in users to homepage - no subscription checking needed
+      console.log('Login successful, redirecting to homepage...');
       
       // Small delay to ensure auth state is propagated
-      setTimeout(async () => {
-        try {
-          const response = await apiRequest('GET', '/api/subscription-status');
-          const subscriptionData = await response.json();
-          console.log('Subscription status:', subscriptionData);
-          
-          if (subscriptionData.hasActiveSubscription) {
-            // User has subscription, go to homepage
-            setLocation("/");
-          } else {
-            // User doesn't have subscription, redirect to auth-callback for Stripe setup
-            setLocation("/auth-callback");
-          }
-        } catch (error) {
-          console.error('Error checking subscription:', error);
-          // If subscription check fails, redirect to auth-callback to be safe
-          setLocation("/auth-callback");
-        }
+      setTimeout(() => {
+        setLocation("/");
       }, 500);
     } catch (error) {
       console.error('Login exception:', error);
