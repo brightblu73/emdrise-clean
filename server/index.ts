@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
@@ -106,10 +107,25 @@ app.post('/api/stripe-webhook', async (req, res) => {
         const s = event.data.object as Stripe.Checkout.Session;
         const subscriptionId = (s.subscription as string) || null;
         const customerId = (s.customer as string) || null;
-        const userId = s.metadata?.user_id || null;
+        let userId = s.metadata?.user_id || null;
         console.log('[webhook] checkout completed for user:', userId);
+        
+        // If no user_id in metadata, try to find it by customer ID
+        if (!userId && customerId) {
+          try {
+            console.log('[webhook] No user_id in metadata, searching by customer ID:', customerId);
+            const userByCustomer = await storage.getUserByStripeCustomerId(customerId);
+            if (userByCustomer) {
+              userId = userByCustomer.id.toString();
+              console.log('[webhook] Found user by customer ID:', userId);
+            }
+          } catch (error) {
+            console.error('[webhook] Error finding user by customer ID:', error);
+          }
+        }
+        
         // fetch subscription for more fields
-        if (subscriptionId) {
+        if (subscriptionId && userId) {
           const sub = await stripe.subscriptions.retrieve(subscriptionId);
           await upsertSubscriptionStatus({
             user_id: userId,
@@ -120,6 +136,8 @@ app.post('/api/stripe-webhook', async (req, res) => {
             trial_end: (sub as any).trial_end,
             cancel_at: (sub as any).cancel_at,
           });
+        } else {
+          console.error('[webhook] Cannot process checkout completion - missing userId or subscriptionId');
         }
         break;
       }

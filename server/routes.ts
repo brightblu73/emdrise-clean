@@ -425,9 +425,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
         if (['active', 'trialing', 'past_due'].includes(subscription.status)) {
           console.log('[stripe] User already has active subscription:', subscription.id);
-          // User already has an active subscription, redirect to success
+          // User already has an active subscription, redirect to homepage with success message
+          const baseUrl = process.env.NODE_ENV === 'development' 
+            ? 'http://localhost:5000' 
+            : `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
           return res.json({
-            url: `${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://' + process.env.REPL_SLUG + '.' + process.env.REPL_OWNER + '.repl.co'}/emdr-session`
+            url: `${baseUrl}?trial_started=true`
           });
         }
       } catch (error) {
@@ -533,7 +536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             user_id: user.id.toString(),
           },
         },
-        success_url: `${baseUrl}/?trial_started=true&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${baseUrl}?trial_started=true&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${baseUrl}/?cancelled=true`,
         allow_promotion_codes: true,
         billing_address_collection: 'auto',
