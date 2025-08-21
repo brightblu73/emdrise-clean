@@ -238,8 +238,7 @@ export default function Auth() {
               {/* Sign In Button */}
               <Button 
                 type="button"
-                variant="outline"
-                className="w-full"
+                className="w-full emdr-gradient text-white"
                 onClick={handleLogin}
               >
                 Sign In
