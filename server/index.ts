@@ -118,6 +118,24 @@ app.post('/api/stripe-webhook', async (req, res) => {
             if (userByCustomer) {
               userId = userByCustomer.id.toString();
               console.log('[webhook] Found user by customer ID:', userId);
+            } else {
+              console.log('[webhook] No user found with customer ID:', customerId);
+              // Also try finding by email from Stripe customer
+              try {
+                const customer = await stripe.customers.retrieve(customerId);
+                if (customer && !customer.deleted && customer.email) {
+                  console.log('[webhook] Trying to find user by email:', customer.email);
+                  const userByEmail = await storage.getUserByEmail(customer.email);
+                  if (userByEmail) {
+                    userId = userByEmail.id.toString();
+                    console.log('[webhook] Found user by email, updating customer ID in database');
+                    // Update the user record with the Stripe customer ID
+                    await storage.updateUserStripeInfo(userByEmail.id, customerId, '');
+                  }
+                }
+              } catch (emailError) {
+                console.error('[webhook] Error finding user by email:', emailError);
+              }
             }
           } catch (error) {
             console.error('[webhook] Error finding user by customer ID:', error);

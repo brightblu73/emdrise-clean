@@ -500,9 +500,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Update user record with existing subscription
         await storage.updateUserStripeInfo(user.id, customer.id, activeSubscription.id);
         
-        // User already has an active subscription, redirect to success
+        // User already has an active subscription, redirect to homepage with success message
+        const baseUrl = process.env.NODE_ENV === 'development' 
+          ? 'http://localhost:5000' 
+          : `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
         return res.json({
-          url: `${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://' + process.env.REPL_SLUG + '.' + process.env.REPL_OWNER + '.repl.co'}/emdr-session`
+          url: `${baseUrl}?trial_started=true`
         });
       }
 
