@@ -16,7 +16,7 @@ import alistairPortrait from "@/assets/alistair-headshot.jpg";
 import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
 import EndorsementCarousel from "@/components/EndorsementCarousel";
 import { Logo } from "@/components/ui/logo";
-import { AuthTest } from "@/components/AuthTest";
+
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -480,14 +480,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* JWT Auth Test Component (Temporary) */}
-      {user && (
-        <section className="py-8 px-4 bg-gray-50">
-          <div className="container mx-auto max-w-6xl">
-            <AuthTest />
-          </div>
-        </section>
-      )}
+
 
       {/* Minimal Footer */}
       <footer className="bg-slate-100 border-t border-slate-200 py-6 px-4">

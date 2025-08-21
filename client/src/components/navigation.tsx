@@ -122,19 +122,7 @@ export default function Navigation() {
                       </DropdownMenuItem>
                     </a>
 
-                    <a href="/api/dev/auth" target="_blank" rel="noopener noreferrer">
-                      <DropdownMenuItem>
-                        <Eye className="h-4 w-4 mr-2" />
-                        Debug Auth Check
-                      </DropdownMenuItem>
-                    </a>
 
-                    <a href="/api/session-dump" target="_blank" rel="noopener noreferrer">
-                      <DropdownMenuItem>
-                        <Eye className="h-4 w-4 mr-2" />
-                        Session Dump
-                      </DropdownMenuItem>
-                    </a>
 
                     <DropdownMenuSeparator />
 
