@@ -152,8 +152,11 @@ export default function Home() {
     }
   };
 
-  // Check URL parameters for trial success
+  // Check URL parameters for trial success and scroll to top
   useEffect(() => {
+    // Always scroll to top when homepage loads
+    window.scrollTo(0, 0);
+    
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('trial_started') === 'true') {
       setShowTrialSuccessMessage(true);
