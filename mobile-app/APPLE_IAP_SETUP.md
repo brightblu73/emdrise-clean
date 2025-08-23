@@ -29,7 +29,7 @@ This guide will help you set up Apple In-App Purchases (IAP) with RevenueCat for
 ### 3. Create Subscription Product
 1. Inside the subscription group, click **Create Subscription**
 2. Configure subscription:
-   - **Product ID**: `emdrise_monthly_subscription` (remember this!)
+   - **Product ID**: `com.emdrise.monthly` (remember this!)
    - **Reference Name**: EMDRise Monthly
    - **Review Notes**: Monthly subscription for EMDR therapy access
    - **Cleared for Sale**: Yes
@@ -69,7 +69,7 @@ This guide will help you set up Apple In-App Purchases (IAP) with RevenueCat for
 1. Go to **Products** in RevenueCat
 2. **Import from App Store Connect** (recommended)
 3. Or manually create:
-   - **Identifier**: `emdrise_monthly_subscription`
+   - **Identifier**: `com.emdrise.monthly`
    - **Type**: Subscription
 
 ### 4. Configure Entitlements
