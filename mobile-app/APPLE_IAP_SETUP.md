@@ -44,6 +44,7 @@ This guide will help you set up Apple In-App Purchases (IAP) with RevenueCat for
 1. Choose your price tier (recommended: $12.99/month)
 2. Set availability in desired countries
 3. **Important**: All required metadata must be filled for ALL enabled localizations
+4. **Save as Draft** - Do NOT submit for review yet (we'll test in Sandbox first)
 
 ### 6. Enable In-App Purchase Capability
 1. Go to [Apple Developer Portal](https://developer.apple.com/)
@@ -51,6 +52,13 @@ This guide will help you set up Apple In-App Purchases (IAP) with RevenueCat for
 3. Find your App ID (`com.emdrise.app`)
 4. Edit → Enable **In-App Purchase** capability
 5. Save changes
+
+### 7. Create Sandbox Test Users
+1. In App Store Connect → **Users and Access** → **Sandbox**
+2. Create test accounts for IAP testing:
+   - Use fake emails (e.g., test1@example.com)
+   - Remember passwords for testing
+   - Set country/region where your app will be available
 
 ## Phase 2: RevenueCat Setup (YOU NEED TO DO THIS)
 
@@ -98,34 +106,37 @@ EXPO_PUBLIC_REVENUECAT_IOS_API_KEY=appl_your_ios_key_here
 EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=goog_your_android_key_here
 ```
 
-## Phase 4: Build and Test (NEXT STEPS)
+## Phase 4: Sandbox Testing (BEFORE APP REVIEW)
 
-### 1. Install Dependencies
+### 1. Create Sandbox Test Users (CRITICAL)
+1. In App Store Connect → **Users and Access** → **Sandbox**
+2. Create 2-3 test accounts:
+   - Use fake emails (test1@yourdomain.com)
+   - Set strong passwords
+   - Choose your app's target countries
+
+### 2. Build Development Version
 ```bash
 cd mobile-app
 npm install
-```
-
-### 2. Create EAS Development Build
-```bash
-# Install EAS CLI globally
-npm install -g @expo/cli eas-cli
-
-# Initialize EAS project
-eas init
-
-# Create development build for iOS
 eas build --profile development --platform ios
-
-# This creates a custom app you can install on your iPhone for testing
 ```
 
-### 3. Testing Checklist
-- [ ] Test subscription purchase with Sandbox account
-- [ ] Test 7-day free trial flow
+### 3. Test on Physical iPhone (Required)
+1. Install development build on iPhone
+2. **Sign out** of real Apple ID in Settings → App Store
+3. Open EMDRise app and try to subscribe
+4. When prompted, sign in with Sandbox test account
+5. Complete purchase (free in Sandbox)
+
+### 4. Sandbox Testing Checklist
+- [ ] Subscribe with Sandbox account (no real money charged)
+- [ ] Verify 7-day trial activates
 - [ ] Test restore purchases
-- [ ] Test subscription status checking
-- [ ] Verify receipt validation works
+- [ ] Cancel subscription and verify status
+- [ ] Test expired subscription behavior
+
+**Key**: Sandbox allows full testing without App Store review or real payments
 
 ### 4. App Store Submission Prep
 - [ ] Screenshots for App Store
