@@ -1,11 +1,10 @@
 import Purchases, { PurchasesOffering, CustomerInfo, PurchasesPackage, LOG_LEVEL } from 'react-native-purchases';
 import { Platform } from 'react-native';
 
-// RevenueCat API Keys (you'll need to provide these)
-// @ts-ignore
-const REVENUECAT_IOS_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY || '';
-// @ts-ignore
-const REVENUECAT_ANDROID_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY || '';
+// RevenueCat API Keys
+const REVENUECAT_IOS_API_KEY = 'appl_xewZcRiyLfkBnmDYaTktVHghPKz';
+// Android API key will be added when needed for Android development
+const REVENUECAT_ANDROID_API_KEY = '';
 
 export class RevenueCatService {
   private static initialized = false;
