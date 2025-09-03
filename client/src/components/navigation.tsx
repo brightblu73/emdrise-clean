@@ -270,30 +270,7 @@ export default function Navigation() {
                               <span className="font-medium">Contact</span>
                             </Button>
                           </a>
-                          <a href="/api/dev/auth" target="_blank" rel="noopener noreferrer">
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start h-12 rounded-xl text-secondary-blue hover:bg-white/80 hover:text-primary-green hover:shadow-sm transition-all duration-200"
-                              onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                              <div className="p-2 rounded-lg mr-3 bg-primary-green/20 text-primary-green">
-                                <Eye className="h-4 w-4" />
-                              </div>
-                              <span className="font-medium">Debug Auth Check</span>
-                            </Button>
-                          </a>
-                          <a href="/api/session-dump" target="_blank" rel="noopener noreferrer">
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start h-12 rounded-xl text-secondary-blue hover:bg-white/80 hover:text-primary-green hover:shadow-sm transition-all duration-200"
-                              onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                              <div className="p-2 rounded-lg mr-3 bg-primary-green/20 text-primary-green">
-                                <Eye className="h-4 w-4" />
-                              </div>
-                              <span className="font-medium">Session Dump</span>
-                            </Button>
-                          </a>
+
                         </div>
 
                         {/* Legal Section */}
