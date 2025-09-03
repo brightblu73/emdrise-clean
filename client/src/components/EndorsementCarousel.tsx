@@ -18,7 +18,7 @@ const endorsements = [
   {
     name: 'APA (American Psychological Association)',
     summary: 'Conditionally recommends EMDR as an effective PTSD treatment.',
-    link: 'https://www.apa.org/ptsd-guideline',
+    link: 'https://www.apa.org/pubs/books/4318028',
   },
   {
     name: 'VA (US Department of Veterans Affairs)',
@@ -28,7 +28,7 @@ const endorsements = [
   {
     name: 'NHS (National Health Service)',
     summary: 'Lists EMDR as an effective trauma-focused therapy for PTSD.',
-    link: 'https://www.nhs.uk/mental-health/conditions/post-traumatic-stress-disorder-ptsd/treatment/',
+    link: 'https://www.nhs.uk/mental-health/talking-therapies-medicine-treatments/talking-therapies-and-counselling/eye-movement-desensitisation-reprocessing-emdr/',
   },
   {
     name: 'EMDRIA (EMDR International Association)',
@@ -38,7 +38,7 @@ const endorsements = [
   {
     name: 'International Society for Traumatic Stress Studies (ISTSS)',
     summary: 'Guidelines recommend EMDR as a first-line treatment for PTSD.',
-    link: 'https://istss.org/clinical-resources/trauma-treatment/new-istss-prevention-and-treatment-guidelines/',
+    link: 'https://www.emdria.org/about-emdr-therapy/emdr-and-ptsd/',
   },
 ];
 
