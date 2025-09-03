@@ -28,15 +28,10 @@ const endorsements = [
   {
     name: 'NHS (National Health Service)',
     summary: 'Lists EMDR as an effective trauma-focused therapy for PTSD.',
-    link: 'https://www.nhs.uk/mental-health/talking-therapies-medicine-treatments/talking-therapies-and-counselling/eye-movement-desensitisation-reprocessing-emdr/',
+    link: 'https://www.nhs.uk/mental-health/conditions/post-traumatic-stress-disorder-ptsd/',
   },
   {
-    name: 'EMDRIA (EMDR International Association)',
-    summary: 'Summarises global clinical endorsements of EMDR for PTSD.',
-    link: 'https://www.emdria.org/about-emdr-therapy/emdr-and-ptsd/',
-  },
-  {
-    name: 'International Society for Traumatic Stress Studies (ISTSS)',
+    name: 'ISTSS (International Society for Traumatic Stress Studies)',
     summary: 'Guidelines recommend EMDR as a first-line treatment for PTSD.',
     link: 'https://www.emdria.org/about-emdr-therapy/emdr-and-ptsd/',
   },
