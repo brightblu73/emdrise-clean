@@ -67,7 +67,7 @@ export default function EndorsementCarousel() {
               clickable: true,
               dynamicBullets: true
             }}
-            loop={true}
+            loop={false}
             centeredSlides={false}
             breakpoints={{
               640: { 
