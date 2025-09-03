@@ -38,10 +38,6 @@ const endorsements = [
 ];
 
 export default function EndorsementCarousel() {
-  const openInNewTab = (url: string) => {
-    // Open in same window to allow back navigation to homepage
-    window.location.href = url;
-  };
 
   return (
     <section className="py-20 emdr-gradient">
@@ -84,12 +80,9 @@ export default function EndorsementCarousel() {
                     <h3 className="text-lg font-semibold text-blue-800 mb-2">{org.name}</h3>
                     <p className="text-sm text-gray-700 mb-4">{org.summary}</p>
                   </div>
-                  <button
-                    onClick={() => openInNewTab(org.link)}
-                    className="text-sm text-green-700 hover:underline font-medium mt-auto text-left"
-                  >
-                    View Guidelines →
-                  </button>
+                  <div className="text-sm text-green-700 font-medium mt-auto text-left">
+                    Guidelines Available Online
+                  </div>
                 </div>
               </SwiperSlide>
             ))}
