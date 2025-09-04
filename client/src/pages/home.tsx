@@ -133,24 +133,6 @@ export default function Home() {
 
 
 
-  // Google Sign In with Supabase (simplified)
-  const handleGoogleSignIn = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/emdr-session`
-        }
-      });
-      if (error) {
-        console.error('Google sign in error:', error);
-        alert(error.message);
-      }
-    } catch (error) {
-      console.error('Google sign in failed:', error);
-      alert('Sign in failed. Please try email sign in.');
-    }
-  };
 
   // Check URL parameters for trial success and scroll to top
   useEffect(() => {

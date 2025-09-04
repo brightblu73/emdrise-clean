@@ -96,21 +96,21 @@ export default function Auth() {
 
 
 
-  // Google Sign In with Supabase
-  const handleGoogleSignIn = async () => {
+  // Apple Sign In with Supabase
+  const handleAppleSignIn = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: 'apple',
         options: {
           redirectTo: `${window.location.origin}/auth-callback`
         }
       });
       if (error) {
-        console.error('Google sign in error:', error);
+        console.error('Apple sign in error:', error);
         alert(error.message);
       }
     } catch (error) {
-      console.error('Google sign in failed:', error);
+      console.error('Apple sign in failed:', error);
       alert('Sign in failed. Please try email sign in.');
     }
   };
@@ -143,31 +143,15 @@ export default function Auth() {
             <p className="text-sm text-slate-600">Choose your sign-in method</p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Only show if Apple is supported */}
-            {(() => {
-              const showAppleSignIn = false;
-              if (showAppleSignIn) {
-                return (
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start" 
-                    disabled
-                  >
-                    <Apple className="mr-2 h-4 w-4" />
-                    Sign in with Apple
-                  </Button>
-                );
-              }
-              return null;
-            })()}
-
-            {/* Google Sign In - Currently unavailable */}
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
-              <p className="text-sm font-medium text-blue-800">Google Sign In Coming Soon</p>
-              <p className="text-sm text-muted-foreground">
-                Use email sign‑in for now.
-              </p>
-            </div>
+            {/* Apple Sign In */}
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
+              onClick={handleAppleSignIn}
+            >
+              <Apple className="mr-2 h-4 w-4" />
+              Sign in with Apple
+            </Button>
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
