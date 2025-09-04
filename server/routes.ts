@@ -326,6 +326,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Delete account endpoint
+  app.delete("/api/delete-account", async (req, res) => {
+    try {
+      // Extract JWT token from Authorization header
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Authorization token required" });
+      }
+
+      const token = authHeader.substring(7);
+      
+      // Verify the JWT with Supabase
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      
+      if (error || !user) {
+        console.error('Invalid token for account deletion:', error?.message);
+        return res.status(401).json({ message: "Invalid or expired token" });
+      }
+
+      console.log(`Deleting account for user: ${user.email}`);
+
+      // Delete user from Supabase (this also removes auth and all related data)
+      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+
+      if (deleteError) {
+        console.error('Error deleting user from Supabase:', deleteError);
+        return res.status(500).json({ 
+          message: "Failed to delete account from authentication service" 
+        });
+      }
+
+      // Note: In a production app, you might also want to:
+      // - Cancel any active Stripe subscriptions
+      // - Delete user data from your local database
+      // - Clean up any file uploads or other associated data
+      // For now, Supabase deletion handles the auth cleanup
+
+      console.log(`Successfully deleted account for user: ${user.email}`);
+      res.json({ 
+        message: "Account deleted successfully",
+        success: true 
+      });
+
+    } catch (error: any) {
+      console.error('Account deletion error:', error);
+      res.status(500).json({ 
+        message: "An error occurred while deleting the account" 
+      });
+    }
+  });
+
   app.get("/api/user", (req, res) => {
     console.log('GET /api/user - Session ID:', req.sessionID);
     console.log('GET /api/user - Authenticated:', req.isAuthenticated());

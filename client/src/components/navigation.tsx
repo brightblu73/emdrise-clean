@@ -14,9 +14,20 @@ import {
   DropdownMenuSubTrigger
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from '../state/AuthProvider';
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Menu, User, LogOut, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail } from "lucide-react";
+import { Heart, Menu, User, LogOut, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail, Trash2 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { logout, redirectAfterLogout } from '@/lib/auth';
 
@@ -25,6 +36,7 @@ export default function Navigation() {
   const { toast } = useToast();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
 
 
@@ -45,6 +57,67 @@ export default function Navigation() {
   const handleSignOut = async () => {
     await logout();
     redirectAfterLogout();
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.email) {
+      toast({
+        title: "Error",
+        description: "Unable to delete account - user not found.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // Get the current session to access the access token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        toast({
+          title: "Error",
+          description: "Authentication session not found.",
+          variant: "destructive",
+        });
+        setIsDeleting(false);
+        return;
+      }
+
+      const response = await fetch('/api/delete-account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Account Deleted",
+          description: "Your account has been permanently deleted.",
+        });
+        // Sign out and redirect
+        await logout();
+        redirectAfterLogout();
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Deletion Failed",
+          description: errorData.message || "Unable to delete account. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      toast({
+        title: "Deletion Failed",
+        description: "An error occurred while deleting your account.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -298,6 +371,47 @@ export default function Navigation() {
                           </Link>
                         </div>
 
+                      </div>
+
+                      {/* Account Management Section */}
+                      <div className="px-4 pt-4 pb-2">
+                        <p className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3 px-2">Account</p>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start h-12 rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
+                            >
+                              <div className="p-2 rounded-lg mr-3 bg-red-100 text-red-600">
+                                <Trash2 className="h-4 w-4" />
+                              </div>
+                              <span className="font-medium">Delete Account</span>
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="bg-white/95 backdrop-blur-sm border border-red-200">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-red-800 flex items-center">
+                                <Trash2 className="h-5 w-5 mr-2" />
+                                Delete Account
+                              </AlertDialogTitle>
+                              <AlertDialogDescription className="text-slate-700">
+                                Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data, including your therapy progress and subscription.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="border-slate-300 hover:bg-slate-50">
+                                Cancel
+                              </AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={handleDeleteAccount}
+                                disabled={isDeleting}
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                              >
+                                {isDeleting ? "Deleting..." : "Yes, Delete Account"}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
 
                       {/* Logout Button */}
