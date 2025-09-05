@@ -237,7 +237,7 @@ export default function Subscribe() {
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl mb-2">EMDRise Premium</CardTitle>
                 <div className="text-4xl font-bold text-primary mb-2">
-                  £12.99<span className="text-lg text-slate-600">/month</span>
+                  £9.99<span className="text-lg text-slate-600">/month</span>
                 </div>
                 <Badge variant="secondary" className="mb-4">
                   {user.subscriptionStatus === 'trial' ? 'Upgrade from Trial' : 'New Subscription'}

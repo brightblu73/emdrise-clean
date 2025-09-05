@@ -251,7 +251,7 @@ export default function Home() {
                     {isCreatingSubscription ? 'Setting up your trial...' : 'Start Your 7-Day Free Trial'}
                   </Button>
                   <div className="text-sm text-blue-200 text-center mt-2">
-                    ✓ 7-day free trial • £12.99/month after trial • ✓ Cancel anytime
+                    ✓ 7-day free trial • £9.99/month after trial • ✓ Cancel anytime
                   </div>
 
                   {/* Login to Continue Journey CTA */}
@@ -419,7 +419,7 @@ export default function Home() {
             <CardHeader className="text-center">
               <CardTitle className="text-2xl mb-2">EMDRise Premium</CardTitle>
               <div className="text-4xl font-bold text-primary mb-2">
-                £12.99<span className="text-lg text-slate-600">/month</span>
+                £9.99<span className="text-lg text-slate-600">/month</span>
               </div>
               <p className="text-sm text-slate-600">7-day free trial • Cancel anytime</p>
             </CardHeader>

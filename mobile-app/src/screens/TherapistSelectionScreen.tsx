@@ -168,7 +168,7 @@ const TherapistSelectionScreen = () => {
             7-day free trial • No credit card required
           </Text>
           <Text style={styles.pricingText}>
-            Then £12.99/month • Cancel anytime
+            Then £9.99/month • Cancel anytime
           </Text>
         </View>
       </ScrollView>

@@ -120,7 +120,7 @@ export default function App() {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>EMDRise Premium</Text>
-        <Text style={styles.price}>£12.99/month after 7-day free trial</Text>
+        <Text style={styles.price}>£9.99/month after 7-day free trial</Text>
         <Text style={styles.features}>
           • 10 guided EMDR therapy scripts{'\n'}
           • Professional therapist videos{'\n'}

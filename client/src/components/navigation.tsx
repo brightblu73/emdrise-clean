@@ -440,7 +440,7 @@ export default function Navigation() {
                           <h3 className="text-lg font-semibold text-primary-green mb-2">Welcome to EMDRise</h3>
                           <p className="text-sm text-secondary-blue/90 mb-4">Professional EMDR therapy for healing and growth</p>
                           <div className="text-xs text-primary-green font-medium bg-gradient-to-r from-primary/10 to-primary-green/10 rounded-lg p-2">
-                            ✓ 7-day free trial • £12.99/month after trial • ✓ Cancel anytime
+                            ✓ 7-day free trial • £9.99/month after trial • ✓ Cancel anytime
                           </div>
                         </div>
                       </div>
