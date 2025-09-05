@@ -13,7 +13,6 @@ export const users = pgTable("users", {
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionStatus: text("subscription_status").default("trial"), // trial, active, cancelled, expired
   preferredTherapist: text("preferred_therapist").default("female"), // female, male
-  memoriesCleared: integer("memories_cleared").default(0), // Track total memories cleared
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -23,8 +22,6 @@ export const sessions = pgTable("sessions", {
   currentScript: integer("current_script").notNull().default(1), // 1: Welcome, 2: Calm Place, 3: Target Setup, 4: Reprocessing, 5: Reprocessing Continued, 6: Installation, 7: Installation Continued, 8: Body Scan, 9: Calm Place Return, 10: Aftercare
   phase: text("phase").notNull().default("introduction"), // introduction, calm_place_setup, target_setup, reprocessing, installation, body_scan, calm_place_return, aftercare
   status: text("status").notNull().default("active"), // active, paused, complete
-  sessionType: text("session_type").default("normal"), // normal, resumed - tracks if this was a resumed session from pause
-  hasCompletedReprocessing: boolean("has_completed_reprocessing").default(false), // true if session progressed through Script 5/5a
   targetId: integer("target_id"),
   calmPlaceId: integer("calm_place_id"),
   loopCount: integer("loop_count").default(0), // Tracks repetitions for scripts 5 and 7

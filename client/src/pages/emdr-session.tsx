@@ -378,71 +378,15 @@ export default function EMDRSession() {
     setLocalVideoCompleted(true);
   };
 
-  const handleAdvanceScript = async () => {
+  const handleAdvanceScript = () => {
     if (!currentSession || isAdvancing) return; // Prevent double-clicks
     
-    // Special handling for Script 10 - Complete Session
+    // Special handling for Script 10 - Complete Session and return to homepage
     if (currentSession.currentScript === 10) {
-      console.log("Session completed - checking reprocessing status");
-      
-      try {
-        // Get the current session to access the access token
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.access_token) {
-          // Fetch latest session data from Supabase to check reprocessing completion
-          const sessionResponse = await fetch(`/api/sessions/${currentSession.id}`, {
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-          });
-          
-          if (sessionResponse.ok) {
-            const latestSessionData = await sessionResponse.json();
-            const hasCompletedReprocessing = latestSessionData.has_completed_reprocessing || latestSessionData.hasCompletedReprocessing;
-            
-            console.log('Has completed reprocessing (from Supabase):', hasCompletedReprocessing);
-            console.log('Session type:', latestSessionData.session_type || latestSessionData.sessionType);
-            
-            if (hasCompletedReprocessing) {
-              // Increment memory count in Supabase for completed reprocessing sessions
-              const response = await fetch('/api/increment-memory-count', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${session.access_token}`,
-                },
-              });
-              
-              if (response.ok) {
-                console.log('Memory count incremented successfully in Supabase');
-                // Clear active session
-                localStorage.removeItem('emdrSession');
-                // Navigate to Memory Cleared Dashboard
-                setLocation("/memory-cleared");
-                return;
-              } else {
-                const errorData = await response.json().catch(() => ({}));
-                console.error('Failed to increment memory count:', errorData);
-              }
-            } else {
-              console.log('Session completed without reprocessing - going to homepage');
-            }
-          } else {
-            const errorData = await sessionResponse.json().catch(() => ({}));
-            console.error('Failed to fetch latest session data:', errorData);
-          }
-        } else {
-          console.error('No access token available');
-        }
-      } catch (error) {
-        console.error('Error checking session reprocessing status:', error);
-      }
-      
-      // For sessions without reprocessing or if API calls failed, just go to homepage
-      console.log('Returning to homepage');
+      console.log("Session completed, redirecting to homepage");
+      // Clear active session but do NOT clear paused session if it exists
       localStorage.removeItem('emdrSession');
-      setLocation("/");
+      setLocation("/"); // Navigate to homepage
       return;
     }
     

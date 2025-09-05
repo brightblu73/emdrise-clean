@@ -1,310 +1,1026 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
-import { SupabaseAPI, UserProgress, EmdrSession, supabaseAdmin } from "./supabase-client";
+import { storage } from "./storage";
+import { insertUserSchema, insertSessionSchema, insertTargetSchema, insertCalmPlaceSchema, insertResourceSchema, insertBilateralSessionSchema, insertScriptProgressionSchema } from "@shared/schema";
+import bcrypt from "bcrypt";
+import session from "express-session";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import Stripe from "stripe";
+import { createClient } from '@supabase/supabase-js';
 import { handleRevenueCatWebhook, verifyRevenueCatWebhook } from './revenuecat-webhook';
 
-// Extend Express Request interface
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-07-30.basil",
+});
+
 declare global {
   namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        email: string;
-      };
+    interface User {
+      id: number;
+      username: string;
+      email: string;
+      stripeCustomerId?: string | null;
+      stripeSubscriptionId?: string | null;
+      subscriptionStatus: string | null;
+      trialEndsAt?: Date | null;
     }
   }
 }
 
-// Supabase authentication middleware
-async function requireAuth(req: Request, res: Response, next: NextFunction) {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: "Authentication required" });
-    }
-
-    const token = authHeader.substring(7);
-    const user = await SupabaseAPI.verifyUser(token);
-    
-    if (!user) {
-      return res.status(401).json({ message: "Authentication required" });
-    }
-
-    // Ensure user progress exists in Supabase
-    await SupabaseAPI.getOrCreateUserProgress(user.id, user.email);
-    
-    req.user = user;
-    next();
-  } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(401).json({ message: "Authentication required" });
+declare module 'express-session' {
+  interface SessionData {
+    user?: Express.User;
+    access_token?: string;
   }
+}
+
+// Initialize Supabase admin client for JWT verification
+const supabaseUrl = 'https://jxhjghgectlpgrpwpkfd.supabase.co';
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+
+const supabaseAdmin = createClient(
+  supabaseUrl,
+  serviceRoleKey,
+  { auth: { persistSession: false } }
+);
+
+// Supabase JWT verification middleware
+async function verifySupabaseJWT(req: Request, res: Response, next: NextFunction) {
+  try {
+    let token: string | null = null;
+
+    // 1. Check Authorization header (Bearer token)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+
+    // 2. Check for access_token in cookies
+    if (!token && req.cookies?.access_token) {
+      token = req.cookies.access_token;
+    }
+
+    // 3. Check for sb-access-token in cookies (Supabase default)
+    if (!token && req.cookies?.['sb-access-token']) {
+      token = req.cookies['sb-access-token'];
+    }
+
+    // 4. Check session storage for access_token
+    if (!token && req.session?.access_token) {
+      token = req.session.access_token;
+    }
+
+    if (token) {
+      // Verify the JWT with Supabase
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      
+      if (user && !error) {
+        // Store user in req.user for Express compatibility
+        req.user = {
+          id: parseInt(user.id) || 0, // Convert UUID to number for Express compatibility
+          username: user.user_metadata?.username || user.email?.split('@')[0] || '',
+          email: user.email || '',
+          stripeCustomerId: user.user_metadata?.stripeCustomerId || null,
+          stripeSubscriptionId: user.user_metadata?.stripeSubscriptionId || null,
+          subscriptionStatus: user.user_metadata?.subscriptionStatus || 'trial',
+          trialEndsAt: user.user_metadata?.trialEndsAt ? new Date(user.user_metadata.trialEndsAt) : null,
+        };
+
+        // Also store in session for persistence
+        if (req.session) {
+          req.session.user = req.user;
+          req.session.access_token = token;
+        }
+
+        console.log('Supabase JWT verified for user:', user.email);
+      } else {
+        console.log('Invalid Supabase JWT token:', error?.message || 'Unknown error');
+      }
+    }
+  } catch (error) {
+    console.error('Error verifying Supabase JWT:', error);
+  }
+  
+  next(); // Always continue to next middleware, even if auth fails
+}
+
+
+
+function readPriceId() {
+  // Some env UIs accidentally include spaces/newlines or quotes when pasting.
+  // Clean it up defensively before validating/using.
+  let v = process.env.STRIPE_PRICE_ID || "";
+  // strip wrapping quotes/backticks and whitespace
+  v = v.trim().replace(/^['"`]|['"`]$/g, "");
+  // common paste artifact: backticks around values (from code blocks)
+  v = v.replace(/^`|`$/g, "");
+  return v;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check route
-  app.get('/api/health', (req, res) => {
+  // Health/env check (does not leak secrets)
+  app.get('/api/health/stripe', (req, res) => {
+    const price = readPriceId();
     res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      supabase: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      anon_key: !!process.env.VITE_SUPABASE_ANON_KEY
+      has_secret: !!process.env.STRIPE_SECRET_KEY,
+      has_price: !!price,
+      has_publishable: !!process.env.VITE_STRIPE_PUBLIC_KEY,
+      price_format_ok: /^price_[A-Za-z0-9]+$/.test(price),
+      // extra debug (safe): show length and first/last 4 chars only
+      price_len: price.length,
+      price_preview: price ? `${price.slice(0,4)}…${price.slice(-4)}` : ""
     });
   });
 
-  // RevenueCat webhook endpoint for Apple IAP
-  app.post('/api/revenuecat-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  // Development auth debug route
+  app.get('/api/dev/auth', (req, res) => {
+    const sessionUser = req.user || null;
+    const subscriptionData = sessionUser ? {
+      stripeCustomerId: sessionUser.stripeCustomerId,
+      stripeSubscriptionId: sessionUser.stripeSubscriptionId,
+      subscriptionStatus: sessionUser.subscriptionStatus,
+      trialEndsAt: sessionUser.trialEndsAt
+    } : "placeholder";
+
+    res.json({
+      status: "ok",
+      user: sessionUser,
+      subscription: subscriptionData
+    });
+  });
+
+  // Full session dump for debugging
+  app.get('/api/session-dump', (req, res) => {
+    res.json({
+      headers: req.headers,
+      cookies: req.cookies || {},
+      session: req.session || {},
+      user: req.user || null,
+      sessionID: req.sessionID || null,
+      rawCookies: req.get('Cookie') || null,
+      jwtSources: {
+        authHeader: req.headers.authorization ? 'present' : 'missing',
+        cookieAccessToken: req.cookies?.access_token ? 'present' : 'missing',
+        cookieSupabaseToken: req.cookies?.['sb-access-token'] ? 'present' : 'missing',
+        sessionAccessToken: req.session?.access_token ? 'present' : 'missing'
+      }
+    });
+  });
+
+  // Trust proxy for session persistence
+  app.set('trust proxy', 1);
+
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || "dev-secret",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax"
+      }
+    })
+  );
+
+  // Add Supabase JWT verification middleware early in the chain
+  app.use(verifySupabaseJWT);
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  // Passport configuration
+  passport.use(new LocalStrategy(
+    { usernameField: 'email' },
+    async (email, password, done) => {
+      try {
+        const user = await storage.getUserByEmail(email);
+        if (!user) {
+          return done(null, false, { message: 'Invalid email or password' });
+        }
+
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+          return done(null, false, { message: 'Invalid email or password' });
+        }
+
+        const expressUser: Express.User = {
+          ...user,
+          stripeCustomerId: user.stripeCustomerId || undefined,
+          stripeSubscriptionId: user.stripeSubscriptionId || undefined,
+          subscriptionStatus: user.subscriptionStatus || 'trial',
+          trialEndsAt: user.trialEndsAt || undefined,
+        };
+        return done(null, expressUser);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  ));
+
+  passport.serializeUser((user, done) => {
+    console.log('Serializing user:', user.id, user.email);
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(async (id: number, done) => {
     try {
-      // For now, just acknowledge the webhook since we're focusing on Supabase integration
-      console.log('RevenueCat webhook received');
+      console.log('Deserializing user with ID:', id);
+      const user = await storage.getUser(id);
+      if (!user) {
+        console.log('User not found for ID:', id);
+        return done(null, null);
+      }
+      const expressUser: Express.User = {
+        ...user,
+        stripeCustomerId: user.stripeCustomerId || undefined,
+        stripeSubscriptionId: user.stripeSubscriptionId || undefined,
+        subscriptionStatus: user.subscriptionStatus || 'trial',
+        trialEndsAt: user.trialEndsAt || undefined,
+      };
+      console.log('User deserialized successfully:', expressUser.email);
+      done(null, expressUser);
+    } catch (error) {
+      console.error('Error deserializing user:', error);
+      done(error);
+    }
+  });
+
+  // Auth routes
+  app.post("/api/register", async (req, res) => {
+    try {
+      const { username, email, password } = insertUserSchema.parse(req.body);
+      
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + 7); // 7 days from now
+
+      const user = await storage.createUser({
+        username,
+        email,
+        password: hashedPassword
+      });
+      
+      // Update subscription info after creation
+      await storage.updateUserSubscriptionStatus(user.id, "trial");
+
+      req.login(user, (err) => {
+        if (err) return res.status(500).json({ message: "Login failed" });
+        res.json({ user: { id: user.id, username: user.username, email: user.email, subscriptionStatus: user.subscriptionStatus } });
+      });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // GET /api/login - redirect to auth page
+  app.get("/api/login", (req, res) => {
+    res.redirect('/auth');
+  });
+
+  app.post("/api/login", (req, res, next) => {
+    console.log('Login request body:', req.body);
+    console.log('Session ID before login:', req.sessionID);
+    passport.authenticate('local', (err: any, user: any, info: any) => {
+      if (err) {
+        console.error('Authentication error:', err);
+        return res.status(500).json({ message: "Authentication error" });
+      }
+      if (!user) {
+        console.log('Authentication failed:', info?.message);
+        return res.status(401).json({ message: info?.message || "Invalid credentials" });
+      }
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          console.error('Login session error:', err);
+          return res.status(500).json({ message: "Login error" });
+        }
+        console.log('Login successful, session ID:', req.sessionID);
+        console.log('User logged in:', user.email);
+        console.log('Session cookie will be set for domain:', req.get('host'));
+        res.json({ user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email,
+          subscriptionStatus: user.subscriptionStatus
+        }});
+      });
+    })(req, res, next);
+  });
+
+  app.post("/api/logout", (req, res) => {
+    req.logout(() => {
+      res.json({ success: true });
+    });
+  });
+
+  // Delete account endpoint
+  app.delete("/api/delete-account", async (req, res) => {
+    try {
+      // Extract JWT token from Authorization header
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Authorization token required" });
+      }
+
+      const token = authHeader.substring(7);
+      
+      // Verify the JWT with Supabase
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      
+      if (error || !user) {
+        console.error('Invalid token for account deletion:', error?.message);
+        return res.status(401).json({ message: "Invalid or expired token" });
+      }
+
+      console.log(`Deleting account for user: ${user.email}`);
+
+      // Delete user from Supabase (this also removes auth and all related data)
+      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+
+      if (deleteError) {
+        console.error('Error deleting user from Supabase:', deleteError);
+        return res.status(500).json({ 
+          message: "Failed to delete account from authentication service" 
+        });
+      }
+
+      // Note: In a production app, you might also want to:
+      // - Cancel any active Stripe subscriptions
+      // - Delete user data from your local database
+      // - Clean up any file uploads or other associated data
+      // For now, Supabase deletion handles the auth cleanup
+
+      console.log(`Successfully deleted account for user: ${user.email}`);
+      res.json({ 
+        message: "Account deleted successfully",
+        success: true 
+      });
+
+    } catch (error: any) {
+      console.error('Account deletion error:', error);
+      res.status(500).json({ 
+        message: "An error occurred while deleting the account" 
+      });
+    }
+  });
+
+  app.get("/api/user", (req, res) => {
+    console.log('GET /api/user - Session ID:', req.sessionID);
+    console.log('GET /api/user - Authenticated:', req.isAuthenticated());
+    console.log('GET /api/user - User:', req.user?.email || 'No user');
+    
+    if (req.isAuthenticated()) {
+      res.json({ user: { 
+        id: req.user!.id, 
+        username: req.user!.username, 
+        email: req.user!.email,
+        subscriptionStatus: req.user!.subscriptionStatus,
+        trialEndsAt: req.user!.trialEndsAt
+      }});
+    } else {
+      res.status(401).json({ message: "Not authenticated" });
+    }
+  });
+
+  // Development helper endpoint to clear test users
+  if (process.env.NODE_ENV === 'development') {
+    app.delete("/api/clear-test-users", async (req, res) => {
+      try {
+        // Clear test user by email
+        const testUser = await storage.getUserByEmail("test@example.com");
+        if (testUser) {
+          // Note: This would require implementing a deleteUser method
+          res.json({ message: "Test user found but deletion not implemented yet" });
+        } else {
+          res.json({ message: "No test user found" });
+        }
+      } catch (error) {
+        res.status(500).json({ message: "Failed to clear test users" });
+      }
+    });
+  }
+
+  // Stripe payment route for one-time payments
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      // Fail fast IF malformed AFTER normalization
+      const price = readPriceId();
+      if (!price || !/^price_[A-Za-z0-9]+$/.test(price)) {
+        console.error('Invalid or missing STRIPE_PRICE_ID env');
+        return res.status(500).json({ error: 'Server not configured (price id)' });
+      }
+
+      const { amount } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "gbp", // Changed to GBP for UK pricing
+      });
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
+  // Subscription routes
+  app.post('/api/create-subscription', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    let user = req.user!;
+
+    // For trial users, they already have access - just confirm it
+    if (user.subscriptionStatus === 'trial') {
+      res.json({ 
+        success: true, 
+        message: 'Trial access active',
+        subscriptionStatus: 'trial',
+        trialEndsAt: user.trialEndsAt 
+      });
+      return;
+    }
+
+    // For actual paid subscriptions (when trial expires), redirect to Stripe
+    // For now, just confirm trial access for testing
+    res.json({ 
+      success: true, 
+      message: 'Trial access confirmed',
+      subscriptionStatus: 'trial'
+    });
+  });
+
+  // Stripe Checkout session endpoint for subscription with trial
+  app.post('/api/create-checkout-session', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.sendStatus(401);
+    }
+
+    let user = req.user!;
+
+    if (user.stripeSubscriptionId) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        if (['active', 'trialing', 'past_due'].includes(subscription.status)) {
+          console.log('[stripe] User already has active subscription:', subscription.id);
+          // User already has an active subscription, redirect to homepage with success message
+          const baseUrl = process.env.NODE_ENV === 'development' 
+            ? 'http://localhost:5000' 
+            : `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+          return res.json({
+            url: `${baseUrl}?trial_started=true`
+          });
+        }
+      } catch (error) {
+        console.error('Error retrieving subscription:', error);
+      }
+    }
+    
+    if (!user.email) {
+      throw new Error('No user email on file');
+    }
+
+    try {
+      let customer;
+      
+      // First, check if user already has a Stripe customer ID
+      if (user.stripeCustomerId) {
+        console.log('[stripe] Retrieving existing customer:', user.stripeCustomerId);
+        try {
+          customer = await stripe.customers.retrieve(user.stripeCustomerId);
+          console.log('[stripe] Successfully retrieved existing customer');
+        } catch (error) {
+          console.error('[stripe] Failed to retrieve customer, will create new one:', error);
+          customer = null; // Will create new customer below
+        }
+      }
+      
+      // If no customer ID or retrieval failed, check if a customer already exists by email
+      if (!customer) {
+        console.log('[stripe] Searching for existing customer by email:', user.email);
+        const existingCustomers = await stripe.customers.list({
+          email: user.email,
+          limit: 1
+        });
+        
+        if (existingCustomers.data.length > 0) {
+          customer = existingCustomers.data[0];
+          console.log('[stripe] Found existing customer by email:', customer.id);
+          // Update user record with the found customer ID
+          await storage.updateUserStripeInfo(user.id, customer.id, '');
+        } else {
+          console.log('[stripe] Creating new customer for:', user.email);
+          customer = await stripe.customers.create({
+            email: user.email,
+            name: user.username,
+          });
+          console.log('[stripe] Created new customer:', customer.id);
+          // Update user with new Stripe customer ID
+          await storage.updateUserStripeInfo(user.id, customer.id, '');
+        }
+      }
+
+      // Check if customer already has an active subscription
+      console.log('[stripe] Checking for existing subscriptions for customer:', customer.id);
+      const existingSubscriptions = await stripe.subscriptions.list({
+        customer: customer.id,
+        status: 'all',
+        limit: 10
+      });
+      
+      // Look for active, trialing, or past_due subscriptions
+      const activeSubscription = existingSubscriptions.data.find(sub => 
+        ['active', 'trialing', 'past_due'].includes(sub.status)
+      );
+      
+      if (activeSubscription) {
+        console.log('[stripe] Found existing active subscription:', activeSubscription.id);
+        // Update user record with existing subscription
+        await storage.updateUserStripeInfo(user.id, customer.id, activeSubscription.id);
+        
+        // User already has an active subscription, redirect to homepage with success message
+        const baseUrl = 'https://14facb85-f01b-45d6-b44f-890bfbec4a96-00-t0829fmlj73n.picard.replit.dev';
+        return res.json({
+          url: `${baseUrl}/`
+        });
+      }
+
+      // Get price ID
+      const price = readPriceId();
+      if (!price || !/^price_[A-Za-z0-9]+$/.test(price)) {
+        console.error('Invalid or missing STRIPE_PRICE_ID env');
+        throw new Error('Server not configured (price id)');
+      }
+
+      // Create Stripe Checkout session
+      const baseUrl = 'https://14facb85-f01b-45d6-b44f-890bfbec4a96-00-t0829fmlj73n.picard.replit.dev';
+
+      console.log('[stripe] Creating checkout session for customer:', customer.id);
+      
+      const session = await stripe.checkout.sessions.create({
+        customer: customer.id,
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: price,
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        subscription_data: {
+          trial_period_days: 7,
+          metadata: {
+            user_id: user.id.toString(),
+          },
+        },
+        success_url: `${baseUrl}/`,
+        cancel_url: `${baseUrl}/`,
+        allow_promotion_codes: true,
+        billing_address_collection: 'auto',
+        customer_update: {
+          address: 'auto',
+        },
+      });
+
+      console.log('[stripe] Created checkout session:', session.id);
+      
+      res.json({
+        url: session.url
+      });
+    } catch (error: any) {
+      console.error('Checkout session creation error:', error);
+      return res.status(400).send({ error: { message: error.message } });
+    }
+  });
+
+  // Check subscription status endpoint
+  app.get('/api/subscription-status', async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    try {
+      const user = req.user;
+      let hasActiveSubscription = false;
+
+      if (user.stripeSubscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+          hasActiveSubscription = subscription.status === 'active' || subscription.status === 'trialing';
+        } catch (error) {
+          console.error('Error checking subscription status:', error);
+        }
+      }
+
+      res.json({ 
+        hasActiveSubscription,
+        subscriptionId: user.stripeSubscriptionId,
+        customerId: user.stripeCustomerId
+      });
+    } catch (error) {
+      console.error('Subscription status check error:', error);
+      res.status(500).json({ error: 'Failed to check subscription status' });
+    }
+  });
+
+  // RevenueCat webhook to handle iOS/Android subscription events
+  app.post('/api/revenuecat-webhook', express.json(), verifyRevenueCatWebhook, handleRevenueCatWebhook);
+
+  // Webhook to handle successful Stripe Checkout sessions
+  app.post('/api/stripe-checkout-webhook', express.raw({type: 'application/json'}), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+      // In production, you should set this webhook secret in environment variables
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      if (webhookSecret) {
+        event = stripe.webhooks.constructEvent(req.body, sig as string, webhookSecret);
+      } else {
+        // For development, just parse the JSON body
+        event = JSON.parse(req.body.toString());
+      }
+    } catch (err: any) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    console.log('[stripe-webhook] Event type:', event.type);
+
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed':
+          const session = event.data.object;
+          console.log('[stripe-webhook] Checkout session completed:', session.id);
+          
+          if (session.mode === 'subscription' && session.subscription) {
+            const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+            const customerId = session.customer as string;
+            
+            // Find user by customer ID and update subscription info
+            const customer = await stripe.customers.retrieve(customerId);
+            if (customer && !customer.deleted && customer.email) {
+              // Update user subscription status in database
+              console.log('[stripe-webhook] Updating subscription for customer:', customer.email);
+              // Note: You may need to implement a method to find user by email and update subscription
+            }
+          }
+          break;
+
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated':
+          const subscription = event.data.object;
+          console.log('[stripe-webhook] Subscription event:', event.type, subscription.id);
+          
+          if (subscription.metadata?.user_id) {
+            const userId = parseInt(subscription.metadata.user_id);
+            await storage.updateUserStripeInfo(userId, subscription.customer as string, subscription.id);
+            console.log('[stripe-webhook] Updated user subscription info for user:', userId);
+          }
+          break;
+
+        case 'customer.subscription.deleted':
+          const deletedSubscription = event.data.object;
+          console.log('[stripe-webhook] Subscription cancelled:', deletedSubscription.id);
+          
+          if (deletedSubscription.metadata?.user_id) {
+            const userId = parseInt(deletedSubscription.metadata.user_id);
+            await storage.updateUserSubscriptionStatus(userId, 'cancelled');
+            console.log('[stripe-webhook] Updated user subscription status to cancelled for user:', userId);
+          }
+          break;
+
+        default:
+          console.log('[stripe-webhook] Unhandled event type:', event.type);
+      }
+
       res.json({ received: true });
     } catch (error) {
-      console.error('RevenueCat webhook error:', error);
+      console.error('[stripe-webhook] Error processing webhook:', error);
       res.status(500).json({ error: 'Webhook processing failed' });
     }
   });
 
-  // Test endpoint without auth
-  app.get("/api/test-memory", async (req, res) => {
-    try {
-      // Test direct database access
-      const { data, error } = await supabaseAdmin
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', '63ee3eee-e618-4b51-8722-4e8455f03d99')
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-      
-      res.json({ 
-        data: data || { memories_cleared: 0 },
-        success: true 
-      });
-    } catch (error: any) {
-      console.error('Error in test endpoint:', error);
-      res.status(500).json({ message: error.message });
+  // Handle successful checkout session return
+  app.get('/emdr-session', (req, res, next) => {
+    const sessionId = req.query.session_id as string;
+    
+    if (sessionId) {
+      console.log('[checkout-success] User returned from successful checkout:', sessionId);
+      // You can verify the session here if needed
+      // For now, just continue to the normal EMDR session route handling
     }
+    
+    next(); // Continue to normal route handling
   });
 
-  // Get user memory count (for Progress menu)  
-  app.get("/api/memory-count", async (req, res) => {
-    try {
-      // Simplified auth - just extract user ID from token without full verification
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: "Authorization header required" });
-      }
-
-      const token = authHeader.substring(7);
+  // Protected middleware
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (req.isAuthenticated()) {
+      // Check subscription status
+      const user = req.user!;
+      const now = new Date();
       
-      // Decode JWT to get user ID without verification (for testing)
-      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-      const userId = payload.sub;
-      
-      if (!userId) {
-        return res.status(401).json({ message: "Invalid token payload" });
-      }
-
-      // Get or create user progress
-      const { data: existingProgress } = await supabaseAdmin
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-      let memoriesCleared = 0;
-      if (existingProgress) {
-        memoriesCleared = existingProgress.memories_cleared || 0;
-      } else {
-        // Create new progress record
-        const { data: newProgress } = await supabaseAdmin
-          .from('user_progress')
-          .insert({
-            user_id: userId,
-            email: payload.email || 'unknown@example.com',
-            memories_cleared: 0
-          })
-          .select()
-          .single();
-        memoriesCleared = newProgress?.memories_cleared || 0;
+      if (user.subscriptionStatus === 'trial' && user.trialEndsAt && now > user.trialEndsAt) {
+        return res.status(403).json({ message: "Trial expired. Please subscribe to continue." });
       }
       
-      res.json({ 
-        memoriesCleared,
-        success: true,
-        userId: userId 
-      });
-    } catch (error: any) {
-      console.error('Error fetching memory count:', error);
-      res.status(500).json({ message: "Failed to fetch memory count", error: error.message });
+      if (user.subscriptionStatus === 'cancelled' || user.subscriptionStatus === 'expired') {
+        return res.status(403).json({ message: "Subscription required to access this feature." });
+      }
+      
+      next();
+    } else {
+      res.status(401).json({ message: "Authentication required" });
     }
-  });
+  };
 
-  // Increment memory count (called when session completes with reprocessing)
-  app.post("/api/increment-memory-count", async (req, res) => {
+  // Session routes - updated to always start with Script 1
+  app.post("/api/sessions", requireAuth, async (req, res) => {
     try {
-      // Simplified auth - extract user ID from JWT
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ message: "Authorization header required" });
-      }
-
-      const token = authHeader.substring(7);
-      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-      const userId = payload.sub;
-      
-      if (!userId) {
-        return res.status(401).json({ message: "Invalid token payload" });
-      }
-
-      // Increment memory count directly in database
-      const { data: updatedProgress } = await supabaseAdmin
-        .rpc('increment_memory_count', { p_user_id: userId });
-      
-      if (!updatedProgress) {
-        return res.status(404).json({ message: "User progress not found" });
-      }
-      
-      console.log(`Incremented memory count for ${payload.email} to ${updatedProgress.memories_cleared}`);
-      res.json({ 
-        memoriesCleared: updatedProgress.memories_cleared,
-        success: true 
+      const sessionData = insertSessionSchema.parse({
+        ...req.body,
+        userId: req.user!.id,
+        currentScript: 1  // Always start with Script 1 (Welcome & Introduction)
       });
-    } catch (error: any) {
-      console.error('Error incrementing memory count:', error);
-      res.status(500).json({ message: "Failed to increment memory count", error: error.message });
-    }
-  });
-
-  // Create new EMDR session
-  app.post("/api/sessions", async (req, res) => {
-    try {
-      const currentScript = req.body.currentScript || 1;
-      const sessionType = (currentScript === "5a" || String(currentScript) === "5a") ? "resumed" : "normal";
-      const hasCompletedReprocessing = (String(currentScript) === "5a");
-      
-      const sessionData = {
-        current_script: currentScript,
-        session_type: sessionType,
-        has_completed_reprocessing: hasCompletedReprocessing,
-        status: "active"
-      };
-      
-      console.log(`Creating ${sessionType} session starting at script ${currentScript}, reprocessing completed: ${hasCompletedReprocessing}`);
-      const session = await SupabaseAPI.createEmdrSession(req.user!.id, sessionData);
+      const session = await storage.createSession(sessionData);
       res.json(session);
     } catch (error: any) {
-      console.error('Error creating session:', error);
       res.status(400).json({ message: error.message });
     }
   });
 
-  // Get session by ID
-  app.get("/api/sessions/:id", requireAuth, async (req, res) => {
+  app.get("/api/sessions", requireAuth, async (req, res) => {
     try {
-      const session = await SupabaseAPI.getEmdrSession(req.params.id);
-      
-      if (!session || session.user_id !== req.user!.id) {
-        return res.status(404).json({ message: "Session not found" });
-      }
-      
-      res.json(session);
+      const sessions = await storage.getUserSessions(req.user!.id);
+      res.json(sessions);
     } catch (error: any) {
-      console.error('Error fetching session:', error);
       res.status(500).json({ message: error.message });
     }
   });
 
-  // Update session (for script progression and reprocessing tracking)
+  app.get("/api/sessions/:id", requireAuth, async (req, res) => {
+    try {
+      const session = await storage.getSession(parseInt(req.params.id));
+      if (!session || session.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      res.json(session);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.patch("/api/sessions/:id", requireAuth, async (req, res) => {
     try {
-      const session = await SupabaseAPI.getEmdrSession(req.params.id);
-      
-      if (!session || session.user_id !== req.user!.id) {
+      const session = await storage.getSession(parseInt(req.params.id));
+      if (!session || session.userId !== req.user!.id) {
         return res.status(404).json({ message: "Session not found" });
       }
       
       const updates = req.body;
-      
-      // Mark reprocessing completion when advancing to Script 5 or 5a
-      if (updates.currentScript === 5 || String(updates.currentScript) === "5a") {
-        updates.has_completed_reprocessing = true;
-        console.log(`Session ${session.id} marked as having completed reprocessing`);
-      }
-      
-      // Convert currentScript to current_script for database
-      if (updates.currentScript !== undefined) {
-        updates.current_script = updates.currentScript;
-        delete updates.currentScript;
-      }
-      
-      const updatedSession = await SupabaseAPI.updateEmdrSession(req.params.id, updates);
-      
-      // Convert back to frontend format
-      const responseSession = {
-        ...updatedSession,
-        currentScript: updatedSession.current_script,
-        sessionType: updatedSession.session_type,
-        hasCompletedReprocessing: updatedSession.has_completed_reprocessing
-      };
-      
-      res.json(responseSession);
+      const updatedSession = await storage.updateSession(session.id, updates);
+      res.json(updatedSession);
     } catch (error: any) {
-      console.error('Error updating session:', error);
       res.status(400).json({ message: error.message });
     }
   });
 
-  // Get current active session for user
-  app.get("/api/session/current", requireAuth, async (req, res) => {
+  // Target routes
+  app.post("/api/targets", requireAuth, async (req, res) => {
     try {
-      const session = await SupabaseAPI.getCurrentSession(req.user!.id);
-      
-      if (!session || session.current_script === 10) {
-        return res.status(404).json({ message: "No active session found" });
-      }
-      
-      // Convert to frontend format
-      const responseSession = {
-        ...session,
-        currentScript: session.current_script,
-        sessionType: session.session_type,
-        hasCompletedReprocessing: session.has_completed_reprocessing
-      };
-      
-      res.json(responseSession);
+      const targetData = insertTargetSchema.parse({
+        ...req.body,
+        userId: req.user!.id
+      });
+      const target = await storage.createTarget(targetData);
+      res.json(target);
     } catch (error: any) {
-      console.error('Error fetching current session:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/targets", requireAuth, async (req, res) => {
+    try {
+      const targets = await storage.getUserTargets(req.user!.id);
+      res.json(targets);
+    } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });
 
-  // Start new session (simplified)
+  app.patch("/api/targets/:id", requireAuth, async (req, res) => {
+    try {
+      const target = await storage.getTarget(parseInt(req.params.id));
+      if (!target || target.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Target not found" });
+      }
+      
+      const updates = req.body;
+      const updatedTarget = await storage.updateTarget(target.id, updates);
+      res.json(updatedTarget);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Calm place routes
+  app.post("/api/calm-places", requireAuth, async (req, res) => {
+    try {
+      const calmPlaceData = insertCalmPlaceSchema.parse({
+        ...req.body,
+        userId: req.user!.id
+      });
+      const calmPlace = await storage.createCalmPlace(calmPlaceData);
+      res.json(calmPlace);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/calm-places", requireAuth, async (req, res) => {
+    try {
+      const calmPlaces = await storage.getUserCalmPlaces(req.user!.id);
+      res.json(calmPlaces);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/calm-places/:id", requireAuth, async (req, res) => {
+    try {
+      const calmPlace = await storage.getCalmPlace(parseInt(req.params.id));
+      if (!calmPlace || calmPlace.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Calm place not found" });
+      }
+      
+      const updates = req.body;
+      const updatedCalmPlace = await storage.updateCalmPlace(calmPlace.id, updates);
+      res.json(updatedCalmPlace);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Resource routes
+  app.post("/api/resources", requireAuth, async (req, res) => {
+    try {
+      const resourceData = insertResourceSchema.parse({
+        ...req.body,
+        userId: req.user!.id
+      });
+      const resource = await storage.createResource(resourceData);
+      res.json(resource);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/resources", requireAuth, async (req, res) => {
+    try {
+      const type = req.query.type as string;
+      const resources = type 
+        ? await storage.getUserResourcesByType(req.user!.id, type)
+        : await storage.getUserResources(req.user!.id);
+      res.json(resources);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/resources/:id", requireAuth, async (req, res) => {
+    try {
+      const updates = req.body;
+      const updatedResource = await storage.updateResource(parseInt(req.params.id), updates);
+      res.json(updatedResource);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/resources/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteResource(parseInt(req.params.id));
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Bilateral session routes
+  app.post("/api/bilateral-sessions", requireAuth, async (req, res) => {
+    try {
+      const bilateralSessionData = insertBilateralSessionSchema.parse(req.body);
+      const bilateralSession = await storage.createBilateralSession(bilateralSessionData);
+      res.json(bilateralSession);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+
+
+
+
+  // Script progression routes for EMDR workflow
+  app.get("/api/session/current", requireAuth, async (req, res) => {
+    try {
+      let session = await storage.getCurrentSessionState(req.user!.id);
+      
+      // If session exists but is completed (Script 10), don't return it
+      if (session && session.currentScript === 10) {
+        return res.status(404).json({ message: "No active session found" });
+      }
+      
+      // Only return existing session, don't auto-create here
+      // Let the frontend explicitly start new sessions
+      if (!session) {
+        return res.status(404).json({ message: "No active session found" });
+      }
+      
+      res.json(session);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   app.post("/api/session/start", requireAuth, async (req, res) => {
     try {
       const sessionData = {
-        current_script: 1,
-        session_type: "normal",
-        has_completed_reprocessing: false,
-        status: "active"
+        userId: req.user!.id,
+        currentScript: 1,
+        phase: "introduction",
+        status: "active" as const
       };
-      
-      const session = await SupabaseAPI.createEmdrSession(req.user!.id, sessionData);
-      
-      // Convert to frontend format
-      const responseSession = {
-        ...session,
-        currentScript: session.current_script,
-        sessionType: session.session_type,
-        hasCompletedReprocessing: session.has_completed_reprocessing
-      };
-      
-      res.json(responseSession);
+      const session = await storage.createSession(sessionData);
+      res.json(session);
     } catch (error: any) {
-      console.error('Error starting session:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/session/:id/advance", requireAuth, async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const forceNext = req.body.forceNext || false; // Allow manual progression out of loops
+      const session = await storage.advanceToNextScript(sessionId, forceNext);
+      res.json(session);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/session/:id/script-progress", requireAuth, async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const { scriptNumber, userInput, notes } = req.body;
+      
+      const progressionData = {
+        sessionId,
+        scriptNumber,
+        userInput,
+        status: "completed" as const,
+        completedAt: new Date()
+      };
+      
+      const progression = await storage.createScriptProgression(progressionData);
+      res.json(progression);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/session/:id/script-progress", requireAuth, async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const progressions = await storage.getSessionScriptProgressions(sessionId);
+      res.json(progressions);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.put("/api/session/:id", requireAuth, async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const updates = req.body;
+      const session = await storage.updateSession(sessionId, updates);
+      res.json(session);
+    } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
   });

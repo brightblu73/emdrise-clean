@@ -346,23 +346,6 @@ export default function Navigation() {
 
                         </div>
 
-                        {/* Progress Section */}
-                        <div className="pt-6">
-                          <p className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3 px-2">Progress</p>
-                          <Link href="/memory-cleared">
-                            <Button 
-                              variant="ghost" 
-                              className="w-full justify-start h-12 rounded-xl text-secondary-blue hover:bg-white/80 hover:text-primary-green hover:shadow-sm transition-all duration-200"
-                              onClick={() => setIsMobileMenuOpen(false)}
-                            >
-                              <div className="p-2 rounded-lg mr-3 bg-primary-green/20 text-primary-green">
-                                <Brain className="h-4 w-4" />
-                              </div>
-                              <span className="font-medium">Progress</span>
-                            </Button>
-                          </Link>
-                        </div>
-
                         {/* Legal Section */}
                         <div className="pt-4">
                           <p className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3 px-2">Legal</p>

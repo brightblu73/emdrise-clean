@@ -5,7 +5,7 @@ import {
   type BilateralSession, type InsertBilateralSession, type ScriptProgression, type InsertScriptProgression
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -24,7 +24,6 @@ export interface IStorage {
   }): Promise<void>;
   updateUserTrialEndDate?(id: number, trialEndDate: Date): Promise<User>;
   getUserByStripeCustomerId(customerId: string): Promise<User | undefined>;
-  incrementMemoryCount(email: string): Promise<User | undefined>;
   
   // Session methods
   createSession(session: InsertSession): Promise<Session>;
@@ -382,8 +381,7 @@ export class DatabaseStorage implements IStorage {
         .set({
           currentScript: 6,
           phase: "installation",
-          loopCount: 0,
-          hasCompletedReprocessing: true // Mark reprocessing as completed
+          loopCount: 0
         })
         .where(eq(sessions.id, sessionId))
         .returning();
@@ -440,12 +438,6 @@ export class DatabaseStorage implements IStorage {
       phase: nextFlow.phase
     };
 
-    // Mark reprocessing completion when reaching Script 5 or 5a
-    if (nextFlow.nextScript === 5 || String(nextFlow.nextScript) === "5a") {
-      updates.hasCompletedReprocessing = true;
-      console.log('Session marked as having completed reprocessing');
-    }
-
     // Increment loop count for repeating scripts
     if (currentScript === nextFlow.nextScript) {
       updates.loopCount = (currentSession.loopCount || 0) + 1;
@@ -466,23 +458,6 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return updatedSession;
-  }
-
-  async incrementMemoryCount(email: string): Promise<User | undefined> {
-    try {
-      const [updatedUser] = await db
-        .update(users)
-        .set({
-          memoriesCleared: sql`${users.memoriesCleared} + 1`
-        })
-        .where(eq(users.email, email))
-        .returning();
-      
-      return updatedUser || undefined;
-    } catch (error) {
-      console.error('Error incrementing memory count:', error);
-      return undefined;
-    }
   }
 }
 
