@@ -395,6 +395,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Memory count endpoints
+  app.get("/api/memory-count", async (req, res) => {
+    try {
+      // Extract JWT token from Authorization header or session
+      let token: string | null = null;
+      const authHeader = req.headers.authorization;
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      } else if (req.session?.access_token) {
+        token = req.session.access_token;
+      }
+
+      if (!token) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      // Verify the JWT with Supabase
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      
+      if (error || !user) {
+        return res.status(401).json({ message: "Invalid authentication" });
+      }
+
+      // Get user's memory count from database
+      const dbUser = await storage.getUserByEmail(user.email!);
+      if (!dbUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ 
+        memoriesCleared: dbUser.memoriesCleared || 0 
+      });
+
+    } catch (error: any) {
+      console.error('Error fetching memory count:', error);
+      res.status(500).json({ message: "Failed to fetch memory count" });
+    }
+  });
+
+  app.post("/api/increment-memory-count", async (req, res) => {
+    try {
+      // Extract JWT token from Authorization header or session
+      let token: string | null = null;
+      const authHeader = req.headers.authorization;
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      } else if (req.session?.access_token) {
+        token = req.session.access_token;
+      }
+
+      if (!token) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      // Verify the JWT with Supabase
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      
+      if (error || !user) {
+        return res.status(401).json({ message: "Invalid authentication" });
+      }
+
+      // Increment user's memory count in database
+      const updatedUser = await storage.incrementMemoryCount(user.email!);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      console.log(`Incremented memory count for ${user.email} to ${updatedUser.memoriesCleared}`);
+      res.json({ 
+        memoriesCleared: updatedUser.memoriesCleared,
+        success: true 
+      });
+
+    } catch (error: any) {
+      console.error('Error incrementing memory count:', error);
+      res.status(500).json({ message: "Failed to increment memory count" });
+    }
+  });
+
   // Development helper endpoint to clear test users
   if (process.env.NODE_ENV === 'development') {
     app.delete("/api/clear-test-users", async (req, res) => {
@@ -749,14 +830,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Session routes - updated to always start with Script 1
+  // Session routes - supports both normal (Script 1) and resumed (Script 5a) sessions
   app.post("/api/sessions", requireAuth, async (req, res) => {
     try {
+      // Determine session type based on currentScript
+      const currentScript = req.body.currentScript || 1;
+      const sessionType = (currentScript === "5a" || currentScript === 5) ? "resumed" : "normal";
+      
       const sessionData = insertSessionSchema.parse({
         ...req.body,
         userId: req.user!.id,
-        currentScript: 1  // Always start with Script 1 (Welcome & Introduction)
+        currentScript: currentScript,
+        sessionType: sessionType, // Set sessionType based on script
       });
+      
+      console.log(`Creating ${sessionType} session starting at script ${currentScript}`);
       const session = await storage.createSession(sessionData);
       res.json(session);
     } catch (error: any) {

@@ -16,6 +16,7 @@ import Subscribe from "./pages/subscribe";
 import EMDRSession from "./pages/emdr-session";
 import TermsOfUse from "./pages/terms-of-use";
 import PrivacyPolicy from "./pages/privacy-policy";
+import MemoryCleared from "./pages/memory-cleared";
 import NotFound from "./pages/not-found";
 
 function Router() {
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/subscribe" component={Subscribe} />
 
       <Route path="/emdr-session" component={EMDRSession} />
+      <Route path="/memory-cleared" component={MemoryCleared} />
       <Route path="/terms-of-use" component={TermsOfUse} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route component={NotFound} />

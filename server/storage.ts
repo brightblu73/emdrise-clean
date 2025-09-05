@@ -5,7 +5,7 @@ import {
   type BilateralSession, type InsertBilateralSession, type ScriptProgression, type InsertScriptProgression
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -24,6 +24,7 @@ export interface IStorage {
   }): Promise<void>;
   updateUserTrialEndDate?(id: number, trialEndDate: Date): Promise<User>;
   getUserByStripeCustomerId(customerId: string): Promise<User | undefined>;
+  incrementMemoryCount(email: string): Promise<User | undefined>;
   
   // Session methods
   createSession(session: InsertSession): Promise<Session>;
@@ -458,6 +459,23 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return updatedSession;
+  }
+
+  async incrementMemoryCount(email: string): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          memoriesCleared: sql`${users.memoriesCleared} + 1`
+        })
+        .where(eq(users.email, email))
+        .returning();
+      
+      return updatedUser || undefined;
+    } catch (error) {
+      console.error('Error incrementing memory count:', error);
+      return undefined;
+    }
   }
 }
 

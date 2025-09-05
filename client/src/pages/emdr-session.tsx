@@ -378,15 +378,55 @@ export default function EMDRSession() {
     setLocalVideoCompleted(true);
   };
 
-  const handleAdvanceScript = () => {
+  const handleAdvanceScript = async () => {
     if (!currentSession || isAdvancing) return; // Prevent double-clicks
     
-    // Special handling for Script 10 - Complete Session and return to homepage
+    // Special handling for Script 10 - Complete Session
     if (currentSession.currentScript === 10) {
-      console.log("Session completed, redirecting to homepage");
-      // Clear active session but do NOT clear paused session if it exists
+      console.log("Session completed");
+      
+      // Check if this was a normal session (not resumed from pause)
+      // A normal session never went through Script 5a
+      const sessionType = currentSession.sessionType || 'normal';
+      const isNormalSession = sessionType === 'normal';
+      
+      console.log('Session type:', sessionType, 'Is normal session:', isNormalSession);
+      
+      if (isNormalSession) {
+        try {
+          // Get the current session to access the access token
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.access_token) {
+            // Increment memory count for completed normal sessions
+            const response = await fetch('/api/increment-memory-count', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+              },
+            });
+            
+            if (response.ok) {
+              console.log('Memory count incremented successfully');
+              // Clear active session
+              localStorage.removeItem('emdrSession');
+              // Navigate to Memory Cleared Dashboard
+              setLocation("/memory-cleared");
+              return;
+            } else {
+              console.error('Failed to increment memory count');
+            }
+          }
+        } catch (error) {
+          console.error('Error incrementing memory count:', error);
+        }
+      }
+      
+      // For resumed sessions or if memory count increment failed, just go to homepage
+      console.log("Returning to homepage");
       localStorage.removeItem('emdrSession');
-      setLocation("/"); // Navigate to homepage
+      setLocation("/");
       return;
     }
     
