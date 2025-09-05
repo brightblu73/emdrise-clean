@@ -382,7 +382,8 @@ export class DatabaseStorage implements IStorage {
         .set({
           currentScript: 6,
           phase: "installation",
-          loopCount: 0
+          loopCount: 0,
+          hasCompletedReprocessing: true // Mark reprocessing as completed
         })
         .where(eq(sessions.id, sessionId))
         .returning();
@@ -438,6 +439,12 @@ export class DatabaseStorage implements IStorage {
       currentScript: nextFlow.nextScript,
       phase: nextFlow.phase
     };
+
+    // Mark reprocessing completion when reaching Script 5 or 5a
+    if (nextFlow.nextScript === 5 || String(nextFlow.nextScript) === "5a") {
+      updates.hasCompletedReprocessing = true;
+      console.log('Session marked as having completed reprocessing');
+    }
 
     // Increment loop count for repeating scripts
     if (currentScript === nextFlow.nextScript) {

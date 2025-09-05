@@ -837,14 +837,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentScript = req.body.currentScript || 1;
       const sessionType = (currentScript === "5a" || currentScript === 5) ? "resumed" : "normal";
       
+      // Sessions starting at 5a are already in reprocessing, so mark as completed reprocessing
+      const hasCompletedReprocessing = (currentScript === "5a");
+      
       const sessionData = insertSessionSchema.parse({
         ...req.body,
         userId: req.user!.id,
         currentScript: currentScript,
-        sessionType: sessionType, // Set sessionType based on script
+        sessionType: sessionType,
+        hasCompletedReprocessing: hasCompletedReprocessing,
       });
       
-      console.log(`Creating ${sessionType} session starting at script ${currentScript}`);
+      console.log(`Creating ${sessionType} session starting at script ${currentScript}, reprocessing completed: ${hasCompletedReprocessing}`);
       const session = await storage.createSession(sessionData);
       res.json(session);
     } catch (error: any) {
@@ -881,6 +885,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const updates = req.body;
+      
+      // Mark reprocessing completion when advancing to Script 5 or 5a
+      if (updates.currentScript === 5 || String(updates.currentScript) === "5a") {
+        updates.hasCompletedReprocessing = true;
+        console.log(`Session ${session.id} marked as having completed reprocessing`);
+      }
+      
       const updatedSession = await storage.updateSession(session.id, updates);
       res.json(updatedSession);
     } catch (error: any) {

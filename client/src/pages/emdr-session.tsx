@@ -385,14 +385,13 @@ export default function EMDRSession() {
     if (currentSession.currentScript === 10) {
       console.log("Session completed");
       
-      // Check if this was a normal session (not resumed from pause)
-      // A normal session never went through Script 5a
-      const sessionType = currentSession.sessionType || 'normal';
-      const isNormalSession = sessionType === 'normal';
+      // Check if this session completed reprocessing (Scripts 5, 5a, 6, 7, 8)
+      // Show dashboard if reprocessing was completed, regardless of pause/resume
+      const hasCompletedReprocessing = currentSession.hasCompletedReprocessing;
       
-      console.log('Session type:', sessionType, 'Is normal session:', isNormalSession);
+      console.log('Has completed reprocessing:', hasCompletedReprocessing);
       
-      if (isNormalSession) {
+      if (hasCompletedReprocessing) {
         try {
           // Get the current session to access the access token
           const { data: { session } } = await supabase.auth.getSession();
@@ -423,8 +422,8 @@ export default function EMDRSession() {
         }
       }
       
-      // For resumed sessions or if memory count increment failed, just go to homepage
-      console.log("Returning to homepage");
+      // For sessions without reprocessing or if memory count increment failed, just go to homepage
+      console.log("Session completed without reprocessing, returning to homepage");
       localStorage.removeItem('emdrSession');
       setLocation("/");
       return;

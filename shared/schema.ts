@@ -24,6 +24,7 @@ export const sessions = pgTable("sessions", {
   phase: text("phase").notNull().default("introduction"), // introduction, calm_place_setup, target_setup, reprocessing, installation, body_scan, calm_place_return, aftercare
   status: text("status").notNull().default("active"), // active, paused, complete
   sessionType: text("session_type").default("normal"), // normal, resumed - tracks if this was a resumed session from pause
+  hasCompletedReprocessing: boolean("has_completed_reprocessing").default(false), // true if session progressed through Script 5/5a
   targetId: integer("target_id"),
   calmPlaceId: integer("calm_place_id"),
   loopCount: integer("loop_count").default(0), // Tracks repetitions for scripts 5 and 7
