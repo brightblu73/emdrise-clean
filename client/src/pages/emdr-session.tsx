@@ -385,45 +385,56 @@ export default function EMDRSession() {
     if (currentSession.currentScript === 10) {
       console.log("Session completed");
       
-      // Check if this session completed reprocessing (Scripts 5, 5a, 6, 7, 8)
-      // Show dashboard if reprocessing was completed, regardless of pause/resume
-      const hasCompletedReprocessing = currentSession.hasCompletedReprocessing;
-      
-      console.log('Has completed reprocessing:', hasCompletedReprocessing);
-      
-      if (hasCompletedReprocessing) {
-        try {
-          // Get the current session to access the access token
-          const { data: { session } } = await supabase.auth.getSession();
+      try {
+        // Get the current session to access the access token
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.access_token) {
+          // Fetch latest session data from server to check reprocessing completion
+          const sessionResponse = await fetch(`/api/sessions/${currentSession.id}`, {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+          });
           
-          if (session?.access_token) {
-            // Increment memory count for completed normal sessions
-            const response = await fetch('/api/increment-memory-count', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}`,
-              },
-            });
+          if (sessionResponse.ok) {
+            const latestSessionData = await sessionResponse.json();
+            const hasCompletedReprocessing = latestSessionData.hasCompletedReprocessing;
             
-            if (response.ok) {
-              console.log('Memory count incremented successfully');
-              // Clear active session
-              localStorage.removeItem('emdrSession');
-              // Navigate to Memory Cleared Dashboard
-              setLocation("/memory-cleared");
-              return;
+            console.log('Has completed reprocessing (from server):', hasCompletedReprocessing);
+            
+            if (hasCompletedReprocessing) {
+              // Increment memory count for completed reprocessing sessions
+              const response = await fetch('/api/increment-memory-count', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session.access_token}`,
+                },
+              });
+              
+              if (response.ok) {
+                console.log('Memory count incremented successfully');
+                // Clear active session
+                localStorage.removeItem('emdrSession');
+                // Navigate to Memory Cleared Dashboard
+                setLocation("/memory-cleared");
+                return;
+              } else {
+                console.error('Failed to increment memory count');
+              }
             } else {
-              console.error('Failed to increment memory count');
+              console.log('Session completed without reprocessing, returning to homepage');
             }
+          } else {
+            console.error('Failed to fetch latest session data');
           }
-        } catch (error) {
-          console.error('Error incrementing memory count:', error);
         }
+      } catch (error) {
+        console.error('Error checking session reprocessing status:', error);
       }
       
-      // For sessions without reprocessing or if memory count increment failed, just go to homepage
-      console.log("Session completed without reprocessing, returning to homepage");
+      // For sessions without reprocessing or if API calls failed, just go to homepage
       localStorage.removeItem('emdrSession');
       setLocation("/");
       return;
