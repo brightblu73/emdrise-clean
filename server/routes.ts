@@ -43,6 +43,12 @@ declare module 'express-session' {
 // Initialize Supabase admin client for JWT verification
 const supabaseUrl = 'https://jxhjghgectlpgrpwpkfd.supabase.co';
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+const supabase = createClient(supabaseUrl, serviceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 const supabaseAdmin = createClient(
   supabaseUrl,
@@ -273,7 +279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Update subscription info after creation
-      await storage.updateUserSubscriptionStatus(user.id, "trial");
+      await storage.updateUserSubscriptionStatus(user.id.toString(), "trial");
 
       req.login(user, (err) => {
         if (err) return res.status(500).json({ message: "Login failed" });
@@ -780,7 +786,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (deletedSubscription.metadata?.user_id) {
             const userId = parseInt(deletedSubscription.metadata.user_id);
-            await storage.updateUserSubscriptionStatus(userId, 'cancelled');
+            await storage.updateUserSubscriptionStatus(userId.toString(), 'cancelled');
             console.log('[stripe-webhook] Updated user subscription status to cancelled for user:', userId);
           }
           break;
@@ -810,22 +816,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Protected middleware
-  const requireAuth = (req: any, res: any, next: any) => {
-    if (req.isAuthenticated()) {
-      // Check subscription status
-      const user = req.user!;
-      const now = new Date();
+  const requireAuth = async (req: any, res: any, next: any) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const token = authHeader.substring(7);
+      const { data: { user: supabaseUser }, error } = await supabase.auth.getUser(token);
       
-      if (user.subscriptionStatus === 'trial' && user.trialEndsAt && now > user.trialEndsAt) {
+      if (error || !supabaseUser) {
+        console.log('Supabase JWT verification failed:', error);
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      console.log('Supabase JWT verified for user:', supabaseUser.email);
+
+      // Check if user exists in local database, create if not
+      let localUser = await storage.getUserByEmail(supabaseUser.email!);
+      if (!localUser) {
+        console.log('Creating local user for Supabase user:', supabaseUser.email);
+        // Create user in local database
+        const trialEndDate = new Date();
+        trialEndDate.setDate(trialEndDate.getDate() + 7); // 7 days from now
+        
+        localUser = await storage.createUser({
+          username: supabaseUser.email!.split('@')[0], // Use part before @ as username
+          email: supabaseUser.email!,
+          password: '', // Empty password since they authenticate via Supabase
+        });
+        
+        await storage.updateUserSubscriptionStatus(localUser.id.toString(), "trial");
+        console.log('Local user created for:', supabaseUser.email);
+      }
+
+      // Check subscription status
+      const now = new Date();
+      if (localUser.subscriptionStatus === 'trial' && localUser.trialEndsAt && now > localUser.trialEndsAt) {
         return res.status(403).json({ message: "Trial expired. Please subscribe to continue." });
       }
       
-      if (user.subscriptionStatus === 'cancelled' || user.subscriptionStatus === 'expired') {
+      if (localUser.subscriptionStatus === 'cancelled' || localUser.subscriptionStatus === 'expired') {
         return res.status(403).json({ message: "Subscription required to access this feature." });
       }
-      
+
+      req.user = localUser;
       next();
-    } else {
+    } catch (error) {
+      console.error('Authentication error:', error);
       res.status(401).json({ message: "Authentication required" });
     }
   };
