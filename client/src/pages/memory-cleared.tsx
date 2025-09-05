@@ -28,12 +28,34 @@ export default function MemoryCleared() {
 
   const fetchMemoryCount = async () => {
     try {
-      const response = await fetch('/api/memory-count');
+      // Get Supabase auth token
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      );
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        console.error('No authentication token available');
+        return;
+      }
+      
+      console.log('Fetching memory count from Supabase API...');
+      const response = await fetch('/api/memory-count', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Memory count fetched from Supabase:', data);
         setMemoriesCleared(data.memoriesCleared || 0);
       } else {
-        console.error('Failed to fetch memory count');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch memory count:', response.status, errorData);
       }
     } catch (error) {
       console.error('Error fetching memory count:', error);
