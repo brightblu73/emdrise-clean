@@ -4,7 +4,7 @@ A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy app
 
 ## Key Features
 
-- **Automatic Therapist Selection**: Streamlined experience with Alistair as the default virtual therapist
+- **Professional Therapist Options**: Choose between Maria and Alistair virtual therapists
 - **Complete EMDR Protocol**: 10-phase guided sessions with professional video narration
 - **Dual Session Flow Management**:
   - **Normal Flow**: Complete sessions (Scripts 1-10) → home → new journey starts at Script 1
@@ -13,7 +13,7 @@ A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy app
 - **Intelligent Session Management**: Persistent pause/resume system that survives closure sequences
 - **Professional Video Library**: Authentic therapist guidance for all phases including resumption videos
 - **Mobile-Optimized**: React Native/Expo app with full offline functionality
-- **Subscription Platform**: Stripe integration with 7-day free trial
+- **Apple IAP Integration**: RevenueCat-powered subscription management with 7-day free trial (£9.99/month)
 
 ## Architecture
 
@@ -36,8 +36,9 @@ A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy app
 - Node.js with Express.js
 - PostgreSQL with Drizzle ORM
 - Neon serverless database hosting
-- Session-based authentication with bcrypt
-- Stripe payment processing
+- Supabase Authentication with Apple Sign In support
+- RevenueCat for Apple IAP subscription management
+- Account deletion with complete data cleanup
 
 ## Session Management
 
@@ -69,9 +70,10 @@ expo start
 ```
 
 ### Environment Setup
-- Configure PostgreSQL database connection
-- Set up Stripe payment keys
-- Ensure video assets are properly hosted
+- Configure Supabase authentication
+- Set up RevenueCat for Apple IAP
+- Configure Apple Developer account for App Store
+- Ensure video assets are hosted on Supabase storage
 
 ## EMDR Protocol Implementation
 
