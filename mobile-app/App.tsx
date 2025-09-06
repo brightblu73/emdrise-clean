@@ -61,7 +61,7 @@ export default function App() {
     Alert.alert(
       'Therapist Selected',
       `You've chosen ${therapist === 'maria' ? 'Maria' : 'Alistair'} as your EMDR therapist.`,
-      [{ text: 'Continue', onPress: () => setCurrentScreen('emdr') }]
+      [{ text: 'Continue', onPress: () => setCurrentScreen('emdr-session') }]
     );
   };
 
@@ -79,7 +79,7 @@ export default function App() {
       return;
     }
 
-    setCurrentScreen('emdr');
+    setCurrentScreen('emdr-session');
   };
 
   const renderHomeScreen = () => (
@@ -230,7 +230,6 @@ export default function App() {
         return (
           <EMDRSessionScreen
             therapist={selectedTherapist!}
-            onComplete={handleBackToHome}
             onBack={handleBackToHome}
             onMemoryCleared={() => setCurrentScreen('memory-cleared')}
           />

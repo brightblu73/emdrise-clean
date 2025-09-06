@@ -5,9 +5,9 @@ type SessionStart = '1' | '5a';
 type SessionFlowState = {
   sessionActive: boolean;
   sessionStartedAt: SessionStart | null;
-  reprocessingStarted: boolean; // becomes true when entering Script 5 or 5a
+  reprocessingStarted: boolean;
   beginNewSession: (startAt: SessionStart) => void;
-  markEnteredScript: (scriptKey: string) => void; // call with '5' or '5a'
+  markEnteredScript: (scriptKey: string) => void;
   resetSession: () => void;
   eligibleForDashboardOnScript10: () => boolean;
 };
@@ -22,35 +22,18 @@ export const SessionFlowProvider: React.FC<React.PropsWithChildren> = ({ childre
   const beginNewSession = useCallback((startAt: SessionStart) => {
     setSessionActive(true);
     setSessionStartedAt(startAt);
-    setReprocessingStarted(startAt === '5a'); // resume flow starts in reprocessing
+    setReprocessingStarted(startAt === '5a');
   }, []);
 
   const markEnteredScript = useCallback((scriptKey: string) => {
     if (scriptKey === '5' || scriptKey === '5a') setReprocessingStarted(true);
   }, []);
 
-  const eligibleForDashboardOnScript10 = useCallback(() => {
-    return sessionActive && reprocessingStarted;
-  }, [sessionActive, reprocessingStarted]);
+  const eligibleForDashboardOnScript10 = useCallback(() => sessionActive && reprocessingStarted, [sessionActive, reprocessingStarted]);
 
-  const resetSession = useCallback(() => {
-    setSessionActive(false);
-    setSessionStartedAt(null);
-    setReprocessingStarted(false);
-  }, []);
+  const resetSession = useCallback(() => { setSessionActive(false); setSessionStartedAt(null); setReprocessingStarted(false); }, []);
 
-  const value = useMemo(
-    () => ({
-      sessionActive,
-      sessionStartedAt,
-      reprocessingStarted,
-      beginNewSession,
-      markEnteredScript,
-      resetSession,
-      eligibleForDashboardOnScript10,
-    }),
-    [sessionActive, sessionStartedAt, reprocessingStarted, beginNewSession, markEnteredScript, resetSession, eligibleForDashboardOnScript10]
-  );
+  const value = useMemo(() => ({ sessionActive, sessionStartedAt, reprocessingStarted, beginNewSession, markEnteredScript, resetSession, eligibleForDashboardOnScript10 }), [sessionActive, sessionStartedAt, reprocessingStarted, beginNewSession, markEnteredScript, resetSession, eligibleForDashboardOnScript10]);
 
   return <SessionFlowContext.Provider value={value}>{children}</SessionFlowContext.Provider>;
 };

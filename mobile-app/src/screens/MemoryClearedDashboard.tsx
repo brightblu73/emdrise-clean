@@ -1,16 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';
-import { getCurrentClearedMemories } from '../services/progress';
+import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import ConfettiCannon from 'react-native-confetti-cannon';
+import { supabase } from '../services/supabase';
 
-const brand = {
-  bg: '#F7FAFC',
-  card: '#FFFFFF',
-  primary: '#1E90FF',
-  accent: '#22A39F',
-  text: '#0F172A',
-  subtext: '#334155',
-  radius: 16,
-};
+const brand = { bg: '#F7FAFC', card: '#FFFFFF', primary: '#1E90FF', accent: '#22A39F', text: '#0F172A', subtext: '#334155', radius: 16 };
 
 interface MemoryClearedDashboardProps {
   onBack?: () => void;
@@ -22,8 +15,10 @@ export default function MemoryClearedDashboard({ onBack }: MemoryClearedDashboar
 
   const loadCount = useCallback(async () => {
     setLoading(true);
-    const clearedCount = await getCurrentClearedMemories();
-    setCount(clearedCount);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setCount(0); setLoading(false); return; }
+    const { data, error } = await supabase.from('profiles').select('memory_cleared_count').eq('id', user.id).single();
+    if (error) { console.log('[Dashboard] load error', error); setCount(0); } else { setCount(data?.memory_cleared_count ?? 0); }
     setLoading(false);
   }, []);
 
@@ -47,26 +42,11 @@ export default function MemoryClearedDashboard({ onBack }: MemoryClearedDashboar
             </View>
           )}
 
-          <TouchableOpacity
-            onPress={onBack || (() => {})}
-            style={styles.button}
-            accessibilityRole="button"
-            accessibilityLabel="Return to Home"
-          >
+          <TouchableOpacity onPress={onBack || (() => {})} style={styles.button} accessibilityRole="button" accessibilityLabel="Return to Home">
             <Text style={styles.buttonText}>Return to Home</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Simple confetti animation using View components since we couldn't install the package */}
-        <View style={styles.confettiContainer}>
-          {[...Array(20)].map((_, i) => (
-            <View key={i} style={[styles.confetti, { 
-              left: Math.random() * 300,
-              animationDelay: Math.random() * 2000,
-              backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'][Math.floor(Math.random() * 5)]
-            }]} />
-          ))}
-        </View>
+        <ConfettiCannon count={120} origin={{ x: 0, y: 0 }} fallSpeed={3000} fadeOut />
       </View>
     </SafeAreaView>
   );
@@ -82,18 +62,4 @@ const styles = StyleSheet.create({
   countValue: { fontSize: 40, fontWeight: '700', color: brand.accent, marginTop: 6 },
   button: { marginTop: 20, backgroundColor: brand.primary, paddingVertical: 14, borderRadius: brand.radius },
   buttonText: { color: '#fff', fontSize: 16, textAlign: 'center' },
-  confettiContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 100,
-    pointerEvents: 'none',
-  },
-  confetti: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
 });

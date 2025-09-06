@@ -72,7 +72,8 @@ export default function EMDRSessionScreen({ therapist, onBack, onMemoryCleared }
     }
 
     // Mark if already in reprocessing scripts
-    if (currentScript === 5 || currentScript === '5a' || currentScript > 5) {
+    const scriptNum = typeof currentScript === 'string' ? parseInt(currentScript) || 0 : currentScript;
+    if (scriptNum === 5 || currentScript === '5a' || scriptNum > 5) {
       console.log('Session loaded with reprocessing script, marking as entered');
       markEnteredScript(String(currentScript));
     }
@@ -97,11 +98,12 @@ export default function EMDRSessionScreen({ therapist, onBack, onMemoryCleared }
 
   const handleAdvanceScript = async () => {
     console.log('Mobile handleAdvanceScript called, current script:', currentScript);
-    if (currentScript < 10) {
-      console.log('Mobile advancing script from', currentScript, 'to', currentScript + 1);
+    const scriptNum = typeof currentScript === 'string' ? parseInt(currentScript) || 0 : currentScript;
+    if (scriptNum < 10) {
+      console.log('Mobile advancing script from', currentScript, 'to', scriptNum + 1);
       
       // Mark when entering reprocessing phases
-      const nextScript = currentScript === '5a' ? 5 : currentScript + 1;
+      const nextScript = currentScript === '5a' ? 5 : scriptNum + 1;
       if (nextScript === 5 || currentScript === '5a') {
         console.log('Entering reprocessing phase, marking script');
         markEnteredScript(String(nextScript));
@@ -140,8 +142,9 @@ export default function EMDRSessionScreen({ therapist, onBack, onMemoryCleared }
 
   const handleBackScript = async () => {
     console.log('Mobile handleBackScript called, current script:', currentScript);
-    if (currentScript > 1) {
-      console.log('Mobile going back from script', currentScript, 'to', currentScript - 1);
+    const scriptNum = typeof currentScript === 'string' ? parseInt(currentScript) || 0 : currentScript;
+    if (scriptNum > 1) {
+      console.log('Mobile going back from script', currentScript, 'to', scriptNum - 1);
       await goBackScript();
     }
   };
@@ -220,7 +223,7 @@ export default function EMDRSessionScreen({ therapist, onBack, onMemoryCleared }
     return (
       <View style={styles.scriptContainer}>
         {/* Back to Previous Step - At top for all scripts except 1 */}
-        {currentScript > 1 && (
+        {(typeof currentScript === 'string' ? parseInt(currentScript) || 0 : currentScript) > 1 && (
           <TouchableOpacity style={styles.topBackButton} onPress={handleBackScript}>
             <Text style={styles.topBackButtonText}>← Back to Previous Step</Text>
           </TouchableOpacity>
