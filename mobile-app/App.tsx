@@ -14,13 +14,15 @@ import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import PrivacyPolicyScreen from './src/screens/PrivacyPolicyScreen';
 import TermsOfUseScreen from './src/screens/TermsOfUseScreen';
+import MemoryClearedDashboard from './src/screens/MemoryClearedDashboard';
 import LoadingScreen from './src/components/LoadingScreen';
+import { SessionFlowProvider } from './src/context/SessionFlowContext';
 
 export type TherapistType = 'maria' | 'alistair';
 
 // Mobile App with all today's improvements
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<'loading' | 'home' | 'login' | 'therapist-selection' | 'emdr-session' | 'privacy-policy' | 'terms-of-use'>('loading');
+  const [currentScreen, setCurrentScreen] = useState<'loading' | 'home' | 'login' | 'therapist-selection' | 'emdr-session' | 'memory-cleared' | 'progress' | 'privacy-policy' | 'terms-of-use'>('loading');
   const [selectedTherapist, setSelectedTherapist] = useState<TherapistType | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -214,6 +216,7 @@ export default function App() {
             onSelectTherapist={() => setCurrentScreen('therapist-selection')}
             onShowPrivacyPolicy={handleShowPrivacyPolicy}
             onShowTermsOfUse={handleShowTermsOfUse}
+            onShowProgress={() => setCurrentScreen('progress')}
           />
         );
       case 'login':
@@ -229,8 +232,13 @@ export default function App() {
             therapist={selectedTherapist!}
             onComplete={handleBackToHome}
             onBack={handleBackToHome}
+            onMemoryCleared={() => setCurrentScreen('memory-cleared')}
           />
         );
+      case 'memory-cleared':
+        return <MemoryClearedDashboard onBack={() => setCurrentScreen('home')} />;
+      case 'progress':
+        return <MemoryClearedDashboard onBack={() => setCurrentScreen('home')} />;
 
       case 'privacy-policy':
         return (
@@ -252,9 +260,11 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      {renderScreen()}
-    </View>
+    <SessionFlowProvider>
+      <View style={styles.container}>
+        {renderScreen()}
+      </View>
+    </SessionFlowProvider>
   );
 }
 

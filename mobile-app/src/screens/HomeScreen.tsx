@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   SafeAreaView,
   Image,
+  Modal,
 } from 'react-native';
 import { useAuth } from '../providers/AuthProvider';
 import { useEMDR } from '../providers/EMDRProvider';
@@ -53,13 +54,17 @@ interface HomeScreenProps {
   onLogin: () => void;
   onSelectTherapist: () => void;
   onShowPrivacyPolicy?: () => void;
+  onShowProgress?: () => void;
   onShowTermsOfUse?: () => void;
 }
 
-export default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPolicy, onShowTermsOfUse }: HomeScreenProps) {
-  const { isAuthenticated, user } = useAuth();
-  const { selectedTherapist } = useEMDR();
-  const navigation = useNavigation();
+export default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPolicy, onShowTermsOfUse, onShowProgress }: HomeScreenProps) {
+  const [showMenu, setShowMenu] = useState(false);
+  
+  // Comment out provider usage for now
+  // const { isAuthenticated, user } = useAuth();
+  // const { selectedTherapist } = useEMDR();
+  // const navigation = useNavigation();
 
   const handleStartSession = () => {
     if (!isAuthenticated) {
@@ -77,6 +82,59 @@ export default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPo
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Hamburger Menu */}
+      <View style={styles.topBar}>
+        <TouchableOpacity
+          style={styles.hamburgerButton}
+          onPress={() => setShowMenu(true)}
+        >
+          <Text style={styles.hamburgerText}>☰</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Menu Modal */}
+      <Modal
+        visible={showMenu}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowMenu(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          onPress={() => setShowMenu(false)}
+        >
+          <View style={styles.menuContainer}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setShowMenu(false);
+                onShowProgress?.();
+              }}
+            >
+              <Text style={styles.menuItemText}>Progress</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setShowMenu(false);
+                onShowPrivacyPolicy?.();
+              }}
+            >
+              <Text style={styles.menuItemText}>Privacy Policy</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setShowMenu(false);
+                onShowTermsOfUse?.();
+              }}
+            >
+              <Text style={styles.menuItemText}>Terms of Use</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
@@ -88,15 +146,9 @@ export default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPo
 
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          {isAuthenticated ? (
-            <Text style={styles.welcomeText}>
-              Welcome back, {user?.username}!
-            </Text>
-          ) : (
-            <Text style={styles.welcomeText}>
-              Begin your healing journey with EMDR therapy
-            </Text>
-          )}
+          <Text style={styles.welcomeText}>
+            Begin your healing journey with EMDR therapy
+          </Text>
         </View>
 
         {/* Therapist Selection Preview */}
@@ -104,11 +156,8 @@ export default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPo
           <Text style={styles.sectionTitle}>Choose Your Therapist</Text>
           <View style={styles.therapistOptions}>
             <TouchableOpacity
-              style={[
-                styles.therapistCard,
-                selectedTherapist === 'maria' && styles.selectedCard
-              ]}
-              onPress={() => navigation.navigate('TherapistSelection')}
+              style={styles.therapistCard}
+              onPress={onSelectTherapist}
             >
               <View style={styles.circularHeadshot}>
                 <View style={styles.mariaHeadshot}>
@@ -532,5 +581,47 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#374151',
     lineHeight: 24,
+  },
+  
+  // Hamburger menu styles
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 5,
+  },
+  hamburgerButton: {
+    padding: 8,
+  },
+  hamburgerText: {
+    fontSize: 20,
+    color: '#374151',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+  },
+  menuContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 10,
+    margin: 16,
+    minWidth: 150,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  menuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  menuItemText: {
+    fontSize: 16,
+    color: '#374151',
   },
 });

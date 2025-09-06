@@ -12,13 +12,17 @@ import {
 import VideoPlayer from '../components/VideoPlayer';
 import BLSComponent from '../components/BLSComponent';
 import { useEMDRSession } from '../hooks/useEMDRSession';
+import { useSessionFlow } from '../context/SessionFlowContext';
+import { incrementClearedMemoriesIfLoggedIn } from '../services/progress';
 
 interface EMDRSessionScreenProps {
   therapist: 'maria' | 'alistair';
   onBack: () => void;
+  onMemoryCleared?: () => void;
 }
 
-export default function EMDRSessionScreen({ therapist, onBack }: EMDRSessionScreenProps) {
+export default function EMDRSessionScreen({ therapist, onBack, onMemoryCleared }: EMDRSessionScreenProps) {
+  const { markEnteredScript, eligibleForDashboardOnScript10, beginNewSession } = useSessionFlow();
   const { 
     sessionData, 
     loading, 
@@ -58,6 +62,22 @@ export default function EMDRSessionScreen({ therapist, onBack }: EMDRSessionScre
 
   const currentScript = sessionData.currentScript;
 
+  // Initialize session flow and mark reprocessing scripts
+  React.useEffect(() => {
+    // Begin session tracking
+    if (currentScript === '5a') {
+      beginNewSession('5a'); // Resume flow
+    } else {
+      beginNewSession('1'); // Normal flow
+    }
+
+    // Mark if already in reprocessing scripts
+    if (currentScript === 5 || currentScript === '5a' || currentScript > 5) {
+      console.log('Session loaded with reprocessing script, marking as entered');
+      markEnteredScript(String(currentScript));
+    }
+  }, [currentScript, markEnteredScript, beginNewSession]);
+
   const getScriptInfo = (script: number | string) => {
     const scripts: Record<string | number, { title: string; description: string; hasVideo: boolean; hasBLS: boolean; canPause?: boolean }> = {
       1: { title: 'Welcome & Introduction', description: 'Introduction to EMDR therapy process', hasVideo: true, hasBLS: true },
@@ -79,18 +99,40 @@ export default function EMDRSessionScreen({ therapist, onBack }: EMDRSessionScre
     console.log('Mobile handleAdvanceScript called, current script:', currentScript);
     if (currentScript < 10) {
       console.log('Mobile advancing script from', currentScript, 'to', currentScript + 1);
+      
+      // Mark when entering reprocessing phases
+      const nextScript = currentScript === '5a' ? 5 : currentScript + 1;
+      if (nextScript === 5 || currentScript === '5a') {
+        console.log('Entering reprocessing phase, marking script');
+        markEnteredScript(String(nextScript));
+      }
+      
       await advanceScript();
     } else {
       // Session complete
+      const handleSessionComplete = async () => {
+        await completeSession();
+        
+        // Check if session was eligible for dashboard (completed reprocessing phases)
+        if (eligibleForDashboardOnScript10()) {
+          try {
+            await incrementClearedMemoriesIfLoggedIn();
+            onMemoryCleared?.();
+          } catch (error) {
+            console.error('Failed to increment memory cleared count:', error);
+            onBack(); // Fallback to home if increment fails
+          }
+        } else {
+          onBack(); // Go directly home for safe closure sessions
+        }
+      };
+
       Alert.alert(
         'Session Complete',
         'You have completed your EMDR session. Well done!',
         [{ 
           text: 'Return Home', 
-          onPress: async () => {
-            await completeSession();
-            onBack();
-          }
+          onPress: handleSessionComplete
         }]
       );
     }
