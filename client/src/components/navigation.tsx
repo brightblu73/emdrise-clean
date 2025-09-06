@@ -302,9 +302,6 @@ export default function Navigation() {
 
                       {/* Navigation Links */}
                       <div className="flex-1 px-4 space-y-3 overflow-y-auto pb-4">
-                        <div className="mb-2">
-                          <p className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3 px-2">Navigation</p>
-                        </div>
                         {navItems.map((item, index) => (
                           <Link key={item.href} href={item.href}>
                             <Button 
@@ -330,7 +327,6 @@ export default function Navigation() {
 
                         {/* Support Section */}
                         <div className="pt-6">
-                          <p className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3 px-2">Support</p>
                           <a href="mailto:support@emdrise.com">
                             <Button 
                               variant="ghost" 
@@ -348,7 +344,6 @@ export default function Navigation() {
 
                         {/* Legal Section */}
                         <div className="pt-4">
-                          <p className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3 px-2">Legal</p>
                           <Link href="/terms-of-use">
                             <Button 
                               variant="ghost" 
@@ -375,7 +370,6 @@ export default function Navigation() {
 
                       {/* Account Management Section */}
                       <div className="px-4 pt-4 pb-2">
-                        <p className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3 px-2">Account</p>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button 
