@@ -22,7 +22,9 @@ export type TherapistType = 'maria' | 'alistair';
 
 // Mobile App with all today's improvements
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<'loading' | 'home' | 'login' | 'therapist-selection' | 'emdr-session' | 'memory-cleared' | 'progress' | 'privacy-policy' | 'terms-of-use'>('loading');
+  const [currentScreen, setCurrentScreen] = useState<'loading' | 'home' | 'login' | 'therapist-selection' | 'emdr-session' | 'memory-cleared' | 'progress' | 'privacy-policy' | 'terms-of-use'>(
+    
+    'loading');
   const [selectedTherapist, setSelectedTherapist] = useState<TherapistType | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -49,6 +51,8 @@ export default function App() {
 
   const saveTherapistPreference = async (therapist: 'maria' | 'alistair') => {
     try {
+     
+      
       await AsyncStorage.setItem('selectedTherapist', therapist);
       setSelectedTherapist(therapist);
     } catch (error) {
@@ -78,6 +82,8 @@ export default function App() {
       setCurrentScreen('login');
       return;
     }
+
+    
 
     setCurrentScreen('emdr-session');
   };

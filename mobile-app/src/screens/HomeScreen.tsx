@@ -27,7 +27,8 @@ const Logo = () => (
 // Placeholder for PrivacyPolicyScreen - This would typically be in its own file
 const PrivacyPolicyScreen = () => (
   <SafeAreaView style={styles.legalScreenContainer}>
-    <ScrollView contentContainerStyle={styles.legalScreenScroll}>
+    <ScrollView contentContainerStyle={
+    styles.legalScreenScroll}>
       <Text style={styles.legalScreenTitle}>Privacy Policy</Text>
       <Text style={styles.legalScreenContent}>
         This is the Privacy Policy content.
@@ -58,7 +59,8 @@ interface HomeScreenProps {
   onShowTermsOfUse?: () => void;
 }
 
-export default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPolicy, onShowTermsOfUse, onShowProgress }: HomeScreenProps) {
+expor
+  t default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPolicy, onShowTermsOfUse, onShowProgress }: HomeScreenProps) {
   const [showMenu, setShowMenu] = useState(false);
   
   // Comment out provider usage for now
@@ -89,6 +91,7 @@ export default function HomeScreen({ onLogin, onSelectTherapist, onShowPrivacyPo
           onPress={() => setShowMenu(true)}
         >
           <Text style={styles.hamburgerText}>☰</Text>
+   
         </TouchableOpacity>
       </View>
 
