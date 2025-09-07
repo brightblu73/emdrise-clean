@@ -9,12 +9,46 @@ EMDRise is a web and mobile application offering guided EMDR (Eye Movement Desen
 - **Feature Philosophy**: Core EMDR therapeutic workflow only - relaxation playlists and supplementary features have been definitively removed
 - **Mobile Synchronization**: Update both web and mobile simultaneously to maintain feature parity
 
+## EMDRise Branding Standards
+**MANDATORY**: All new features, iterations, and changes must automatically incorporate EMDRise branding guidelines:
+
+### Color System (CSS Variables - ALWAYS USE)
+- **Primary Colors**: `--primary-blue` (hsl(217, 88%, 58%)), `--primary-green` (hsl(158, 92%, 40%))
+- **Secondary Colors**: `--secondary-blue` (hsl(212, 92%, 66%)), `--secondary-green` (hsl(162, 83%, 58%))
+- **Accent**: `--warm-accent` (hsl(41, 96%, 48%)) for CTAs and notifications
+- **Therapeutic Backgrounds**: `--therapeutic-bg`, `--safe-space` for calm, clinical environments
+
+### Tailwind Classes (USE THESE)
+- `text-primary-blue`, `bg-primary-green`, `border-secondary-blue`, `text-primary-green`
+- NEVER use: generic `blue-600`, `green-500`, `blue-50` or hardcoded hex values
+
+### Component Standards
+- **Logo**: Always use `<Logo variant="hero|header|mobile|footer" />` component
+- **Gradients**: Use `emdr-gradient` class or CSS `linear-gradient(135deg, var(--primary-blue), var(--primary-green))`
+- **Cards**: Apply `therapeutic-card` class for consistent styling
+- **Buttons**: Primary buttons use EMDR gradient, secondary use brand color borders
+- **Typography**: Headings in `text-primary-blue`, supporting text in appropriate brand colors
+
+### Brand Voice & Standards
+- **Professional yet supportive** tone in all UI text
+- **Therapeutic safety** as priority in design decisions
+- **Clinical credibility** through consistent professional styling
+- **Hope and healing** reflected in color choices and interactions
+
+### Development Rules
+1. **NO exceptions** - every new element must use EMDRise brand colors
+2. **CSS Variables first** - reference `--primary-blue` etc., not hardcoded values
+3. **Component consistency** - use established patterns from existing components
+4. **Brand audit required** - verify all changes against brand guidelines before implementation
+
 ## System Architecture
 
 ### UI/UX Decisions
-- **Color Scheme**: Ambient and professional.
-- **Layout**: Professional and responsive with components like EMDR Journey Timeline and responsive button sizing.
-- **Endorsements**: Features a carousel for organizational recommendations of EMDR.
+- **EMDRise Brand Identity**: Professional therapeutic design using established color palette (Primary Blue #1E90FF, Primary Green #05A660, therapeutic backgrounds)
+- **Layout**: Responsive, accessible design with EMDR Journey Timeline, therapeutic cards, and professional spacing
+- **Endorsements**: Carousel showcasing organizational EMDR endorsements with consistent brand styling
+- **Logo Implementation**: Consistent `<Logo />` component usage across all pages and contexts
+- **Brand Compliance**: All visual elements follow EMDRise Brand Guidelines (EMDRise-Brand-Guidelines.md)
 
 ### Technical Implementations
 - **Core EMDR Features**:
