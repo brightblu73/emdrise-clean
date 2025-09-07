@@ -75,12 +75,12 @@ export default function EndorsementCarousel() {
           >
             {endorsements.map((org, idx) => (
               <SwiperSlide key={idx}>
-                <div className="h-[280px] flex flex-col justify-between bg-white border border-blue-200 rounded-2xl p-6 shadow hover:shadow-md transition overflow-hidden">
+                <div className="h-[280px] flex flex-col justify-between bg-white border border-primary-blue/20 rounded-2xl p-6 shadow hover:shadow-md transition overflow-hidden">
                   <div>
-                    <h3 className="text-lg font-semibold text-blue-800 mb-2">{org.name}</h3>
-                    <p className="text-sm text-gray-700 mb-4">{org.summary}</p>
+                    <h3 className="text-lg font-semibold text-primary-blue mb-2">{org.name}</h3>
+                    <p className="text-sm text-slate-700 mb-4">{org.summary}</p>
                   </div>
-                  <div className="text-sm text-green-700 font-medium mt-auto text-left">
+                  <div className="text-sm text-primary-green font-medium mt-auto text-left">
                     Guidelines Available Online
                   </div>
                 </div>

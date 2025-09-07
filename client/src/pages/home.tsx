@@ -350,7 +350,7 @@ export default function Home() {
                   <Card 
                     className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${
                       selectedTherapist === 'female' 
-                        ? 'border-primary-green bg-green-50' 
+                        ? 'border-primary-green bg-primary-green/10' 
                         : 'border-transparent hover:border-primary-green'
                     }`}
                     onClick={() => handleTherapistSelect('female')}
@@ -370,7 +370,7 @@ export default function Home() {
                   <Card 
                     className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${
                       selectedTherapist === 'male' 
-                        ? 'border-secondary-blue bg-blue-50' 
+                        ? 'border-secondary-blue bg-secondary-blue/10' 
                         : 'border-transparent hover:border-secondary-blue'
                     }`}
                     onClick={() => handleTherapistSelect('male')}
@@ -411,7 +411,7 @@ export default function Home() {
           <h2 className="ny-subheading text-white mb-6">
             Start Your Healing Journey Today
           </h2>
-          <p className="text-xl text-blue-100 mb-12">
+          <p className="text-xl text-white/90 mb-12">
             Experience professional EMDR therapy with expert therapeutic guidance
           </p>
 
@@ -465,10 +465,10 @@ export default function Home() {
 
 
       {/* Minimal Footer */}
-      <footer className="bg-slate-100 border-t border-slate-200 py-6 px-4">
+      <footer style={{backgroundColor: 'var(--therapeutic-bg)'}} className="border-t border-primary-blue/20 py-6 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-primary-blue/80">
               © {new Date().getFullYear()} EMDRise. All rights reserved. 
               EMDRise is not a substitute for professional mental health care.
             </p>

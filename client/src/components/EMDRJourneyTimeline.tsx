@@ -51,19 +51,19 @@ export default function EMDRJourneyTimeline() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
             {steps.map((step, index) => (
-              <div key={index} className="text-center relative group cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition-colors">
-                <div className="w-10 h-10 mx-auto mb-3 text-blue-600">
+              <div key={index} className="text-center relative group cursor-pointer p-3 rounded-lg hover:bg-primary-green/10 transition-colors">
+                <div className="w-10 h-10 mx-auto mb-3 text-primary-blue">
                   <step.icon className="w-full h-full" />
                 </div>
-                <div className="text-sm font-semibold text-blue-600 leading-tight">
+                <div className="text-sm font-semibold text-primary-blue leading-tight">
                   {step.label}
                 </div>
                 
                 {/* Tooltip */}
                 <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300 absolute z-10 bottom-full left-1/2 transform -translate-x-1/2 mb-2">
-                  <div className="w-44 bg-blue-50 text-blue-800 text-center rounded-md p-2 text-xs shadow-lg border border-blue-200">
+                  <div className="w-44 bg-primary-green/10 text-primary-blue text-center rounded-md p-2 text-xs shadow-lg border border-primary-green/20">
                     {step.tooltip}
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-blue-50"></div>
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-primary-green/10"></div>
                   </div>
                 </div>
               </div>

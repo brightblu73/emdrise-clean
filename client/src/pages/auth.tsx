@@ -9,6 +9,7 @@ import { useAuth } from "../state/AuthProvider";
 import { supabase } from '@/lib/supabase';
 import { apiRequest } from '@/lib/queryClient';
 import { Brain, Apple, Mail } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 
 export default function Auth() {
   const [, setLocation] = useLocation();
@@ -116,24 +117,10 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center safe-space-bg">
+    <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: 'var(--safe-space)'}}>
       <div className="max-w-md w-full mx-4">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <Brain className="text-white h-8 w-8" />
-          </div>
-          <div className="flex items-center justify-center mb-2">
-            <h1 className="text-3xl font-bold text-slate-800 mr-1">EMDR</h1>
-            <div className="flex space-x-1 mr-1">
-              <div className="w-3 h-2 bg-primary rounded-full relative">
-                <div className="w-1 h-1 bg-white rounded-full absolute top-0.5 left-0.5"></div>
-              </div>
-              <div className="w-3 h-2 bg-primary rounded-full relative">
-                <div className="w-1 h-1 bg-white rounded-full absolute top-0.5 left-0.5"></div>
-              </div>
-            </div>
-            <h1 className="text-3xl font-bold text-slate-800">ise</h1>
-          </div>
+          <Logo variant="hero" className="mx-auto mb-4" />
           <p className="text-slate-600">Begin your journey to emotional freedom</p>
         </div>
 
@@ -192,7 +179,8 @@ export default function Auth() {
               {/* Create Account / Start Free Trial - Move to top */}
               <Button 
                 type="button" 
-                className="w-full emdr-gradient text-white"
+                className="w-full text-white" 
+                style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
                 onClick={handleSignUp}
               >
                 Create Account / Start Free Trial
@@ -206,7 +194,8 @@ export default function Auth() {
               {/* Sign In Button */}
               <Button 
                 type="button"
-                className="w-full emdr-gradient text-white"
+                className="w-full text-white"
+                style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
                 onClick={handleLogin}
               >
                 Sign In
