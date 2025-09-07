@@ -17,7 +17,7 @@ export default function TermsOfUse() {
               Terms of Use
             </h1>
             <p className="text-center text-slate-600 mb-8 text-lg">
-              <strong>Last updated: 6 September 2025</strong>
+              <strong>Last updated: 7 September 2025</strong>
             </p>
 
             <div className="space-y-8 text-slate-700 leading-relaxed">
@@ -54,8 +54,24 @@ export default function TermsOfUse() {
 
               <section>
                 <h2 className="text-2xl font-bold text-primary-blue mb-4">5. Account Registration & Subscription</h2>
+                <p className="mb-4">
+                  To access certain features of EMDRise, you must create an account and maintain an active subscription. By creating an account, you agree to provide accurate and complete information and to maintain the confidentiality of your login credentials.
+                </p>
+                <p className="mb-4">
+                  <strong className="text-slate-800">Billing and Renewal.</strong> Your subscription will continue and automatically renew unless canceled. You consent to our charging your payment method on a recurring basis without requiring your prior approval for each recurring charge, until such time as you cancel the applicable order. The length of your billing cycle will depend on the type of subscription plan you choose when you subscribed to the Services.
+                </p>
+                <p className="mb-4">
+                  <strong className="text-slate-800">Free Trial.</strong> We may offer a free trial to new users who register. Unless canceled before the end of the free trial period, your account will be charged according to the subscription plan you selected when you registered. The length of the free trial and subscription pricing are displayed at the time of sign-up.
+                </p>
+                <p className="mb-4">
+                  <strong className="text-slate-800">Cancellation.</strong> You can cancel your subscription at any time by logging into your account. Your cancellation will take effect at the end of the current paid term. If you have any questions or are unsatisfied with our Services, please contact us at{' '}
+                  <a href="mailto:support@emdrise.com" className="text-primary-blue underline">support@emdrise.com</a>.
+                </p>
+                <p className="mb-4">
+                  <strong className="text-slate-800">Fee Changes.</strong> We may, from time to time, make changes to the subscription fee and will communicate any price changes to you in accordance with applicable law.
+                </p>
                 <p>
-                  To access certain features of EMDRise, you must create an account via Apple Sign‑In and subscribe. We offer a 7‑day free trial followed by a monthly subscription of £9.99. You may cancel your subscription through your Apple account at any time before the end of the trial to avoid being charged. Subscription payments are processed by Apple's in‑app purchase system via RevenueCat. By creating an account, you agree to provide accurate and complete information and to maintain the security of your account credentials.
+                  <strong className="text-slate-800">Refunds Policy.</strong> All sales are final and no refund will be issued.
                 </p>
               </section>
 
@@ -123,7 +139,7 @@ export default function TermsOfUse() {
                 <p>
                   If you have any questions or concerns about these Terms, please contact us at:
                   <br />
-                  <strong className="text-[#1E90FF] text-lg">support@emdrise.com</strong>
+                  <strong className="text-primary-blue text-lg">support@emdrise.com</strong>
                 </p>
               </section>
             </div>
