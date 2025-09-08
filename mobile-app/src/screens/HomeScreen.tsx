@@ -45,7 +45,7 @@ const TermsOfUseScreen = () => (
         These are the Terms of Use.
         [... Actual terms text would go here ...]
       </Text>
-    </SafeAreaView>
+    </ScrollView>
   </SafeAreaView>
 );
 
