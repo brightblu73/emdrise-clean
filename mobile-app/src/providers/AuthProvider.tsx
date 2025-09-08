@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 
 type Ctx = {
   user: any; session: any; loading: boolean;
+  isAuthenticated: boolean;
   signInWithEmail: (email: string, password: string) => Promise<{ error: any }>;
   signInWithApple: () => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
@@ -107,7 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthCtx.Provider value={{ 
       user, 
       session, 
-      loading, 
+      loading,
+      isAuthenticated: !!user,
       signInWithEmail, 
       signInWithApple,
       signUp,

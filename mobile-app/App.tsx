@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  SafeAreaView
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import EMDRSessionScreen from './src/screens/EMDRSessionScreen';
-import HomeScreen from './src/screens/HomeScreen';
-import LoginScreen from './src/screens/LoginScreen';
-import PrivacyPolicyScreen from './src/screens/PrivacyPolicyScreen';
-import TermsOfUseScreen from './src/screens/TermsOfUseScreen';
-import LoadingScreen from './src/components/LoadingScreen';
+import React from 'react';
+import { SafeAreaView, StyleSheet } from 'react-native';
+import { AuthProvider } from './src/providers/AuthProvider';
+import AppNavigator from './src/navigation/AppNavigator';
 
 export type TherapistType = 'maria' | 'alistair';
 
-// Mobile App with all today's improvements
+export default function App() {
+  return (
+    <AuthProvider>
+      <SafeAreaView style={styles.container}>
+        <AppNavigator />
+      </SafeAreaView>
+    </AuthProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f0f9ff',
+  },
+});
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<'loading' | 'home' | 'login' | 'therapist-selection' | 'emdr-session' | 'privacy-policy' | 'terms-of-use'>('loading');
   const [selectedTherapist, setSelectedTherapist] = useState<TherapistType | null>(null);
