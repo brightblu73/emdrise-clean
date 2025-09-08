@@ -17,7 +17,7 @@ const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { signInWithEmail } = useAuth();
   const navigation = useNavigation();
 
   const handleLogin = async () => {
@@ -28,11 +28,11 @@ const LoginScreen = () => {
 
     setIsLoading(true);
     try {
-      const success = await login(email, password);
-      if (success) {
+      const { error } = await signInWithEmail(email, password);
+      if (!error) {
         navigation.goBack();
       } else {
-        Alert.alert('Error', 'Invalid credentials. Please try again.');
+        Alert.alert('Error', error.message || 'Invalid credentials. Please try again.');
       }
     } catch (error) {
       Alert.alert('Error', 'Login failed. Please try again.');
