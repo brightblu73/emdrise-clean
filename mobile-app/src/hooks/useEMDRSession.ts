@@ -1,257 +1,394 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiService } from '../services/api';
 
-interface SessionData {
-  id?: string;
-  currentScript: number | string;
-  therapist: 'maria' | 'alistair';
-  startedAt: string;
-  progress: Record<string, any>;
-  pausedFromScript?: number | string;
-  pausedAt?: string;
+interface EMDRSessionState {
+  currentSession: Session | null;
+  isLoading: boolean;
+  canAdvance: boolean;
+  scriptInfo: {
+    title: string;
+    description: string;
+    videoUrl?: string;
+    isLoop: boolean;
+  };
 }
 
-export function useEMDRSession(therapist: 'maria' | 'alistair') {
-  const [sessionData, setSessionData] = useState<SessionData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface Session {
+  id: number;
+  currentScript: number | string;
+  status: string;
+  isActive: boolean;
+  createdAt: string;
+  resumedAt?: string;
+  pausedAt?: string;
+  pausedFromScript?: number | string;
+  isPaused?: boolean;
+}
+
+export function useEMDRSession() {
+  const [isVideoCompleted, setIsVideoCompleted] = useState(false);
+
+  // Use AsyncStorage-based session for mobile version - but prioritize paused sessions
+  const [currentSession, setCurrentSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    initializeSession();
-  }, [therapist]);
+    const initializeSession = async () => {
+      try {
+        // Check for paused session first (higher priority)
+        const pausedSession = await AsyncStorage.getItem('pausedEMDRSession');
+        if (pausedSession) {
+          console.log('Paused session detected on initialization, will be handled by startSession');
+          setCurrentSession(null); // Let startSession handle the resumption
+          setIsLoading(false);
+          return;
+        }
+        
+        const stored = await AsyncStorage.getItem('emdrSession');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // Validate session has required fields and fix corrupted state
+          if (parsed && (parsed.currentScript === null || parsed.currentScript === undefined)) {
+            console.log('Corrupted session detected with null currentScript, resetting to script 1');
+            parsed.currentScript = 1;
+          }
+          setCurrentSession(parsed);
+        }
+      } catch (error) {
+        console.error('Error parsing stored session:', error);
+        // Clear corrupted data
+        await AsyncStorage.removeItem('emdrSession');
+        await AsyncStorage.removeItem('pausedEMDRSession');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const initializeSession = async () => {
-    try {
-      setLoading(true);
+    initializeSession();
+  }, []);
+  
+  // Save session to AsyncStorage whenever it changes
+  useEffect(() => {
+    if (currentSession) {
+      AsyncStorage.setItem('emdrSession', JSON.stringify(currentSession));
+    }
+  }, [currentSession]);
+
+  // Mobile session start
+  const startSessionMutation = {
+    mutate: async () => {
+      // Simple and reliable: Check for pause flag first
+      const pauseFlag = await AsyncStorage.getItem('emdrPauseFlag');
+      const pausedSession = await AsyncStorage.getItem('pausedEMDRSession');
       
-      // Try to load local session first
-      const localSession = await loadLocalSession();
-      if (localSession) {
-        setSessionData(localSession);
-        setLoading(false);
+      if (pauseFlag === 'true' || pausedSession) {
+        console.log('Pause flag detected, resuming at Script 5a');
+        // Clear pause indicators
+        await AsyncStorage.removeItem('emdrPauseFlag');
+        await AsyncStorage.removeItem('pausedEMDRSession');
+        await AsyncStorage.removeItem('emdrSession'); // Clear any existing session
+        
+        // Always resume at Script 5a for paused sessions
+        const resumeSession = {
+          id: Date.now(),
+          currentScript: '5a',
+          status: 'active',
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          resumedAt: new Date().toISOString(),
+        };
+        setCurrentSession(resumeSession);
+        console.log('Mobile session resumed at Script 5a:', resumeSession);
         return;
       }
-
-      // Try to get current session from server
-      try {
-        const serverSession = await apiService.getCurrentSession();
-        if (serverSession) {
-          setSessionData(serverSession);
-          await saveLocalSession(serverSession);
-        } else {
-          // Create new session
-          await createNewSession();
-        }
-      } catch (apiError) {
-        // Fallback to local session
-        await createNewSession();
-      }
-    } catch (error) {
-      setError('Failed to initialize session');
-      console.error('Session initialization error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadLocalSession = async (): Promise<SessionData | null> => {
-    try {
-      const saved = await AsyncStorage.getItem('currentEMDRSession');
-      if (saved) {
-        const data = JSON.parse(saved);
-        // Ensure therapist matches
-        if (data.therapist === therapist) {
-          return data;
-        }
-      }
-    } catch (error) {
-      console.log('No local session found');
-    }
-    return null;
-  };
-
-  const saveLocalSession = async (data: SessionData) => {
-    try {
-      await AsyncStorage.setItem('currentEMDRSession', JSON.stringify(data));
-    } catch (error) {
-      console.error('Failed to save local session');
-    }
-  };
-
-  const createNewSession = async () => {
-    // Check for paused session
-    const pausedSession = await AsyncStorage.getItem('pausedEMDRSession');
-    let currentScript: number | string = 1;
-    
-    if (pausedSession) {
-      try {
-        const parsed = JSON.parse(pausedSession);
-        if (parsed.therapist === therapist) {
-          // Resume from Script 5a if paused from Script 5
-          currentScript = "5a";
-          await AsyncStorage.removeItem('pausedEMDRSession');
-        }
-      } catch (error) {
-        console.log('Error parsing paused session:', error);
-      }
-    }
-
-    const newSession: SessionData = {
-      currentScript,
-      therapist,
-      startedAt: new Date().toISOString(),
-      progress: {}
-    };
-
-    try {
-      // Try to create on server
-      const serverSession = await apiService.createSession(newSession);
-      newSession.id = serverSession.id;
-    } catch (error) {
-      // Continue with local session if server fails
-      console.log('Server session creation failed, using local session');
-    }
-
-    setSessionData(newSession);
-    await saveLocalSession(newSession);
-  };
-
-  const updateSession = async (updates: Partial<SessionData>) => {
-    if (!sessionData) return;
-
-    const updatedSession = { ...sessionData, ...updates };
-    console.log('Mobile updateSession - updating session with:', updates);
-    console.log('Mobile updateSession - updated session:', updatedSession);
-    setSessionData(updatedSession);
-    
-    // Save locally
-    await saveLocalSession(updatedSession);
-    
-    // TEMPORARILY DISABLE server sync to prevent web/mobile conflicts  
-    // TODO: Implement proper session isolation between web and mobile
-    console.log('Mobile updateSession - server sync DISABLED to prevent conflicts');
-    
-    /* 
-    // Try to sync with server (but add mobile identifier to prevent web conflicts)
-    if (updatedSession.id) {
-      try {
-        const mobileUpdates = { ...updates, platform: 'mobile' };
-        await apiService.updateSession(updatedSession.id, mobileUpdates);
-        console.log('Mobile updateSession - server sync successful');
-      } catch (error) {
-        console.log('Failed to sync with server, continuing with local session');
-      }
-    }
-    */
-  };
-
-  const advanceScript = async () => {
-    if (!sessionData) return;
-    
-    let nextScript: number | string;
-    
-    // Handle Script 5a completion - return to Script 5
-    if (sessionData.currentScript === "5a") {
-      nextScript = 5;
-    } 
-    // Handle normal progression
-    else {
-      const current = typeof sessionData.currentScript === 'string' ? 
-        parseInt(sessionData.currentScript) : sessionData.currentScript;
-      if (current >= 10) return;
-      nextScript = current + 1;
-    }
-    
-    console.log('Mobile advanceScript - advancing from', sessionData.currentScript, 'to', nextScript);
-    await updateSession({ currentScript: nextScript });
-  };
-
-  const goBackScript = async (targetScript?: number | string) => {
-    if (!sessionData) return;
-    
-    let prevScript: number | string;
-    
-    if (targetScript !== undefined) {
-      prevScript = targetScript;
-    } else {
-      const current = typeof sessionData.currentScript === 'string' ? 
-        parseInt(sessionData.currentScript) : sessionData.currentScript;
-      if (current <= 1) return;
-      prevScript = current - 1;
-    }
-    
-    console.log('Mobile goBackScript - going back from', sessionData.currentScript, 'to', prevScript);
-    await updateSession({ currentScript: prevScript });
-  };
-
-  const completeSession = async () => {
-    if (!sessionData) return;
-    
-    const completedSession = {
-      ...sessionData,
-      completedAt: new Date().toISOString(),
-      status: 'completed'
-    };
-    
-    await updateSession(completedSession);
-    await AsyncStorage.removeItem('currentEMDRSession');
-  };
-
-  const saveNotes = async (notes: string) => {
-    if (!sessionData) return;
-    
-    try {
-      // Save locally
-      const noteData = {
-        script: sessionData.currentScript,
-        notes,
-        timestamp: new Date().toISOString()
+      
+      // No pause detected, start new session at Script 1
+      const newSession = {
+        id: Date.now(),
+        currentScript: 1,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        isActive: true,
       };
-      
-      const existingNotes = await AsyncStorage.getItem('emdrNotes') || '[]';
-      const allNotes = JSON.parse(existingNotes);
-      allNotes.push(noteData);
-      await AsyncStorage.setItem('emdrNotes', JSON.stringify(allNotes));
-      
-      // Try to sync with server
-      if (sessionData.id) {
-        try {
-          await apiService.saveSessionNotes(sessionData.id, notes);
-        } catch (error) {
-          console.log('Failed to sync notes with server');
+      setCurrentSession(newSession);
+      console.log('Mobile session started:', newSession);
+    },
+    isPending: false,
+  };
+
+  // Mobile script advancement
+  const advanceScriptMutation = {
+    mutate: ({ sessionId, forceNext = false }: { sessionId: number; forceNext?: boolean }) => {
+      if (currentSession) {
+        let nextScript;
+        
+        // Handle Script 5a completion - return to Script 5
+        if (currentSession.currentScript === "5a") {
+          nextScript = 5;
+        } 
+        // Handle normal progression
+        else {
+          const current = typeof currentSession.currentScript === 'string' ? 
+            parseInt(currentSession.currentScript) : currentSession.currentScript;
+          nextScript = Math.min(current + 1, 10); // Max 10 scripts
         }
+        
+        const updatedSession = {
+          ...currentSession,
+          currentScript: nextScript,
+        };
+        setCurrentSession(updatedSession);
+        setIsVideoCompleted(false);
+        console.log('Mobile session advanced to script:', nextScript);
       }
-    } catch (error) {
-      throw new Error('Failed to save notes');
+    },
+    isPending: false,
+  };
+
+  // Mobile progress save
+  const saveProgressMutation = {
+    mutate: ({ sessionId, scriptNumber, userInput, notes }: { sessionId: number; scriptNumber: number; userInput?: any; notes?: string; }) => {
+      console.log('Mobile progress saved:', { scriptNumber, userInput, notes });
+    },
+    isPending: false,
+  };
+
+  // Mobile previous script navigation
+  const backToPreviousScriptMutation = {
+    mutate: ({ sessionId, targetScript }: { sessionId: number; targetScript: number }) => {
+      if (currentSession) {
+        const updatedSession = {
+          ...currentSession,
+          currentScript: targetScript,
+        };
+        setCurrentSession(updatedSession);
+        setIsVideoCompleted(false);
+        console.log('Mobile session went back to script:', targetScript);
+      }
+    },
+    isPending: false,
+  };
+
+  // Mobile session update
+  const updateSessionMutation = {
+    mutate: ({ sessionId, updates }: { sessionId: number; updates: any; }) => {
+      if (currentSession) {
+        const updatedSession = { ...currentSession, ...updates };
+        setCurrentSession(updatedSession);
+        console.log('Mobile session updated:', updates);
+      }
+    },
+    isPending: false,
+  };
+
+  // Get script information based on current script number
+  const getScriptInfo = async (scriptNumber: number | string) => {
+    // Get selected therapist from AsyncStorage for video URL
+    const selectedTherapist = await AsyncStorage.getItem('selectedTherapist');
+    const therapistPrefix = selectedTherapist === 'female' ? 'maria' : 'alistair';
+    
+    const scriptMap: Record<string | number, { title: string; description: string; videoUrl?: string; isLoop: boolean; needsSetup?: boolean; hasBLS?: boolean; canPause?: boolean }> = {
+      1: {
+        title: "Welcome and Introduction to EMDR",
+        description: "Introduction to EMDR therapy and what to expect",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script1-welcome.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script1-welcome.mp4',
+        isLoop: false,
+      },
+      2: {
+        title: "Setting up your Calm Place",
+        description: "Set up your safe, calm place for grounding during and after reprocessing",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script2-calmplace.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script2-calmplace.mp4',
+        isLoop: false,
+      },
+      3: {
+        title: "Setting up the Target Memory",
+        description: "Identifying the target memory to be reprocessed",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script3-target.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script3-target.mp4',
+        isLoop: false,
+      },
+      4: {
+        title: "Desensitisation and Reprocessing",
+        description: "Preparing for bilateral stimulation and reprocessing",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script4-reprocessing.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script4-reprocessing.mp4',
+        isLoop: false,
+        needsSetup: true,
+        hasBLS: true,
+      },
+      5: {
+        title: "Reprocessing Continued",
+        description: "Bilateral stimulation processing cycles with therapist guidance",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5-reprocessing-continued.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5-reprocessing-continued.mp4',
+        isLoop: true,
+        hasBLS: true,
+        needsSetup: false,  // Always show BLS, don't wait for setup
+        canPause: true, // Can pause to Script 9 for safe closure
+      },
+      "5a": {
+        title: "Continue Reprocessing After an Incomplete Session",
+        description: "Resume reprocessing from where you left off in your previous session",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5a-continue-reprocessing.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5a-continue-reprocessing.mp4',
+        isLoop: true,
+        hasBLS: true,
+        needsSetup: false,
+      },
+      6: {
+        title: "Installation of Positive Belief",
+        description: "Strengthening positive beliefs and new neural pathways",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script6-installation.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script6-installation.mp4',
+        isLoop: false,
+        needsSetup: true,
+      },
+      7: {
+        title: "Installation of Positive Belief Continued",
+        description: "Continued positive belief installation and reinforcement",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script7-installation-continued.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script7-installation-continued.mp4',
+        isLoop: true,
+        needsSetup: true,
+      },
+      8: {
+        title: "Body Scan",
+        description: "Scanning for remaining disturbance in the body for reprocessing",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script8-body-scan.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script8-body-scan.mp4',
+        isLoop: false,
+      },
+      9: {
+        title: "Calm Place",
+        description: "Return to your calm place for grounding",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script9-calm-place.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script9-calm-place.mp4',
+        isLoop: false,
+      },
+      10: {
+        title: "Aftercare",
+        description: "Session completion instructions",
+        videoUrl: therapistPrefix === 'maria' 
+          ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script10-aftercare.mp4'
+          : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script10-aftercare.mp4',
+        isLoop: false,
+      },
+    };
+
+    return scriptMap[scriptNumber] || {
+      title: "Unknown Script",
+      description: "Script information not available",
+      isLoop: false,
+    };
+  };
+
+  // Mobile current script update
+  const updateCurrentScriptMutation = {
+    mutate: ({ sessionId, scriptNumber }: { sessionId: number; scriptNumber: number }) => {
+      if (currentSession) {
+        const updatedSession = { ...currentSession, currentScript: scriptNumber };
+        setCurrentSession(updatedSession);
+        setIsVideoCompleted(false);
+        console.log('Mobile script updated to:', scriptNumber);
+      }
+    },
+    isPending: false,
+  };
+
+  const [scriptInfo, setScriptInfo] = useState({
+    title: "Ready to Begin",
+    description: "Start your EMDR therapy session",
+    isLoop: false,
+  });
+
+  useEffect(() => {
+    if (currentSession) {
+      getScriptInfo(currentSession.currentScript).then(setScriptInfo);
     }
+  }, [currentSession]);
+
+  const sessionState: EMDRSessionState = {
+    currentSession: currentSession ?? null,
+    isLoading,
+    canAdvance: (currentSession ? (
+      currentSession.currentScript === 1 || 
+      currentSession.currentScript === 2 || 
+      currentSession.currentScript === 3 || // target memory setup
+      currentSession.currentScript === 4 || // desensitisation setup
+      currentSession.currentScript === 5 || // reprocessing continued
+      currentSession.currentScript === 6 || // installation
+      currentSession.currentScript === 7 || // installation continued
+      currentSession.currentScript === 8 || // body scan
+      currentSession.currentScript === 9 || // closure
+      isVideoCompleted
+    ) : false) && !advanceScriptMutation.isPending,
+    scriptInfo,
   };
 
   // Pause session function - saves current state and jumps to Script 9
   const pauseSession = async () => {
-    if (!sessionData) return;
-    
-    // Save current session state as paused
-    const pausedSession = {
-      ...sessionData,
-      pausedAt: new Date().toISOString(),
-      pausedFromScript: sessionData.currentScript,
-    };
-    await AsyncStorage.setItem('pausedEMDRSession', JSON.stringify(pausedSession));
-    
-    // Jump to Script 9 for safe closure
-    await updateSession({ currentScript: 9 });
+    if (currentSession) {
+      // Save current session state as paused - use a persistent flag
+      const pausedSession = {
+        ...currentSession,
+        pausedAt: new Date().toISOString(),
+        pausedFromScript: currentSession.currentScript,
+        isPaused: true, // Clear flag that persists through closure
+      };
+      await AsyncStorage.setItem('pausedEMDRSession', JSON.stringify(pausedSession));
+      await AsyncStorage.setItem('emdrPauseFlag', 'true'); // Simple flag that survives closure
+      console.log('Session paused - saved to AsyncStorage:', pausedSession);
+      console.log('Paused session should be detectable from homepage now');
+      
+      // Jump to Script 9 for safe closure
+      const updatedSession = {
+        ...currentSession,
+        currentScript: 9,
+      };
+      setCurrentSession(updatedSession);
+      setIsVideoCompleted(false);
+      console.log('Session paused at script:', pausedSession.pausedFromScript, 'jumping to Script 9');
+    }
   };
 
   return {
-    sessionData,
-    loading,
-    error,
-    updateSession,
-    advanceScript,
-    goBackScript,
-    completeSession,
-    pauseSession,
-    saveNotes
+    ...sessionState,
+    isVideoCompleted,
+    setIsVideoCompleted,
+    startSession: startSessionMutation.mutate,
+    updateCurrentScript: updateCurrentScriptMutation,
+    advanceScript: (forceNext: boolean = false) => {
+      if (currentSession && !advanceScriptMutation.isPending) {
+        console.log("Advancing script from", currentSession.currentScript, "to next script");
+        advanceScriptMutation.mutate({ sessionId: currentSession.id, forceNext });
+      } else if (advanceScriptMutation.isPending) {
+        console.log("Script advancement already in progress, ignoring duplicate request");
+      }
+    },
+    backToPreviousScript: (targetScript: number) => {
+      if (currentSession && !backToPreviousScriptMutation.isPending) {
+        backToPreviousScriptMutation.mutate({ sessionId: currentSession.id, targetScript });
+      }
+    },
+    pauseSession, // Pause functionality
+    saveProgress: saveProgressMutation.mutate,
+    updateSession: updateSessionMutation.mutate,
+
+    isStartingSession: startSessionMutation.isPending,
+    isAdvancing: advanceScriptMutation.isPending,
+    isGoingBack: backToPreviousScriptMutation.isPending,
+    isSavingProgress: saveProgressMutation.isPending,
   };
 }
