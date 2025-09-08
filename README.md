@@ -1,6 +1,6 @@
 # EMDRise - EMDR Therapy Application
 
-A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy application providing guided therapeutic sessions with professional therapist videos and advanced bilateral stimulation. Mobile-first design with web platform support.
+A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy application providing guided therapeutic sessions with professional therapist videos and advanced bilateral stimulation. Native mobile application built with React Native and Expo for iOS and Android.
 
 ## Key Features
 
@@ -17,20 +17,15 @@ A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy app
 
 ## Architecture
 
-### Mobile App (Primary Platform)
-- React Native with Expo SDK
+### Mobile Application (React Native + Expo)
+- React Native with Expo SDK (~51.0.28)
 - TypeScript with ES modules  
 - Expo AV for native video playback
 - AsyncStorage for session persistence
-- Native haptic feedback integration
+- React Navigation v6 for native navigation
+- Native haptic feedback integration via Expo Haptics
+- RevenueCat integration for Apple In-App Purchases
 - Comprehensive offline functionality
-
-### Web Platform 
-- React 18 with TypeScript
-- Vite build system with HMR
-- Tailwind CSS with shadcn/ui components
-- TanStack Query for state management
-- Responsive design for all devices
 
 ### Backend Infrastructure
 - Node.js with Express.js
@@ -56,17 +51,23 @@ A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy app
 
 ## Getting Started
 
-### Web Platform
-```bash
-npm install
-npm run dev
-```
-
-### Mobile App  
+### Mobile Application
 ```bash
 cd mobile-app
 npm install
 expo start
+```
+
+For iOS development:
+```bash
+cd mobile-app
+npm run ios
+```
+
+For Android development:
+```bash
+cd mobile-app
+npm run android
 ```
 
 ### Environment Setup
@@ -96,9 +97,9 @@ expo start
 
 ## Technical Highlights
 
-- **Persistent Session Management**: localStorage-based system with reliable pause/resume
+- **Persistent Session Management**: AsyncStorage-based system with reliable pause/resume
 - **Video Integration**: Seamless therapist guidance with BLS synchronization  
-- **Cross-Platform**: Shared codebase between web and mobile with platform-specific optimizations
+- **Native Mobile Experience**: Optimized specifically for iOS and Android devices with platform-specific features
 - **Professional UI/UX**: Ambient therapeutic design with accessibility considerations
 - **Scalable Architecture**: Microservices-ready backend with serverless database
 
