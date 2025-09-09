@@ -1,6 +1,7 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet } from 'react-native';
 import { AuthProvider } from './src/providers/AuthProvider';
+import { EMDRProvider } from './src/providers/EMDRProvider';
 import AppNavigator from './src/navigation/AppNavigator';
 
 export type TherapistType = 'maria' | 'alistair';
@@ -8,9 +9,11 @@ export type TherapistType = 'maria' | 'alistair';
 export default function App() {
   return (
     <AuthProvider>
-      <SafeAreaView style={styles.container}>
-        <AppNavigator />
-      </SafeAreaView>
+      <EMDRProvider>
+        <SafeAreaView style={styles.container}>
+          <AppNavigator />
+        </SafeAreaView>
+      </EMDRProvider>
     </AuthProvider>
   );
 }
@@ -18,6 +21,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f9ff',
+    backgroundColor: '#f8fafc',
   },
 });
