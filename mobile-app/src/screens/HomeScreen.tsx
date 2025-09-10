@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthProvider';
 import { useEMDR } from '../providers/EMDRProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { EMDRiseColors, EMDRiseStyles, EMDRiseSpacing, EMDRiseBorderRadius, EMDRiseShadows, EMDRiseTypography } from '../constants/branding';
 
 // Therapist images will be handled as base64 or remote URLs for now
 // In production, these would be actual imported assets
@@ -344,7 +345,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: EMDRiseColors.therapeuticBg,
   },
   
   // Header
@@ -352,29 +353,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#f1f5f9',
+    paddingHorizontal: EMDRiseSpacing.lg,
+    paddingVertical: EMDRiseSpacing.md,
+    backgroundColor: EMDRiseColors.muted,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: EMDRiseColors.border,
   },
   headerLeft: {
     flex: 1,
   },
   headerLogo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1e40af',
+    fontSize: EMDRiseTypography.sizes.heading.h2,
+    fontWeight: EMDRiseTypography.weights.bold,
+    color: EMDRiseColors.primaryBlue,
   },
   headerTagline: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: EMDRiseTypography.sizes.body.tiny,
+    color: EMDRiseColors.primaryBlue,
   },
   signInButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#1e40af',
-    borderRadius: 6,
+    paddingHorizontal: EMDRiseSpacing.lg,
+    paddingVertical: EMDRiseSpacing.sm,
+    backgroundColor: EMDRiseColors.primaryBlue,
+    borderRadius: EMDRiseBorderRadius.md,
   },
   signInText: {
     color: '#ffffff',
@@ -396,7 +397,7 @@ const styles = StyleSheet.create({
   
   // Hero Section
   heroSection: {
-    backgroundColor: '#1e40af',
+    background: 'linear-gradient(135deg, #1E90FF, #05A660)', // EMDRise brand gradient
     paddingTop: 40,
     paddingBottom: 60,
     paddingHorizontal: 20,
@@ -464,14 +465,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     paddingVertical: 16,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 12, // Rounded-xl from brand guidelines
     alignItems: 'center',
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   primaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e40af',
+    color: '#1E90FF', // Primary Blue from brand guidelines
     textAlign: 'center',
   },
   secondaryButton: {
@@ -525,16 +531,23 @@ const styles = StyleSheet.create({
   
   // Therapist Selection
   therapistSelectionCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 16,
+    backgroundColor: '#F7FAFC', // Card color from brand guidelines
+    borderRadius: 12, // Rounded-xl from brand guidelines
     padding: 24,
     marginHorizontal: 20,
     marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0', // Border from brand guidelines
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   therapistSelectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#1A202C', // Foreground from brand guidelines
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -558,8 +571,8 @@ const styles = StyleSheet.create({
     width: width * 0.35,
   },
   therapistCardSelected: {
-    borderColor: '#10b981',
-    backgroundColor: '#10b981' + '20',
+    borderColor: '#05A660', // Primary Green from brand guidelines
+    backgroundColor: '#F0F7F4', // Safe Space from brand guidelines
   },
   therapistImageContainer: {
     width: 120,
@@ -586,7 +599,7 @@ const styles = StyleSheet.create({
     color: '#1e293b',
   },
   selectedIndicator: {
-    backgroundColor: '#10b981',
+    backgroundColor: '#05A660', // Primary Green from brand guidelines
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -603,10 +616,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   
-  // Timeline
+  // Timeline - Using EMDR gradient background
   timelineContainer: {
-    backgroundColor: '#1e40af',
+    backgroundColor: '#1E90FF', // Fallback to Primary Blue
     padding: 24,
+    // Note: Gradient would be applied via LinearGradient component in production
   },
   timelineTitle: {
     fontSize: 20,
@@ -644,15 +658,16 @@ const styles = StyleSheet.create({
   phaseTitle: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#1e40af',
+    color: '#1E90FF', // Primary Blue from brand guidelines
     textAlign: 'center',
     lineHeight: 12,
   },
   
-  // Endorsements
+  // Endorsements - Using EMDR gradient background
   endorsementContainer: {
-    backgroundColor: '#1e40af',
+    backgroundColor: '#1E90FF', // Fallback to Primary Blue
     padding: 24,
+    // Note: Gradient would be applied via LinearGradient component in production
   },
   endorsementContent: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -694,7 +709,7 @@ const styles = StyleSheet.create({
   endorsementName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1e40af',
+    color: '#1E90FF', // Primary Blue from brand guidelines
     marginBottom: 8,
   },
   endorsementSummary: {
@@ -706,7 +721,7 @@ const styles = StyleSheet.create({
   endorsementFooter: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#059669',
+    color: '#05A660', // Primary Green from brand guidelines
     marginTop: 12,
   },
   endorsementDisclaimer: {
@@ -717,10 +732,11 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   
-  // Pricing
+  // Pricing - Using EMDR gradient background
   pricingSection: {
-    backgroundColor: '#1e40af',
+    backgroundColor: '#1E90FF', // Fallback to Primary Blue
     padding: 24,
+    // Note: Gradient would be applied via LinearGradient component in production
   },
   pricingSectionTitle: {
     fontSize: 24,
@@ -761,7 +777,7 @@ const styles = StyleSheet.create({
   pricingPrice: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1e40af',
+    color: '#1E90FF', // Primary Blue from brand guidelines
   },
   pricingPeriod: {
     fontSize: 16,
@@ -783,7 +799,7 @@ const styles = StyleSheet.create({
   },
   featureCheck: {
     fontSize: 16,
-    color: '#10b981',
+    color: '#05A660', // Primary Green from brand guidelines
     fontWeight: 'bold',
     marginRight: 12,
     marginTop: 2,
@@ -795,10 +811,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   pricingButton: {
-    backgroundColor: '#1e40af',
+    backgroundColor: '#1E90FF', // Primary Blue from brand guidelines
     paddingVertical: 16,
-    borderRadius: 8,
+    borderRadius: 12, // Rounded-xl from brand guidelines
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   pricingButtonText: {
     fontSize: 16,
@@ -808,17 +829,18 @@ const styles = StyleSheet.create({
   
   // Footer
   footer: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#F8FAFC', // Therapeutic background from brand guidelines
     borderTopWidth: 1,
-    borderTopColor: '#1e40af' + '33',
+    borderTopColor: '#E2E8F0', // Border from brand guidelines
     paddingVertical: 24,
     paddingHorizontal: 20,
   },
   footerText: {
     fontSize: 12,
-    color: '#1e40af' + 'CC',
+    color: '#1E90FF', // Primary Blue from brand guidelines
     textAlign: 'center',
     marginBottom: 4,
+    opacity: 0.8,
   },
   footerSubtext: {
     fontSize: 11,
