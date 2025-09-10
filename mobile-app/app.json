@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "scheme": "emdr",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -19,14 +20,31 @@
       "bundleIdentifier": "com.emdrise.app",
       "infoPlist": {
         "NSUserTrackingUsageDescription": "This identifier will be used to deliver personalized ads to you."
-      }
+      },
+      "associatedDomains": ["applinks:*.supabase.co"]
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.emdrise.app"
+      "package": "com.emdrise.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "emdr"
+            },
+            {
+              "scheme": "https",
+              "host": "*.supabase.co"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -87,15 +87,21 @@ const LoginScreen = () => {
 
   // Apple Sign In handler
   const handleAppleSignIn = async () => {
+    setIsLoading(true);
     try {
       const { error } = await signInWithApple();
       if (error) {
         console.error('Apple sign in error:', error);
-        Alert.alert('Error', 'Apple Sign In is not yet available. Please use email sign in.');
+        Alert.alert('Error', error.message || 'Apple Sign In failed. Please try email sign in.');
+      } else {
+        // Apple OAuth will redirect to Apple's authentication page
+        console.log('Apple Sign In initiated successfully');
       }
     } catch (error) {
       console.error('Apple sign in failed:', error);
       Alert.alert('Error', 'Sign in failed. Please try email sign in.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
