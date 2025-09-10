@@ -57,20 +57,21 @@ const TherapistCard = ({ therapist, isSelected, onSelect }: {
 const EMDRJourneyTimeline = () => (
   <View style={styles.timelineContainer}>
     <Text style={styles.timelineTitle}>Your EMDR Journey</Text>
-    <Text style={styles.timelineSubtitle}>Professional 8-phase EMDR protocol</Text>
     
     <View style={styles.timelinePhases}>
       {[
-        { phase: 1, title: "Preparation", description: "History taking & preparation" },
-        { phase: 2, title: "Assessment", description: "Target memory identification" },
-        { phase: 3, title: "Desensitization", description: "Bilateral stimulation processing" },
-        { phase: 4, title: "Installation", description: "Positive belief strengthening" },
-        { phase: 5, title: "Body Scan", description: "Physical sensation check" },
-        { phase: 6, title: "Closure", description: "Session completion" }
+        { title: "Preparation", description: "Try your preferred BLS method." },
+        { title: "Calm Place", description: "Create a mental safe space to return to when needed." },
+        { title: "Target Memory", description: "Identify the image, belief, and emotions that represent the memory." },
+        { title: "Reprocessing", description: "Process the memory using BLS while observing what comes up." },
+        { title: "Installation", description: "Strengthen the positive belief using BLS." },
+        { title: "Body Scan", description: "Check your body for any lingering tension or discomfort." },
+        { title: "Closure", description: "Return to a calm state before finishing the session." },
+        { title: "Aftercare", description: "Reflect and take gentle steps to look after yourself post-session." }
       ].map((item, index) => (
         <View key={index} style={styles.timelinePhase}>
-          <View style={styles.phaseNumber}>
-            <Text style={styles.phaseNumberText}>{item.phase}</Text>
+          <View style={styles.phaseIcon}>
+            <Text style={styles.phaseIconText}>⚡</Text>
           </View>
           <View style={styles.phaseContent}>
             <Text style={styles.phaseTitle}>{item.title}</Text>
@@ -85,32 +86,49 @@ const EMDRJourneyTimeline = () => (
 // Endorsement Carousel Component
 const EndorsementCarousel = () => (
   <View style={styles.endorsementContainer}>
-    <Text style={styles.endorsementTitle}>Trusted by Mental Health Professionals</Text>
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.endorsementScroll}>
-      {[
-        { 
-          quote: "EMDR has been life-changing for my clients dealing with trauma.",
-          author: "Dr. Sarah Thompson",
-          credential: "Licensed Clinical Psychologist"
-        },
-        {
-          quote: "The structured approach makes EMDR accessible and effective.",
-          author: "Dr. Michael Chen", 
-          credential: "EMDR Certified Therapist"
-        },
-        {
-          quote: "Professional quality guidance that supports real healing.",
-          author: "Dr. Lisa Rodriguez",
-          credential: "Trauma Specialist"
-        }
-      ].map((endorsement, index) => (
-        <View key={index} style={styles.endorsementCard}>
-          <Text style={styles.endorsementQuote}>"{endorsement.quote}"</Text>
-          <Text style={styles.endorsementAuthor}>{endorsement.author}</Text>
-          <Text style={styles.endorsementCredential}>{endorsement.credential}</Text>
-        </View>
-      ))}
-    </ScrollView>
+    <View style={styles.endorsementContent}>
+      <Text style={styles.endorsementTitle}>Leading Organisations That Endorse EMDR</Text>
+      <Text style={styles.endorsementSubtitle}>Swipe to see all endorsements →</Text>
+      
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.endorsementScroll}>
+        {[
+          {
+            name: 'NICE (National Institute for Health and Care Excellence)',
+            summary: 'Recommends EMDR for PTSD in adults and children.'
+          },
+          {
+            name: 'WHO (World Health Organization)',
+            summary: 'Recommends EMDR in guidelines for conditions related to stress.'
+          },
+          {
+            name: 'APA (American Psychological Association)',
+            summary: 'Conditionally recommends EMDR as an effective PTSD treatment.'
+          },
+          {
+            name: 'VA (US Department of Veterans Affairs)',
+            summary: 'Strongly recommends EMDR for veterans with PTSD.'
+          },
+          {
+            name: 'NHS (National Health Service)',
+            summary: 'Lists EMDR as an effective trauma-focused therapy for PTSD.'
+          },
+          {
+            name: 'ISTSS (International Society for Traumatic Stress Studies)',
+            summary: 'Guidelines recommend EMDR as a first-line treatment for PTSD.'
+          }
+        ].map((org, index) => (
+          <View key={index} style={styles.endorsementCard}>
+            <Text style={styles.endorsementName}>{org.name}</Text>
+            <Text style={styles.endorsementSummary}>{org.summary}</Text>
+            <Text style={styles.endorsementFooter}>Guidelines Available Online</Text>
+          </View>
+        ))}
+      </ScrollView>
+      
+      <Text style={styles.endorsementDisclaimer}>
+        The organisations listed above have endorsed EMDR as a treatment for PTSD. Their inclusion here reflects support for the EMDR method itself, not this specific app.
+      </Text>
+    </View>
   </View>
 );
 
@@ -539,31 +557,31 @@ const styles = StyleSheet.create({
   
   // Timeline
   timelineContainer: {
+    backgroundColor: '#1e40af',
     padding: 24,
-    backgroundColor: '#ffffff',
   },
   timelineTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e40af',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  timelineSubtitle: {
-    fontSize: 16,
-    color: '#64748b',
+    color: '#ffffff',
     textAlign: 'center',
     marginBottom: 24,
   },
   timelinePhases: {
-    space: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   timelinePhase: {
-    flexDirection: 'row',
+    width: '48%',
+    marginBottom: 20,
     alignItems: 'center',
-    marginBottom: 16,
+    paddingHorizontal: 8,
   },
-  phaseNumber: {
+  phaseIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -572,34 +590,48 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 16,
   },
-  phaseNumberText: {
+  phaseIconText: {
     fontSize: 16,
-    fontWeight: 'bold',
     color: '#ffffff',
   },
   phaseContent: {
-    flex: 1,
+    alignItems: 'center',
+    marginTop: 8,
   },
   phaseTitle: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#1e293b',
+    color: '#1e40af',
+    textAlign: 'center',
     marginBottom: 4,
   },
   phaseDescription: {
-    fontSize: 14,
+    fontSize: 10,
     color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 14,
   },
   
   // Endorsements
   endorsementContainer: {
+    backgroundColor: '#1e40af',
     padding: 24,
-    backgroundColor: '#f8fafc',
+  },
+  endorsementContent: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    padding: 24,
   },
   endorsementTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1e293b',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  endorsementSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -608,32 +640,44 @@ const styles = StyleSheet.create({
   },
   endorsementCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
     marginRight: 16,
-    width: width * 0.8,
+    width: width * 0.85,
+    height: 240,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(30, 64, 175, 0.2)',
   },
-  endorsementQuote: {
+  endorsementName: {
     fontSize: 16,
-    color: '#374151',
-    fontStyle: 'italic',
-    marginBottom: 12,
-    lineHeight: 24,
-  },
-  endorsementAuthor: {
-    fontSize: 14,
     fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: 4,
+    color: '#1e40af',
+    marginBottom: 8,
   },
-  endorsementCredential: {
+  endorsementSummary: {
+    fontSize: 14,
+    color: '#374151',
+    lineHeight: 20,
+    flex: 1,
+  },
+  endorsementFooter: {
     fontSize: 12,
-    color: '#64748b',
+    fontWeight: '500',
+    color: '#059669',
+    marginTop: 12,
+  },
+  endorsementDisclaimer: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center',
+    marginTop: 20,
+    lineHeight: 16,
   },
   
   // Pricing
