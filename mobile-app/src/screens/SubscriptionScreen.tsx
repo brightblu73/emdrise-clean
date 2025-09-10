@@ -20,8 +20,12 @@ export const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({
   const handleSubscriptionChange = (isActive: boolean) => {
     if (isActive) {
       onSubscriptionActive?.();
-      // Navigate back or to main app
-      navigation?.goBack?.();
+      // Navigate to EMDRSession or back to Home
+      if (navigation?.canGoBack?.()) {
+        navigation.goBack();
+      } else {
+        navigation?.navigate?.('Home');
+      }
     }
   };
 
