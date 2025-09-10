@@ -14,6 +14,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthProvider';
 import { useEMDR } from '../providers/EMDRProvider';
+import { useRevenueCat } from '../hooks/useRevenueCat';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import VideoPlayer from '../components/VideoPlayer';
 import BLSComponent from '../components/BLSComponent';
@@ -25,8 +26,9 @@ interface EMDRSessionScreenProps {
 }
 
 export default function EMDRSessionScreen({ route }: EMDRSessionScreenProps) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { selectedTherapist, createSession, currentSession, updateSession } = useEMDR();
+  const { subscriptionStatus, loading: subscriptionLoading } = useRevenueCat();
   const navigation = useNavigation();
   
   // Session state
@@ -54,11 +56,38 @@ export default function EMDRSessionScreen({ route }: EMDRSessionScreenProps) {
   const [bodyScanStep, setBodyScanStep] = useState<'scanning' | 'disturbance' | 'clearing' | 'complete'>('scanning');
   const [disturbanceLevel, setDisturbanceLevel] = useState([0]);
 
-  // Load therapist and initialize session
+  // Check subscription access and load therapist
   useEffect(() => {
     const initializeSession = async () => {
       try {
         setLoading(true);
+
+        // Check authentication first
+        if (!isAuthenticated) {
+          Alert.alert('Authentication Required', 'Please sign in to access EMDR sessions.');
+          navigation.navigate('Login');
+          return;
+        }
+
+        // Check subscription status
+        if (!subscriptionLoading && !subscriptionStatus.isActive) {
+          Alert.alert(
+            'Subscription Required', 
+            'Please subscribe to access EMDR therapy sessions.',
+            [
+              {
+                text: 'Subscribe Now',
+                onPress: () => navigation.navigate('Subscription')
+              },
+              {
+                text: 'Go Back',
+                style: 'cancel',
+                onPress: () => navigation.goBack()
+              }
+            ]
+          );
+          return;
+        }
         
         // Load saved therapist
         const savedTherapist = await AsyncStorage.getItem('selectedTherapist');
@@ -94,7 +123,7 @@ export default function EMDRSessionScreen({ route }: EMDRSessionScreenProps) {
     };
 
     initializeSession();
-  }, []);
+  }, [isAuthenticated, subscriptionStatus.isActive, subscriptionLoading]);
 
   // Script definitions matching web version
   const getScriptInfo = (scriptNumber: number | string) => {
@@ -374,10 +403,19 @@ export default function EMDRSessionScreen({ route }: EMDRSessionScreenProps) {
     </View>
   );
 
-  if (loading) {
+  if (loading || subscriptionLoading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Preparing your EMDR session...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  // Additional security check - prevent render if no subscription
+  if (!subscriptionStatus.isActive) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Checking subscription status...</Text>
       </SafeAreaView>
     );
   }

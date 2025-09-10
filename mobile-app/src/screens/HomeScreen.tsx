@@ -13,6 +13,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthProvider';
 import { useEMDR } from '../providers/EMDRProvider';
+import { useRevenueCat } from '../hooks/useRevenueCat';
+import { RevenueCatService } from '../services/RevenueCat';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EMDRiseColors, EMDRiseStyles, EMDRiseSpacing, EMDRiseBorderRadius, EMDRiseShadows, EMDRiseTypography } from '../constants/branding';
 
@@ -136,6 +138,7 @@ const EndorsementCarousel = () => (
 export default function HomeScreen() {
   const { isAuthenticated, user, loading } = useAuth();
   const { selectedTherapist, setSelectedTherapist } = useEMDR();
+  const { subscriptionStatus, loading: subscriptionLoading, setUserId } = useRevenueCat();
   const navigation = useNavigation();
   
   const [localSelectedTherapist, setLocalSelectedTherapist] = useState<'maria' | 'alistair' | null>(null);
@@ -144,6 +147,16 @@ export default function HomeScreen() {
   const handleSignIn = () => {
     navigation.navigate('Login');
   };
+
+  // Set RevenueCat user ID when user is authenticated
+  useEffect(() => {
+    const setupRevenueCat = async () => {
+      if (isAuthenticated && user?.id) {
+        await setUserId(user.id);
+      }
+    };
+    setupRevenueCat();
+  }, [isAuthenticated, user?.id, setUserId]);
 
   // Load saved therapist selection
   useEffect(() => {
@@ -180,6 +193,12 @@ export default function HomeScreen() {
       navigation.navigate('Login');
       return;
     }
+
+    // Check subscription status before allowing access
+    if (!subscriptionStatus.isActive) {
+      navigation.navigate('Subscription');
+      return;
+    }
     
     navigation.navigate('EMDRSession');
   };
@@ -189,11 +208,17 @@ export default function HomeScreen() {
       navigation.navigate('Login');
       return;
     }
+
+    // Check subscription status before allowing access
+    if (!subscriptionStatus.isActive) {
+      navigation.navigate('Subscription');
+      return;
+    }
     
     navigation.navigate('EMDRSession');
   };
 
-  if (loading) {
+  if (loading || subscriptionLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
