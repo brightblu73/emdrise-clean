@@ -15,6 +15,9 @@ import { useAuth } from '../providers/AuthProvider';
 import { useEMDR } from '../providers/EMDRProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Therapist images will be handled as base64 or remote URLs for now
+// In production, these would be actual imported assets
+
 const { width } = Dimensions.get('window');
 
 // EMDRise Logo Component
@@ -36,9 +39,9 @@ const TherapistCard = ({ therapist, isSelected, onSelect }: {
     onPress={onSelect}
   >
     <View style={styles.therapistImageContainer}>
-      <View style={styles.placeholderImage}>
-        <Text style={styles.placeholderText}>
-          {therapist === 'maria' ? 'M' : 'A'}
+      <View style={styles.therapistImagePlaceholder}>
+        <Text style={styles.therapistImageText}>
+          {therapist === 'maria' ? '👩‍⚕️' : '👨‍⚕️'}
         </Text>
       </View>
     </View>
@@ -60,23 +63,20 @@ const EMDRJourneyTimeline = () => (
     
     <View style={styles.timelinePhases}>
       {[
-        { title: "Preparation", description: "Try your preferred BLS method." },
-        { title: "Calm Place", description: "Create a mental safe space to return to when needed." },
-        { title: "Target Memory", description: "Identify the image, belief, and emotions that represent the memory." },
-        { title: "Reprocessing", description: "Process the memory using BLS while observing what comes up." },
-        { title: "Installation", description: "Strengthen the positive belief using BLS." },
-        { title: "Body Scan", description: "Check your body for any lingering tension or discomfort." },
-        { title: "Closure", description: "Return to a calm state before finishing the session." },
-        { title: "Aftercare", description: "Reflect and take gentle steps to look after yourself post-session." }
+        { title: "Preparation", icon: "⚙️" },
+        { title: "Calm Place", icon: "☁️" },
+        { title: "Target Memory", icon: "🎯" },
+        { title: "Reprocessing", icon: "🔄" },
+        { title: "Installation", icon: "🔗" },
+        { title: "Body Scan", icon: "📊" },
+        { title: "Closure", icon: "🔒" },
+        { title: "Aftercare", icon: "💙" }
       ].map((item, index) => (
         <View key={index} style={styles.timelinePhase}>
           <View style={styles.phaseIcon}>
-            <Text style={styles.phaseIconText}>⚡</Text>
+            <Text style={styles.phaseIconText}>{item.icon}</Text>
           </View>
-          <View style={styles.phaseContent}>
-            <Text style={styles.phaseTitle}>{item.title}</Text>
-            <Text style={styles.phaseDescription}>{item.description}</Text>
-          </View>
+          <Text style={styles.phaseTitle}>{item.title}</Text>
         </View>
       ))}
     </View>
@@ -140,6 +140,10 @@ export default function HomeScreen() {
   const [localSelectedTherapist, setLocalSelectedTherapist] = useState<'maria' | 'alistair' | null>(null);
   const [showTrialMessage, setShowTrialMessage] = useState(false);
 
+  const handleSignIn = () => {
+    navigation.navigate('Login');
+  };
+
   // Load saved therapist selection
   useEffect(() => {
     const loadTherapist = async () => {
@@ -200,6 +204,17 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.headerLogo}>EMDRise</Text>
+          <Text style={styles.headerTagline}>Healing Together</Text>
+        </View>
+        <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
+          <Text style={styles.signInText}>Sign In</Text>
+        </TouchableOpacity>
+      </View>
+      
       <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
@@ -330,6 +345,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
+  },
+  
+  // Header
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#f1f5f9',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerLogo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1e40af',
+  },
+  headerTagline: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  signInButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#1e40af',
+    borderRadius: 6,
+  },
+  signInText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   loadingContainer: {
     flex: 1,
@@ -512,25 +562,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#10b981' + '20',
   },
   therapistImageContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     overflow: 'hidden',
     marginBottom: 12,
     borderWidth: 3,
     borderColor: '#e2e8f0',
   },
-  placeholderImage: {
+  therapistImagePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#e2e8f0',
+    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  placeholderText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#64748b',
+  therapistImageText: {
+    fontSize: 48,
   },
   therapistName: {
     fontSize: 16,
@@ -576,40 +624,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   timelinePhase: {
-    width: '48%',
+    width: '23%',
     marginBottom: 20,
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   phaseIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#1e40af',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginBottom: 8,
   },
   phaseIconText: {
-    fontSize: 16,
-    color: '#ffffff',
-  },
-  phaseContent: {
-    alignItems: 'center',
-    marginTop: 8,
+    fontSize: 24,
   },
   phaseTitle: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
     color: '#1e40af',
     textAlign: 'center',
-    marginBottom: 4,
-  },
-  phaseDescription: {
-    fontSize: 10,
-    color: '#64748b',
-    textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 12,
   },
   
   // Endorsements
