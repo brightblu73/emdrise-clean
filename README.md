@@ -2,6 +2,11 @@
 
 A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy application providing guided therapeutic sessions with professional therapist videos and advanced bilateral stimulation. Native mobile application built with React Native and Expo for iOS and Android.
 
+## 🚀 **DEVELOPERS START HERE**
+
+**📱 Production Mobile App Location:** `mobile-app/` directory  
+**⚠️ Important:** All other directories are deprecated, backups, or documentation. Use ONLY `mobile-app/` for development and testing.
+
 ## Key Features
 
 - **Professional Therapist Options**: Choose between Maria and Alistair virtual therapists
@@ -48,6 +53,29 @@ A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy app
 3. "Continue Your Journey" → Resume at **Script 5a** (resumption video)
 4. Continue: Script 5a→5→6→7→8→9→10 → Complete session
 5. Next "Continue Your Journey" → New session starts at Script 1
+
+## 🔧 **Quick Setup for Developers**
+
+### 1. Clone Repository
+```bash
+git clone [your-repo-url]
+cd EMDRise
+```
+
+### 2. Navigate to Production App
+```bash
+cd mobile-app
+```
+
+### 3. Install & Run
+```bash
+npm install
+npm start
+```
+
+### 4. Test on Device
+- iOS: `npm run ios`
+- Android: `npm run android`
 
 ## Getting Started
 
