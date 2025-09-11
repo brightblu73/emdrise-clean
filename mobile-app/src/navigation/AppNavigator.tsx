@@ -10,6 +10,10 @@ import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import TermsOfUseScreen from '../screens/TermsOfUseScreen';
 import ResourcesScreen from '../screens/ResourcesScreen';
 import ProgressScreen from '../screens/ProgressScreen';
+import AssessmentScreen from '../screens/AssessmentScreen';
+import PreparationScreen from '../screens/PreparationScreen';
+import ProcessingScreen from '../screens/ProcessingScreen';
+import TherapistDetailScreen from '../screens/TherapistDetailScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -21,6 +25,10 @@ export type RootStackParamList = {
   TermsOfUse: undefined;
   Resources: undefined;
   Progress: undefined;
+  Assessment: undefined;
+  Preparation: undefined;
+  Processing: undefined;
+  TherapistDetail: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -84,6 +92,26 @@ export default function AppNavigator() {
           name="Progress" 
           component={ProgressScreen}
           options={{ title: 'Progress' }}
+        />
+        <Stack.Screen 
+          name="Assessment" 
+          component={AssessmentScreen}
+          options={{ title: 'EMDR Assessment', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Preparation" 
+          component={PreparationScreen}
+          options={{ title: 'EMDR Preparation', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Processing" 
+          component={ProcessingScreen}
+          options={{ title: 'EMDR Processing', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="TherapistDetail" 
+          component={TherapistDetailScreen}
+          options={{ title: 'Meet Your Therapist', headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

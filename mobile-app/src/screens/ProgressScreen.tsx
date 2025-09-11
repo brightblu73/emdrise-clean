@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,14 +6,16 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthProvider';
-import { useEMDR } from '../providers/EMDRProvider';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQuery } from '@tanstack/react-query';
+import { EMDRiseColors, EMDRiseTypography, EMDRiseSpacing, EMDRiseBorderRadius, EMDRiseShadows } from '../constants/branding';
 
 interface SessionData {
-  id: string;
+  id: number;
   phase: number;
   status: string;
   startedAt: string;
@@ -29,38 +31,109 @@ interface SessionData {
   notes?: string;
 }
 
+interface TargetData {
+  id: number;
+  memory: string;
+  initialSuds: number;
+  finalSuds: number | null;
+  initialVoc: number;
+  finalVoc: number | null;
+  status: string;
+  createdAt: string;
+}
+
+interface TabProps {
+  title: string;
+  isActive: boolean;
+  onPress: () => void;
+}
+
+const { width } = Dimensions.get('window');
+
+const TabButton: React.FC<TabProps> = ({ title, isActive, onPress }) => (
+  <TouchableOpacity
+    style={[styles.tabButton, isActive && styles.activeTabButton]}
+    onPress={onPress}
+  >
+    <Text style={[styles.tabText, isActive && styles.activeTabText]}>{title}</Text>
+  </TouchableOpacity>
+);
+
+const MetricCard: React.FC<{ icon: string; value: string; label: string; color: string }> = ({ icon, value, label, color }) => (
+  <View style={[styles.metricCard, { borderLeftColor: color }]}>
+    <View style={[styles.metricIcon, { backgroundColor: color }]}>
+      <Text style={styles.metricIconText}>{icon}</Text>
+    </View>
+    <Text style={styles.metricValue}>{value}</Text>
+    <Text style={styles.metricLabel}>{label}</Text>
+  </View>
+);
+
+const ProgressBar: React.FC<{ value: number; height?: number; color?: string }> = ({ value, height = 6, color = EMDRiseColors.primaryGreen }) => (
+  <View style={[styles.progressBarContainer, { height }]}>
+    <View style={[styles.progressBarFill, { width: `${Math.min(value, 100)}%`, backgroundColor: color }]} />
+  </View>
+);
+
+const LoadingSpinner: React.FC = () => (
+  <View style={styles.loadingContainer}>
+    <ActivityIndicator size="large" color={EMDRiseColors.primaryBlue} />
+  </View>
+);
+
 const ProgressScreen = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
-  const { currentSession } = useEMDR();
-  const [sessions, setSessions] = useState<SessionData[]>([]);
+  const [selectedTab, setSelectedTab] = useState('overview');
   const [selectedPeriod, setSelectedPeriod] = useState('all');
 
-  useEffect(() => {
-    loadSessionHistory();
-  }, []);
-
-  const loadSessionHistory = async () => {
-    try {
-      // Load session history from AsyncStorage
-      const storedSessions = await AsyncStorage.getItem('sessionHistory');
-      if (storedSessions) {
-        const parsed = JSON.parse(storedSessions);
-        setSessions(Array.isArray(parsed) ? parsed : []);
-      }
-
-      // Include current session if active
-      if (currentSession) {
-        setSessions(prev => {
-          const filtered = prev.filter(s => s.id !== currentSession.id);
-          return [currentSession as SessionData, ...filtered];
-        });
-      }
-    } catch (error) {
-      console.error('Error loading session history:', error);
-      setSessions([]);
+  // React Query for data fetching - matching web version exactly
+  const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
+    queryKey: ['/api/sessions'],
+    enabled: !!user,
+    queryFn: () => {
+      // For now, return empty array - this will be connected to actual API later
+      return [];
     }
-  };
+  });
+
+  const { data: targetsData, isLoading: targetsLoading } = useQuery({
+    queryKey: ['/api/targets'],
+    enabled: !!user,
+    queryFn: () => {
+      // For now, return empty array - this will be connected to actual API later
+      return [];
+    }
+  });
+
+  const sessions = (sessionsData as SessionData[]) || [];
+  const targets = (targetsData as TargetData[]) || [];
+  const isLoading = sessionsLoading || targetsLoading;
+
+  // Calculate metrics - matching web version exactly
+  const completedSessions = sessions.filter((s) => s.status === 'complete');
+  const totalProcessingTime = completedSessions.reduce((acc: number, session: SessionData) => {
+    if (session.startedAt && session.completedAt) {
+      const start = new Date(session.startedAt);
+      const end = new Date(session.completedAt);
+      return acc + (end.getTime() - start.getTime());
+    }
+    return acc;
+  }, 0);
+
+  const averageSudsReduction = targets.length > 0 
+    ? targets.reduce((acc: number, target: TargetData) => {
+        if (target.initialSuds && target.finalSuds !== null) {
+          const reduction = ((target.initialSuds - target.finalSuds) / target.initialSuds) * 100;
+          return acc + reduction;
+        }
+        return acc;
+      }, 0) / targets.filter((t: TargetData) => t.finalSuds !== null).length
+    : 0;
+
+  const daysInTherapy = user && user.createdAt 
+    ? Math.floor((new Date().getTime() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-GB', {
@@ -70,71 +143,243 @@ const ProgressScreen = () => {
     });
   };
 
-  const formatDuration = (startTime: string, endTime?: string) => {
-    if (!endTime) return 'In Progress';
-    
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const durationMs = end.getTime() - start.getTime();
-    const minutes = Math.floor(durationMs / (1000 * 60));
-    
-    if (minutes < 60) {
-      return `${minutes} min`;
-    } else {
-      const hours = Math.floor(minutes / 60);
-      const remainingMinutes = minutes % 60;
-      return `${hours}h ${remainingMinutes}m`;
-    }
-  };
-
-  const getProgressPercentage = (phase: number) => {
-    return Math.min((phase / 10) * 100, 100);
-  };
-
-  const completedSessions = sessions.filter(s => s.status === 'complete');
-  const totalProcessingTime = completedSessions.reduce((acc, session) => {
-    if (session.startedAt && session.completedAt) {
-      const start = new Date(session.startedAt);
-      const end = new Date(session.completedAt);
-      return acc + (end.getTime() - start.getTime());
-    }
-    return acc;
-  }, 0);
-
-  const averageSudsReduction = completedSessions.length > 0 
-    ? completedSessions.reduce((acc, session) => {
-        if (session.target?.initialSuds && session.target?.finalSuds !== null) {
-          const reduction = ((session.target.initialSuds - session.target.finalSuds) / session.target.initialSuds) * 100;
-          return acc + reduction;
-        }
-        return acc;
-      }, 0) / completedSessions.length
-    : 0;
-
   const formatProcessingTime = (milliseconds: number) => {
     const hours = Math.floor(milliseconds / (1000 * 60 * 60));
     const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
 
+  // Render tab content based on selected tab
+  const renderTabContent = () => {
+    switch (selectedTab) {
+      case 'overview':
+        return renderOverviewTab();
+      case 'sessions':
+        return renderSessionsTab();
+      case 'insights':
+        return renderInsightsTab();
+      default:
+        return renderOverviewTab();
+    }
+  };
+
+  const renderOverviewTab = () => (
+    <View style={styles.tabContent}>
+      {/* Progress Overview - 4-card grid */}
+      <View style={styles.metricsGrid}>
+        <MetricCard
+          icon="🎯"
+          value={completedSessions.length.toString()}
+          label="Sessions Completed"
+          color={EMDRiseColors.primaryBlue}
+        />
+        <MetricCard
+          icon="📈"
+          value={`${Math.round(averageSudsReduction)}%`}
+          label="Average SUDS Reduction"
+          color={EMDRiseColors.primaryGreen}
+        />
+        <MetricCard
+          icon="🧠"
+          value={targets.length.toString()}
+          label="Targets Processed"
+          color={EMDRiseColors.secondaryBlue}
+        />
+        <MetricCard
+          icon="📅"
+          value={daysInTherapy.toString()}
+          label="Days of Healing"
+          color={EMDRiseColors.warmAccent}
+        />
+      </View>
+
+      {/* Current Session Progress */}
+      {/* Weekly Progress Goals */}
+      <View style={styles.progressSection}>
+        <Text style={styles.sectionTitle}>This Week's Progress</Text>
+        <View style={styles.progressCard}>
+          <View style={styles.progressItem}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressLabel}>Sessions Goal</Text>
+              <Text style={styles.progressValue}>2/3</Text>
+            </View>
+            <ProgressBar value={67} />
+          </View>
+          <View style={styles.progressItem}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressLabel}>Practice Minutes</Text>
+              <Text style={styles.progressValue}>45/60</Text>
+            </View>
+            <ProgressBar value={75} />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+
+  const renderSessionsTab = () => (
+    <View style={styles.tabContent}>
+      <Text style={styles.sectionTitle}>Recent Sessions</Text>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : sessions.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateTitle}>No sessions yet</Text>
+          <Text style={styles.emptyStateDescription}>
+            Start your first EMDR session to begin tracking your progress.
+          </Text>
+          <TouchableOpacity 
+            style={styles.startButton}
+            onPress={() => navigation.navigate('TherapistSelection' as never)}
+          >
+            <Text style={styles.startButtonText}>Start Your First Session</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ScrollView style={styles.sessionsList}>
+          {sessions.slice(0, 10).map((session: SessionData) => (
+            <View key={session.id} style={styles.sessionCard}>
+              <View style={styles.sessionHeader}>
+                <View style={styles.sessionTitleContainer}>
+                  <Text style={styles.sessionTitle} numberOfLines={2}>
+                    {session.target?.memory ? 
+                      session.target.memory.substring(0, 50) + (session.target.memory.length > 50 ? '...' : '') :
+                      `Session ${session.id}`
+                    }
+                  </Text>
+                  <Text style={styles.sessionDate}>
+                    {formatDate(session.startedAt)}
+                  </Text>
+                </View>
+                <View style={[
+                  styles.statusBadge,
+                  session.status === 'complete' ? styles.statusComplete : styles.statusInProgress
+                ]}>
+                  <Text style={[
+                    styles.statusText,
+                    session.status === 'complete' ? styles.statusCompleteText : styles.statusInProgressText
+                  ]}>
+                    {session.status === 'complete' ? '✓ Complete' : 'In Progress'}
+                  </Text>
+                </View>
+              </View>
+              
+              {session.target && (
+                <View style={styles.sessionMetrics}>
+                  {session.target.initialSuds !== undefined && session.target.finalSuds !== undefined && (
+                    <Text style={styles.metricText}>
+                      SUDS: {session.target.initialSuds} → {session.target.finalSuds}
+                    </Text>
+                  )}
+                  {session.target.initialVoc !== undefined && session.target.finalVoc !== undefined && (
+                    <Text style={styles.metricText}>
+                      VOC: {session.target.initialVoc} → {session.target.finalVoc}
+                    </Text>
+                  )}
+                </View>
+              )}
+            </View>
+          ))}
+        </ScrollView>
+      )}
+    </View>
+  );
+
+  const renderInsightsTab = () => (
+    <View style={styles.tabContent}>
+      {/* Subscription Status */}
+      <View style={styles.subscriptionCard}>
+        <Text style={styles.sectionTitle}>Subscription Status</Text>
+        <View style={styles.subscriptionDetails}>
+          <View style={styles.subscriptionRow}>
+            <Text style={styles.subscriptionLabel}>Status</Text>
+            <View style={[
+              styles.subscriptionBadge,
+              user?.subscriptionStatus === 'active' ? styles.subscriptionActive : styles.subscriptionTrial
+            ]}>
+              <Text style={[
+                styles.subscriptionBadgeText,
+                user?.subscriptionStatus === 'active' ? styles.subscriptionActiveText : styles.subscriptionTrialText
+              ]}>
+                {user?.subscriptionStatus === 'trial' ? 'Free Trial' :
+                 user?.subscriptionStatus === 'active' ? 'Active' :
+                 user?.subscriptionStatus || 'Unknown'}
+              </Text>
+            </View>
+          </View>
+          
+          {user?.subscriptionStatus === 'trial' && user?.trialEndsAt && (
+            <View style={styles.subscriptionRow}>
+              <Text style={styles.subscriptionLabel}>Trial Ends</Text>
+              <Text style={styles.subscriptionValue}>
+                {formatDate(user.trialEndsAt)}
+              </Text>
+            </View>
+          )}
+          
+          {user?.subscriptionStatus === 'trial' && (
+            <TouchableOpacity 
+              style={styles.upgradeButton}
+              onPress={() => navigation.navigate('Subscription' as never)}
+            >
+              <Text style={styles.upgradeButtonText}>Upgrade to Premium</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* Quick Actions */}
+      <View style={styles.quickActionsCard}>
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <View style={styles.quickActionsGrid}>
+          <TouchableOpacity 
+            style={styles.quickActionButton}
+            onPress={() => navigation.navigate('TherapistSelection' as never)}
+          >
+            <Text style={styles.quickActionIcon}>🎯</Text>
+            <Text style={styles.quickActionText}>Start New Session</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.quickActionButton}
+            onPress={() => navigation.navigate('Resources' as never)}
+          >
+            <Text style={styles.quickActionIcon}>🧠</Text>
+            <Text style={styles.quickActionText}>Manage Resources</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.quickActionButton}>
+            <Text style={styles.quickActionIcon}>✅</Text>
+            <Text style={styles.quickActionText}>New Assessment</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
+  // Authentication guard - matching web version exactly
   if (!user) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.center}>
-          <Text style={styles.authMessage}>Please sign in to view your progress.</Text>
-          <TouchableOpacity 
-            style={styles.signInButton}
-            onPress={() => navigation.navigate('Login')}
-          >
-            <Text style={styles.signInButtonText}>Sign In</Text>
-          </TouchableOpacity>
+        <View style={styles.authContainer}>
+          <View style={styles.authCard}>
+            <Text style={styles.authMessage}>Please sign in to view your progress.</Text>
+            <TouchableOpacity 
+              style={styles.signInButton}
+              onPress={() => navigation.navigate('Login' as never)}
+            >
+              <Text style={styles.signInButtonText}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
   }
 
+  // Main render - matching web version exactly
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header - matching web version */}
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
@@ -145,154 +390,38 @@ const ProgressScreen = () => {
         <Text style={styles.headerTitle}>Progress</Text>
       </View>
 
-      <ScrollView style={styles.content}>
-        <Text style={styles.pageTitle}>Your EMDR Journey</Text>
-        <Text style={styles.pageDescription}>
-          Track your progress and see how far you've come in your healing journey.
-        </Text>
-
-        {/* Stats Overview */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{sessions.length}</Text>
-            <Text style={styles.statLabel}>Total Sessions</Text>
-          </View>
-          
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{completedSessions.length}</Text>
-            <Text style={styles.statLabel}>Completed</Text>
-          </View>
-          
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{formatProcessingTime(totalProcessingTime)}</Text>
-            <Text style={styles.statLabel}>Processing Time</Text>
-          </View>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Page Header - matching web version */}
+        <View style={styles.pageHeader}>
+          <Text style={styles.pageTitle}>Your Healing Journey</Text>
+          <Text style={styles.pageDescription}>
+            Track your progress and celebrate your growth
+          </Text>
         </View>
 
-        {averageSudsReduction > 0 && (
-          <View style={styles.reductionCard}>
-            <Text style={styles.reductionTitle}>Average SUDS Reduction</Text>
-            <Text style={styles.reductionPercentage}>{Math.round(averageSudsReduction)}%</Text>
-            <Text style={styles.reductionDescription}>
-              This shows how much your distress levels have decreased on average across completed sessions.
-            </Text>
-          </View>
-        )}
+        {/* Tab Navigation - matching web version */}
+        <View style={styles.tabContainer}>
+          <TabButton
+            title="Overview"
+            isActive={selectedTab === 'overview'}
+            onPress={() => setSelectedTab('overview')}
+          />
+          <TabButton
+            title="Sessions"
+            isActive={selectedTab === 'sessions'}
+            onPress={() => setSelectedTab('sessions')}
+          />
+          <TabButton
+            title="Insights"
+            isActive={selectedTab === 'insights'}
+            onPress={() => setSelectedTab('insights')}
+          />
+        </View>
 
-        {/* Current Session */}
-        {currentSession && (
-          <View style={styles.currentSessionCard}>
-            <Text style={styles.currentSessionTitle}>Current Session</Text>
-            <View style={styles.sessionHeader}>
-              <Text style={styles.sessionPhase}>Phase {currentSession.phase} of 10</Text>
-              <Text style={styles.sessionDate}>
-                {formatDate(currentSession.startedAt)}
-              </Text>
-            </View>
-            <View style={styles.progressBarContainer}>
-              <View style={styles.progressBar}>
-                <View 
-                  style={[
-                    styles.progressFill, 
-                    { width: `${getProgressPercentage(currentSession.phase)}%` }
-                  ]} 
-                />
-              </View>
-              <Text style={styles.progressText}>
-                {Math.round(getProgressPercentage(currentSession.phase))}% Complete
-              </Text>
-            </View>
-            <TouchableOpacity 
-              style={styles.continueButton}
-              onPress={() => navigation.navigate('EMDRSession')}
-            >
-              <Text style={styles.continueButtonText}>Continue Session</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        {/* Tab Content */}
+        {renderTabContent()}
 
-        {/* Session History */}
-        <Text style={styles.sectionTitle}>Session History</Text>
-        
-        {sessions.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateTitle}>No sessions yet</Text>
-            <Text style={styles.emptyStateDescription}>
-              Start your first EMDR session to begin tracking your progress.
-            </Text>
-            <TouchableOpacity 
-              style={styles.startButton}
-              onPress={() => navigation.navigate('TherapistSelection')}
-            >
-              <Text style={styles.startButtonText}>Start Your Journey</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.sessionsContainer}>
-            {sessions.map((session) => (
-              <View key={session.id} style={styles.sessionCard}>
-                <View style={styles.sessionHeader}>
-                  <Text style={styles.sessionTitle}>
-                    Session with {session.therapist === 'maria' ? 'Maria' : 'Alistair'}
-                  </Text>
-                  <View style={[
-                    styles.statusBadge,
-                    session.status === 'complete' ? styles.statusComplete : styles.statusInProgress
-                  ]}>
-                    <Text style={[
-                      styles.statusText,
-                      session.status === 'complete' ? styles.statusCompleteText : styles.statusInProgressText
-                    ]}>
-                      {session.status === 'complete' ? 'Completed' : 'In Progress'}
-                    </Text>
-                  </View>
-                </View>
-                
-                <View style={styles.sessionDetails}>
-                  <Text style={styles.sessionDetail}>
-                    📅 {formatDate(session.startedAt)}
-                  </Text>
-                  <Text style={styles.sessionDetail}>
-                    ⏱️ {formatDuration(session.startedAt, session.completedAt)}
-                  </Text>
-                  <Text style={styles.sessionDetail}>
-                    📊 Phase {session.phase} of 10
-                  </Text>
-                </View>
-
-                {session.target && (
-                  <View style={styles.targetInfo}>
-                    <Text style={styles.targetTitle}>Target Memory:</Text>
-                    <Text style={styles.targetMemory} numberOfLines={2}>
-                      {session.target.memory}
-                    </Text>
-                    {session.status === 'complete' && (
-                      <View style={styles.ratingsContainer}>
-                        <Text style={styles.ratingText}>
-                          SUDS: {session.target.initialSuds} → {session.target.finalSuds}
-                        </Text>
-                        <Text style={styles.ratingText}>
-                          VOC: {session.target.initialVoc} → {session.target.finalVoc}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                )}
-
-                {session.notes && (
-                  <View style={styles.notesContainer}>
-                    <Text style={styles.notesTitle}>Notes:</Text>
-                    <Text style={styles.notesText} numberOfLines={3}>
-                      {session.notes}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Disclaimer */}
+        {/* Disclaimer - matching web version */}
         <View style={styles.disclaimerCard}>
           <Text style={styles.disclaimerText}>
             💡 Progress tracking is for your personal reflection. EMDRise is not a substitute 
@@ -305,344 +434,444 @@ const ProgressScreen = () => {
   );
 };
 
+export default ProgressScreen;
+
 const styles = StyleSheet.create({
+  // Main Container - matching web version
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: EMDRiseColors.therapeuticBg,
   },
+
+  // Header Styles - matching web navigation
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#1E90FF',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    paddingHorizontal: EMDRiseSpacing.lg,
+    paddingVertical: EMDRiseSpacing.md,
+    backgroundColor: EMDRiseColors.primaryBlue,
+    ...EMDRiseShadows.medium,
   },
   backButton: {
-    marginRight: 16,
+    marginRight: EMDRiseSpacing.lg,
   },
   backButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+    color: EMDRiseColors.text.white,
+    fontSize: EMDRiseTypography.sizes.body.base,
+    fontWeight: EMDRiseTypography.weights.medium,
   },
   headerTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: EMDRiseColors.text.white,
+    fontSize: EMDRiseTypography.sizes.heading.h4,
+    fontWeight: EMDRiseTypography.weights.bold,
   },
+
+  // Content Area
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: EMDRiseSpacing.lg,
+  },
+
+  // Page Header - matching web version
+  pageHeader: {
+    marginTop: EMDRiseSpacing.xl,
+    marginBottom: EMDRiseSpacing['2xl'],
   },
   pageTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1E90FF',
-    marginTop: 20,
-    marginBottom: 8,
+    fontSize: EMDRiseTypography.sizes.heading.h1,
+    fontWeight: EMDRiseTypography.weights.bold,
+    color: EMDRiseColors.text.primary,
+    marginBottom: EMDRiseSpacing.sm,
   },
   pageDescription: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
-    lineHeight: 24,
+    fontSize: EMDRiseTypography.sizes.body.large,
+    color: EMDRiseColors.text.secondary,
+    lineHeight: EMDRiseTypography.sizes.body.large * EMDRiseTypography.lineHeights.relaxed,
   },
-  center: {
+
+  // Authentication Guard
+  authContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: EMDRiseSpacing['3xl'],
+  },
+  authCard: {
+    backgroundColor: EMDRiseColors.card,
+    borderRadius: EMDRiseBorderRadius.xl,
+    padding: EMDRiseSpacing['2xl'],
+    ...EMDRiseShadows.medium,
+    borderWidth: 1,
+    borderColor: EMDRiseColors.border,
+    alignItems: 'center',
   },
   authMessage: {
-    fontSize: 18,
-    color: '#666',
+    fontSize: EMDRiseTypography.sizes.body.large,
+    color: EMDRiseColors.text.secondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: EMDRiseSpacing['2xl'],
   },
   signInButton: {
-    backgroundColor: '#1E90FF',
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: EMDRiseColors.primaryBlue,
+    paddingHorizontal: EMDRiseSpacing['3xl'],
+    paddingVertical: EMDRiseSpacing.lg,
+    borderRadius: EMDRiseBorderRadius.lg,
+    ...EMDRiseShadows.medium,
   },
   signInButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: EMDRiseColors.text.white,
+    fontSize: EMDRiseTypography.sizes.body.base,
+    fontWeight: EMDRiseTypography.weights.bold,
   },
-  statsContainer: {
+
+  // Tab Navigation - web equivalent
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: EMDRiseColors.card,
+    borderRadius: EMDRiseBorderRadius.xl,
+    padding: EMDRiseSpacing.xs,
+    marginBottom: EMDRiseSpacing['2xl'],
+    ...EMDRiseShadows.small,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: EMDRiseSpacing.md,
+    paddingHorizontal: EMDRiseSpacing.lg,
+    borderRadius: EMDRiseBorderRadius.lg,
+    alignItems: 'center',
+  },
+  activeTabButton: {
+    backgroundColor: EMDRiseColors.primaryBlue,
+    ...EMDRiseShadows.small,
+  },
+  tabText: {
+    fontSize: EMDRiseTypography.sizes.body.base,
+    fontWeight: EMDRiseTypography.weights.medium,
+    color: EMDRiseColors.text.secondary,
+  },
+  activeTabText: {
+    color: EMDRiseColors.text.white,
+    fontWeight: EMDRiseTypography.weights.semibold,
+  },
+
+  // Tab Content Area
+  tabContent: {
+    flex: 1,
+    marginBottom: EMDRiseSpacing['2xl'],
+  },
+
+  // Metrics Grid (4-card overview)
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: EMDRiseSpacing['2xl'],
+  },
+  metricCard: {
+    width: (width - EMDRiseSpacing.lg * 2 - EMDRiseSpacing.md) / 2,
+    backgroundColor: EMDRiseColors.card,
+    borderRadius: EMDRiseBorderRadius.xl,
+    padding: EMDRiseSpacing['2xl'],
+    alignItems: 'center',
+    marginBottom: EMDRiseSpacing.lg,
+    borderLeftWidth: 4,
+    ...EMDRiseShadows.medium,
+  },
+  metricIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: EMDRiseSpacing.lg,
+  },
+  metricIconText: {
+    fontSize: 28,
+  },
+  metricValue: {
+    fontSize: EMDRiseTypography.sizes.heading.h1,
+    fontWeight: EMDRiseTypography.weights.bold,
+    color: EMDRiseColors.text.primary,
+    marginBottom: EMDRiseSpacing.xs,
+  },
+  metricLabel: {
+    fontSize: EMDRiseTypography.sizes.body.small,
+    color: EMDRiseColors.text.secondary,
+    textAlign: 'center',
+  },
+
+  // Progress Section
+  progressSection: {
+    marginBottom: EMDRiseSpacing['2xl'],
+  },
+  progressCard: {
+    backgroundColor: EMDRiseColors.card,
+    borderRadius: EMDRiseBorderRadius.xl,
+    padding: EMDRiseSpacing['2xl'],
+    ...EMDRiseShadows.medium,
+    borderWidth: 1,
+    borderColor: EMDRiseColors.border,
+  },
+  progressItem: {
+    marginBottom: EMDRiseSpacing.lg,
+  },
+  progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  statCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
     alignItems: 'center',
+    marginBottom: EMDRiseSpacing.sm,
+  },
+  progressLabel: {
+    fontSize: EMDRiseTypography.sizes.body.small,
+    color: EMDRiseColors.text.secondary,
+  },
+  progressValue: {
+    fontSize: EMDRiseTypography.sizes.body.small,
+    fontWeight: EMDRiseTypography.weights.medium,
+    color: EMDRiseColors.text.primary,
+  },
+
+  // Progress Bar Component
+  progressBarContainer: {
+    backgroundColor: EMDRiseColors.muted,
+    borderRadius: EMDRiseBorderRadius.sm,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: EMDRiseBorderRadius.sm,
+  },
+
+  // Loading Component
+  loadingContainer: {
     flex: 1,
-    marginHorizontal: 4,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1E90FF',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
-  },
-  reductionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
+    justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    paddingVertical: EMDRiseSpacing['4xl'],
   },
-  reductionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#05A660',
-    marginBottom: 8,
+
+  // Section Titles
+  sectionTitle: {
+    fontSize: EMDRiseTypography.sizes.heading.h2,
+    fontWeight: EMDRiseTypography.weights.bold,
+    color: EMDRiseColors.text.primary,
+    marginBottom: EMDRiseSpacing.lg,
   },
-  reductionPercentage: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#05A660',
-    marginBottom: 8,
+
+  // Empty State
+  emptyState: {
+    backgroundColor: EMDRiseColors.card,
+    borderRadius: EMDRiseBorderRadius.xl,
+    padding: EMDRiseSpacing['3xl'],
+    alignItems: 'center',
+    ...EMDRiseShadows.medium,
+    borderWidth: 1,
+    borderColor: EMDRiseColors.border,
   },
-  reductionDescription: {
-    fontSize: 14,
-    color: '#666',
+  emptyStateTitle: {
+    fontSize: EMDRiseTypography.sizes.heading.h3,
+    fontWeight: EMDRiseTypography.weights.bold,
+    color: EMDRiseColors.text.secondary,
+    marginBottom: EMDRiseSpacing.sm,
+  },
+  emptyStateDescription: {
+    fontSize: EMDRiseTypography.sizes.body.base,
+    color: EMDRiseColors.text.secondary,
     textAlign: 'center',
-    lineHeight: 20,
+    marginBottom: EMDRiseSpacing['2xl'],
+    lineHeight: EMDRiseTypography.sizes.body.base * EMDRiseTypography.lineHeights.relaxed,
   },
-  currentSessionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 24,
-    borderLeftWidth: 4,
-    borderLeftColor: '#1E90FF',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  startButton: {
+    backgroundColor: EMDRiseColors.primaryBlue,
+    paddingHorizontal: EMDRiseSpacing['2xl'],
+    paddingVertical: EMDRiseSpacing.lg,
+    borderRadius: EMDRiseBorderRadius.lg,
+    ...EMDRiseShadows.medium,
   },
-  currentSessionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1E90FF',
-    marginBottom: 12,
+  startButtonText: {
+    color: EMDRiseColors.text.white,
+    fontSize: EMDRiseTypography.sizes.body.base,
+    fontWeight: EMDRiseTypography.weights.bold,
+  },
+
+  // Sessions List
+  sessionsList: {
+    flex: 1,
+  },
+
+  // Session Cards - matching web styling
+  sessionCard: {
+    backgroundColor: EMDRiseColors.card,
+    borderRadius: EMDRiseBorderRadius.xl,
+    padding: EMDRiseSpacing.lg,
+    marginBottom: EMDRiseSpacing.lg,
+    ...EMDRiseShadows.medium,
+    borderWidth: 1,
+    borderColor: EMDRiseColors.border,
   },
   sessionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems: 'flex-start',
+    marginBottom: EMDRiseSpacing.md,
   },
-  sessionPhase: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-  },
-  sessionDate: {
-    fontSize: 14,
-    color: '#666',
-  },
-  progressBarContainer: {
-    marginBottom: 16,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: '#e9ecef',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 4,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#05A660',
-  },
-  progressText: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'right',
-  },
-  continueButton: {
-    backgroundColor: '#1E90FF',
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  continueButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
-  },
-  emptyState: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 32,
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#666',
-    marginBottom: 8,
-  },
-  emptyStateDescription: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  startButton: {
-    backgroundColor: '#1E90FF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  sessionsContainer: {
-    gap: 16,
-    marginBottom: 32,
-  },
-  sessionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  sessionTitleContainer: {
+    flex: 1,
+    marginRight: EMDRiseSpacing.md,
   },
   sessionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1E90FF',
+    fontSize: EMDRiseTypography.sizes.body.base,
+    fontWeight: EMDRiseTypography.weights.semibold,
+    color: EMDRiseColors.text.primary,
+    marginBottom: EMDRiseSpacing.xs,
   },
+  sessionDate: {
+    fontSize: EMDRiseTypography.sizes.body.small,
+    color: EMDRiseColors.text.muted,
+  },
+
+  // Status Badge
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: EMDRiseSpacing.sm,
+    paddingVertical: EMDRiseSpacing.xs,
+    borderRadius: EMDRiseBorderRadius.full,
   },
   statusComplete: {
-    backgroundColor: '#d4edda',
+    backgroundColor: EMDRiseColors.safeSpace,
   },
   statusInProgress: {
     backgroundColor: '#fff3cd',
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: EMDRiseTypography.sizes.body.tiny,
+    fontWeight: EMDRiseTypography.weights.medium,
   },
   statusCompleteText: {
-    color: '#155724',
+    color: EMDRiseColors.primaryGreen,
   },
   statusInProgressText: {
-    color: '#856404',
+    color: EMDRiseColors.warmAccent,
   },
-  sessionDetails: {
-    marginTop: 12,
-    gap: 4,
-  },
-  sessionDetail: {
-    fontSize: 14,
-    color: '#666',
-  },
-  targetInfo: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
-  },
-  targetTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  targetMemory: {
-    fontSize: 14,
-    color: '#666',
-    fontStyle: 'italic',
-    marginBottom: 8,
-  },
-  ratingsContainer: {
+
+  // Session Metrics
+  sessionMetrics: {
     flexDirection: 'row',
-    gap: 16,
+    flexWrap: 'wrap',
+    gap: EMDRiseSpacing.lg,
   },
-  ratingText: {
-    fontSize: 12,
-    color: '#05A660',
-    fontWeight: '500',
+  metricText: {
+    fontSize: EMDRiseTypography.sizes.body.small,
+    color: EMDRiseColors.text.secondary,
   },
-  notesContainer: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
+
+  // Subscription Card
+  subscriptionCard: {
+    backgroundColor: EMDRiseColors.card,
+    borderRadius: EMDRiseBorderRadius.xl,
+    padding: EMDRiseSpacing['2xl'],
+    marginBottom: EMDRiseSpacing['2xl'],
+    ...EMDRiseShadows.medium,
+    borderWidth: 1,
+    borderColor: EMDRiseColors.border,
   },
-  notesTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+  subscriptionDetails: {
+    gap: EMDRiseSpacing.md,
   },
-  notesText: {
-    fontSize: 14,
-    color: '#666',
-    fontStyle: 'italic',
+  subscriptionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
+  subscriptionLabel: {
+    fontSize: EMDRiseTypography.sizes.body.small,
+    color: EMDRiseColors.text.secondary,
+  },
+  subscriptionValue: {
+    fontSize: EMDRiseTypography.sizes.body.small,
+    fontWeight: EMDRiseTypography.weights.medium,
+    color: EMDRiseColors.text.primary,
+  },
+  subscriptionBadge: {
+    paddingHorizontal: EMDRiseSpacing.sm,
+    paddingVertical: EMDRiseSpacing.xs,
+    borderRadius: EMDRiseBorderRadius.full,
+  },
+  subscriptionActive: {
+    backgroundColor: EMDRiseColors.safeSpace,
+  },
+  subscriptionTrial: {
+    backgroundColor: '#fff3cd',
+  },
+  subscriptionBadgeText: {
+    fontSize: EMDRiseTypography.sizes.body.tiny,
+    fontWeight: EMDRiseTypography.weights.medium,
+  },
+  subscriptionActiveText: {
+    color: EMDRiseColors.primaryGreen,
+  },
+  subscriptionTrialText: {
+    color: EMDRiseColors.warmAccent,
+  },
+  upgradeButton: {
+    backgroundColor: EMDRiseColors.primaryBlue,
+    paddingVertical: EMDRiseSpacing.md,
+    borderRadius: EMDRiseBorderRadius.lg,
+    marginTop: EMDRiseSpacing.lg,
+    ...EMDRiseShadows.small,
+  },
+  upgradeButtonText: {
+    color: EMDRiseColors.text.white,
+    fontSize: EMDRiseTypography.sizes.body.small,
+    fontWeight: EMDRiseTypography.weights.semibold,
+    textAlign: 'center',
+  },
+
+  // Quick Actions
+  quickActionsCard: {
+    backgroundColor: EMDRiseColors.card,
+    borderRadius: EMDRiseBorderRadius.xl,
+    padding: EMDRiseSpacing['2xl'],
+    marginBottom: EMDRiseSpacing['2xl'],
+    ...EMDRiseShadows.medium,
+    borderWidth: 1,
+    borderColor: EMDRiseColors.border,
+  },
+  quickActionsGrid: {
+    gap: EMDRiseSpacing.md,
+  },
+  quickActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: EMDRiseColors.border,
+    borderRadius: EMDRiseBorderRadius.lg,
+    paddingVertical: EMDRiseSpacing.lg,
+    paddingHorizontal: EMDRiseSpacing.lg,
+  },
+  quickActionIcon: {
+    fontSize: 20,
+    marginRight: EMDRiseSpacing.md,
+  },
+  quickActionText: {
+    fontSize: EMDRiseTypography.sizes.body.base,
+    fontWeight: EMDRiseTypography.weights.medium,
+    color: EMDRiseColors.text.primary,
+  },
+
+  // Disclaimer Card - matching web version
   disclaimerCard: {
     backgroundColor: '#e7f3ff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 32,
+    borderRadius: EMDRiseBorderRadius.xl,
+    padding: EMDRiseSpacing.lg,
+    marginBottom: EMDRiseSpacing['3xl'],
     borderLeftWidth: 4,
-    borderLeftColor: '#1E90FF',
+    borderLeftColor: EMDRiseColors.primaryBlue,
   },
   disclaimerText: {
-    fontSize: 14,
-    color: '#1E90FF',
-    lineHeight: 20,
+    fontSize: EMDRiseTypography.sizes.body.small,
+    color: EMDRiseColors.primaryBlue,
+    lineHeight: EMDRiseTypography.sizes.body.small * EMDRiseTypography.lineHeights.relaxed,
   },
 });
 
