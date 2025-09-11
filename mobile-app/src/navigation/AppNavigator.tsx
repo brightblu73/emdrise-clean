@@ -8,6 +8,8 @@ import TherapistSelectionScreen from '../screens/TherapistSelectionScreen';
 import SubscriptionScreen from '../screens/SubscriptionScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import TermsOfUseScreen from '../screens/TermsOfUseScreen';
+import ResourcesScreen from '../screens/ResourcesScreen';
+import ProgressScreen from '../screens/ProgressScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -17,6 +19,8 @@ export type RootStackParamList = {
   Subscription: undefined;
   PrivacyPolicy: undefined;
   TermsOfUse: undefined;
+  Resources: undefined;
+  Progress: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -70,6 +74,16 @@ export default function AppNavigator() {
           name="TermsOfUse" 
           component={TermsOfUseScreen}
           options={{ title: 'Terms of Use' }}
+        />
+        <Stack.Screen 
+          name="Resources" 
+          component={ResourcesScreen}
+          options={{ title: 'Resources' }}
+        />
+        <Stack.Screen 
+          name="Progress" 
+          component={ProgressScreen}
+          options={{ title: 'Progress' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

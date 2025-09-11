@@ -41,7 +41,7 @@ This guide will help you set up Apple In-App Purchases (IAP) with RevenueCat for
    - **Introductory Offer**: 7 days free, then regular pricing
 
 ### 5. Set Pricing
-1. Choose your price tier (recommended: $12.99/month)
+1. Choose your price tier (recommended: $9.99/month)
 2. Set availability in desired countries
 3. **Important**: All required metadata must be filled for ALL enabled localizations
 4. **Save as Draft** - Do NOT submit for review yet (we'll test in Sandbox first)

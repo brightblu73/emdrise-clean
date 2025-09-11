@@ -10,7 +10,7 @@ The mobile app is now **FULLY FUNCTIONAL** with all features from the web versio
 - ✅ Choose between Maria and Alistair
 - ✅ Therapist preference saved with AsyncStorage  
 - ✅ Authentication flow with guest access
-- ✅ 7-day free trial pricing (£12.99/month)
+- ✅ 7-day free trial pricing (£9.99/month)
 
 #### **2. Complete 10-Script EMDR System**
 - ✅ **Script 1**: Welcome & Introduction + BLS Testing

@@ -36,7 +36,7 @@ All technical implementation is complete. Your mobile app is ready for Apple In-
 
 2. **Subscription Product**
    - Product ID: `emdrise_monthly_subscription`
-   - Price: $12.99/month (recommended)
+   - Price: $9.99/month (recommended)
    - 7-day free trial
 
 3. **Enable IAP Capability**

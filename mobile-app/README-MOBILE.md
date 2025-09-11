@@ -5,7 +5,7 @@ The mobile app has been successfully rebuilt with all of today's improvements:
 
 ### 🎯 Features Implemented
 - **Therapist Selection**: Choose between Maria and Alistair (matches web app)
-- **7-Day Free Trial**: £12.99/month pricing (matches web app)
+- **7-Day Free Trial**: £9.99/month pricing (matches web app)
 - **EMDR Session Flow**: Script 1 (Welcome & Introduction) with BLS testing
 - **Local Storage**: Therapist preferences saved with AsyncStorage
 - **Authentication**: Simple login flow
@@ -32,7 +32,7 @@ The mobile app has been successfully rebuilt with all of today's improvements:
 
 ### 💾 All Today's Work Preserved
 - Therapist selection (Maria/Alistair)
-- Pricing structure (£12.99/month)
+- Pricing structure (£9.99/month)
 - EMDR session flow
 - BLS testing capabilities
 - Professional branding
