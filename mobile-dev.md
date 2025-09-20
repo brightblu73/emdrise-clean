@@ -1,86 +1,92 @@
-# EMDRise Mobile Development Guide
+# EMDRise Web Development Guide
 
-## 🚀 Primary Platform: React Native Mobile App
+## 🚀 Primary Platform: React Web Application
 
-This project is **mobile-first**. The React Native app in the `mobile-app/` folder is the primary platform.
+This project is **web-first**. The React web app in the `client/` folder is the single source of truth and primary platform.
 
-### Quick Start for Mobile Development
+### Quick Start for Web Development
 
-1. **Navigate to mobile app:**
+1. **Start the development server:**
    ```bash
-   cd mobile-app
+   npm run dev
    ```
 
-2. **Start the Expo development server:**
+2. **Access the application:**
+   - **Local Development:** Open browser to the provided Replit URL
+   - **Mobile Testing:** Access the same URL on mobile devices
+   - **PWA Installation:** Install as a Progressive Web App for mobile app-like experience
+
+3. **Production build:**
    ```bash
-   npx expo start
+   npm run build
+   npm start
    ```
 
-3. **Run on device/simulator:**
-   - **Physical Device (Recommended):** Scan QR code with Expo Go app
-   - **iOS Simulator:** Press `i` in terminal or run `npx expo start --ios`
-   - **Android Emulator:** Press `a` in terminal or run `npx expo start --android`
-
-### Mobile App Features
+### Web App Features
 
 #### ✅ Complete EMDR Therapy System
 - **Therapist Selection**: Choose between Maria and Alistair
 - **10-Script Video Protocol**: Complete therapeutic progression
-- **Native Video Playback**: Optimized for mobile with Expo AV
+- **HTML5 Video Playback**: Cross-platform video streaming
 - **BLS Integration**: Visual, auditory, and tapping bilateral stimulation
 
-#### ✅ Mobile-Specific Enhancements
-- **Haptic Feedback**: Different vibration patterns for left/right BLS
-- **AsyncStorage**: Local session persistence
-- **Portrait Video**: Optimized 9:16 aspect ratio
-- **Native Navigation**: React Navigation stack
-- **Touch Interactions**: Smooth mobile gestures
+#### ✅ Web-Specific Enhancements
+- **Responsive Design**: Optimized for all screen sizes
+- **Local Storage**: Browser-based session persistence
+- **Progressive Web App**: Mobile app-like experience
+- **Touch & Click Support**: Smooth interactions across devices
+- **Cross-Platform**: Works on any device with a modern browser
 
 #### ✅ Bilateral Stimulation (BLS)
-- **Visual BLS**: Animated ball with haptic feedback
-- **Auditory BLS**: Stereo audio with Web Audio API + vibration
-- **Tapping BLS**: Hand icons with double-tap haptic patterns
-- **Haptic Toggle**: Enable/disable vibration feedback
+- **Visual BLS**: Animated elements with device vibration support
+- **Auditory BLS**: Stereo audio with Web Audio API
+- **Tapping BLS**: Interactive elements for all input methods
+- **Device Capabilities**: Leverages available device features (vibration, audio)
 
 ### Project Structure
 
 ```
-mobile-app/
-├── App.tsx                     # Main app entry point
+client/
 ├── src/
+│   ├── App.tsx                    # Main app entry point
 │   ├── components/
-│   │   ├── BLSComponent.tsx    # Bilateral stimulation system
-│   │   └── VideoPlayer.tsx     # Native video player
-│   ├── screens/
-│   │   ├── EMDRSessionScreen.tsx # Main therapy session
-│   │   ├── HomeScreen.tsx      # Landing/therapist selection
-│   │   └── LoginScreen.tsx     # Authentication
-│   └── providers/
-│       └── AuthProvider.tsx    # Context-based auth
-└── assets/
-    └── videos/                 # Therapist video library
+│   │   ├── BLSComponent.tsx       # Bilateral stimulation system
+│   │   └── ui/                    # UI component library
+│   ├── pages/
+│   │   ├── EMDRSession.tsx        # Main therapy session
+│   │   ├── Home.tsx               # Landing/therapist selection
+│   │   └── Login.tsx              # Authentication
+│   ├── lib/
+│   │   └── supabase.ts            # Supabase client
+│   └── assets/
+│       └── videos/                # Therapist video library
+server/
+├── index.ts                   # Express server
+└── routes.ts                  # API routes
 ```
 
 ### Development Status
 
-- ✅ **Architecture**: Complete React Native/Expo setup
-- ✅ **Authentication**: Working login system
+- ✅ **Architecture**: Complete React/Vite/Express setup
+- ✅ **Authentication**: Supabase integration with Apple Sign-In
 - ✅ **Video System**: All 10 scripts for both therapists
-- ✅ **BLS System**: Enhanced with haptic feedback
-- ✅ **Navigation**: Full script progression
-- ✅ **Storage**: AsyncStorage integration
+- ✅ **BLS System**: Web-optimized with device capability detection
+- ✅ **Navigation**: Full script progression with Wouter routing
+- ✅ **Storage**: Local storage integration
+- ✅ **Payments**: Stripe integration for subscriptions
 
-### Web App Status
+### Mobile Deployment Strategy
 
-The web version (`client/` folder) is currently **paused** and serves as:
-- Development reference
-- Future consideration for web platform
-- Testing ground for features before mobile implementation
+The web app serves as the foundation for:
+- **Immediate Use**: Full-featured Progressive Web App
+- **Future Mobile**: Native mobile deployment via Ionic Capacitor
+- **Cross-Platform**: Single codebase for web and mobile
 
-### Next Steps for Mobile
+### Next Steps
 
-1. **App Store Preparation**: Build production versions
-2. **Testing**: Comprehensive device testing
-3. **Deployment**: Submit to iOS App Store and Google Play Store
+1. **PWA Enhancement**: Improve offline capabilities
+2. **Mobile Optimization**: Fine-tune responsive design
+3. **Capacitor Integration**: Prepare for native mobile deployment
+4. **App Store Preparation**: Build native versions when ready
 
-The mobile app provides the complete EMDRise experience with native performance and enhanced therapeutic features.
+The web app provides the complete EMDRise experience with cross-platform compatibility and future mobile deployment readiness.

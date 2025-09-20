@@ -5,9 +5,9 @@ EMDRise is a web and mobile application offering guided EMDR (Eye Movement Desen
 
 ## User Preferences
 - **Communication Style**: Simple, everyday language that's non-technical and supportive
-- **Development Focus**: Mobile app (React Native/Expo) as primary platform, web version secondary/future consideration
+- **Development Focus**: Web app as the single source of truth, with future mobile deployment via Ionic Capacitor
 - **Feature Philosophy**: Core EMDR therapeutic workflow only - relaxation playlists and supplementary features have been definitively removed
-- **Mobile Synchronization**: Update both web and mobile simultaneously to maintain feature parity
+- **Platform Strategy**: Web-first development with PWA capabilities, preparing for native mobile deployment
 
 ## EMDRise Branding Standards
 **MANDATORY**: All new features, iterations, and changes must automatically incorporate EMDRise branding guidelines:
@@ -43,50 +43,51 @@ EMDRise is a web and mobile application offering guided EMDR (Eye Movement Desen
 
 ## System Architecture
 
-### Mobile-First Architecture (PRIMARY)
-**IMPORTANT**: As of the latest migration, the `mobile-app` folder is the SOLE source of truth for EMDRise. The web client has been deprecated in favor of native mobile development.
+### Web-First Architecture (PRIMARY)
+**IMPORTANT**: As of the latest migration, the web app in the `client/` folder is the SOLE source of truth for EMDRise. The `mobile-app/` folder is obsolete and no longer used. All development focuses on the web application, which will serve as the foundation for future mobile deployment via Ionic Capacitor.
 
 ### UI/UX Decisions
 - **EMDRise Brand Identity**: Professional therapeutic design using established color palette (Primary Blue #1E90FF, Primary Green #05A660, therapeutic backgrounds)
-- **Mobile-Native Design**: React Native components with therapeutic styling, custom therapist avatars, and mobile-optimized layouts
-- **Navigation**: React Navigation v6 with stack-based navigation for seamless mobile UX
-- **Logo Implementation**: React Native `<Logo />` component with variant support (header, hero, mobile, footer)
-- **Brand Compliance**: All mobile components follow EMDRise Brand Guidelines with native styling
+- **Responsive Web Design**: React components with therapeutic styling, custom therapist avatars, and mobile-optimized responsive layouts
+- **Navigation**: Wouter routing for seamless single-page application experience
+- **Logo Implementation**: React `<Logo />` component with variant support (header, hero, mobile, footer)
+- **Brand Compliance**: All components follow EMDRise Brand Guidelines with responsive web styling
 
 ### Technical Implementations
-- **Mobile Application Structure**:
-    - **Main App**: `mobile-app/App.tsx` with AuthProvider and AppNavigator
-    - **Authentication**: Mobile Supabase integration with AsyncStorage persistence and Apple Sign In support
-    - **EMDR Session Management**: Mobile-optimized session hooks with AsyncStorage-based state persistence
-    - **Navigation**: Dedicated AppNavigator with screens for Home, Login, TherapistSelection, EMDRSession, Subscription
-    - **RevenueCat Integration**: Native iOS/Android In-App Purchase handling via RevenueCat SDK
+- **Web Application Structure**:
+    - **Main App**: `client/src/App.tsx` with routing and authentication providers
+    - **Authentication**: Supabase integration with local storage persistence and Apple Sign In support
+    - **EMDR Session Management**: React hooks with local storage-based state persistence
+    - **Navigation**: Wouter routing with pages for Home, Login, TherapistSelection, EMDRSession, Subscription
+    - **Payment Integration**: Stripe integration for subscription management
 
-- **Core EMDR Features** (Mobile-Native):
-    - **Video-Guided Therapy**: Expo AV video player with professional therapist content for all 10 EMDR protocol phases
-    - **Session Flow Management**: AsyncStorage-based pause/resume functionality with Script 5a continuation support
-    - **Mobile BLS System**: Native haptic feedback via Expo Haptics, stereo audio, and visual stimulation optimized for mobile devices
-    - **Subscription Management**: Apple In-App Purchases via RevenueCat with 7-day free trial support
-    - **Cloud-First Architecture**: Video content served from Supabase cloud storage, optimized for mobile streaming
+- **Core EMDR Features** (Web-Optimized):
+    - **Video-Guided Therapy**: HTML5 video player with professional therapist content for all 10 EMDR protocol phases
+    - **Session Flow Management**: Local storage-based pause/resume functionality with Script 5a continuation support
+    - **Web BLS System**: Web APIs for vibration, stereo audio, and visual stimulation optimized for all devices
+    - **Subscription Management**: Stripe-powered subscriptions with 7-day free trial support
+    - **Cloud-First Architecture**: Video content served from Supabase cloud storage, optimized for web streaming
 
 ### System Design Choices
-- **Primary Platform**: Mobile application (iOS and Android native apps) via `mobile-app/` folder
-- **Mobile Framework**: React Native with Expo (~51.0.28), TypeScript, ES modules
-- **Mobile Navigation**: React Navigation v6 with stack navigator
-- **Video Playback**: Expo AV for mobile-optimized video streaming
-- **Local Storage**: AsyncStorage for session persistence, therapist selection, and auth state
-- **Authentication**: Mobile AuthProvider with Supabase backend integration
-- **Payment Processing**: RevenueCat for Apple In-App Purchases and subscription management
-- **Development Workflow**: Mobile app located in `mobile-app/` directory with Expo CLI for development and EAS for builds
+- **Primary Platform**: Web application with PWA capabilities via `client/` folder
+- **Web Framework**: React 18 with Vite, TypeScript, ES modules
+- **Navigation**: Wouter for lightweight client-side routing
+- **Video Playback**: HTML5 video for cross-platform streaming
+- **Local Storage**: Browser localStorage for session persistence, therapist selection, and auth state
+- **Authentication**: React AuthProvider with Supabase backend integration
+- **Payment Processing**: Stripe for web-based subscription management
+- **Development Workflow**: Web app located in `client/` directory with Vite dev server for development and production builds
+- **Future Mobile**: Foundation prepared for native mobile deployment via Ionic Capacitor
 
 ## External Dependencies
 
-- **RevenueCat**: For Apple In-App Purchase subscription management and analytics.
+- **Stripe**: For web-based subscription management and payment processing.
 - **Supabase**: Provides authentication, database, and cloud storage services.
-- **Apple Developer Account**: Necessary for App Store IAP integration and Apple Sign In capabilities.
+- **Apple Developer Account**: Necessary for Apple Sign In capabilities and future mobile app deployment.
 - **Neon Database**: Hosts the serverless PostgreSQL database.
 - **Radix UI**: Used for accessible UI component primitives.
 - **Tailwind CSS**: Utilized as the utility-first styling framework.
 - **Lucide Icons**: Provides a consistent iconography set.
 - **Swiper.js**: Integrated for responsive carousel implementations.
-- **Expo**: The framework used for React Native mobile development.
-- **AsyncStorage**: Employed for local data persistence in the mobile application.
+- **Vite**: The build tool and development server for the web application.
+- **Browser LocalStorage**: Employed for local data persistence in the web application.

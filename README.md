@@ -1,11 +1,11 @@
 # EMDRise - EMDR Therapy Application
 
-A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy application providing guided therapeutic sessions with professional therapist videos and advanced bilateral stimulation. Native mobile application built with React Native and Expo for iOS and Android.
+A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy application providing guided therapeutic sessions with professional therapist videos and advanced bilateral stimulation. Modern web application built with React, TypeScript, and advanced PWA capabilities that will serve as the foundation for future mobile deployment via Ionic Capacitor.
 
 ## 🚀 **DEVELOPERS START HERE**
 
-**📱 Production Mobile App Location:** `mobile-app/` directory  
-**⚠️ Important:** All other directories are deprecated, backups, or documentation. Use ONLY `mobile-app/` for development and testing.
+**🌐 Production Web App Location:** `client/` directory  
+**⚠️ Important:** The web app is the single source of truth. The `mobile-app/` directory is obsolete and no longer used. Use ONLY the web app for development and testing.
 
 ## Key Features
 
@@ -17,20 +17,20 @@ A comprehensive EMDR (Eye Movement Desensitization and Reprocessing) therapy app
 - **Advanced Bilateral Stimulation**: Visual dots, stereo audio, and haptic feedback for mobile devices
 - **Intelligent Session Management**: Persistent pause/resume system that survives closure sequences
 - **Professional Video Library**: Authentic therapist guidance for all phases including resumption videos
-- **Mobile-Optimized**: React Native/Expo app with full offline functionality
+- **Mobile-Ready**: Progressive Web App with responsive design, optimized for mobile deployment via Capacitor
 - **Apple IAP Integration**: RevenueCat-powered subscription management with 7-day free trial (£9.99/month)
 
 ## Architecture
 
-### Mobile Application (React Native + Expo)
-- React Native with Expo SDK (~51.0.28)
-- TypeScript with ES modules  
-- Expo AV for native video playback
-- AsyncStorage for session persistence
-- React Navigation v6 for native navigation
-- Native haptic feedback integration via Expo Haptics
-- RevenueCat integration for Apple In-App Purchases
-- Comprehensive offline functionality
+### Web Application (React + TypeScript + Vite)
+- Modern React 18 with TypeScript and ES modules  
+- Vite for fast development and optimized builds
+- HTML5 video for cross-platform video playback
+- Local storage for session persistence
+- Wouter for lightweight client-side routing
+- Web APIs for device capabilities (vibration, audio)
+- Stripe integration for payment processing
+- Progressive Web App capabilities for mobile-like experience
 
 ### Backend Infrastructure
 - Node.js with Express.js
@@ -62,47 +62,36 @@ git clone [your-repo-url]
 cd EMDRise
 ```
 
-### 2. Navigate to Production App
+### 2. Start Development Server
 ```bash
-cd mobile-app
+npm run dev
 ```
 
-### 3. Install & Run
-```bash
-npm install
-npm start
-```
-
-### 4. Test on Device
-- iOS: `npm run ios`
-- Android: `npm run android`
+### 3. Access Application
+- Open browser to the provided Replit URL
+- Test on mobile devices via the web URL
+- PWA installation available for mobile app-like experience
 
 ## Getting Started
 
-### Mobile Application
+### Web Application
 ```bash
-cd mobile-app
 npm install
-expo start
+npm run dev
 ```
 
-For iOS development:
+For production build:
 ```bash
-cd mobile-app
-npm run ios
-```
-
-For Android development:
-```bash
-cd mobile-app
-npm run android
+npm run build
+npm start
 ```
 
 ### Environment Setup
 - Configure Supabase authentication
-- Set up RevenueCat for Apple IAP
-- Configure Apple Developer account for App Store
+- Set up Stripe for payment processing
+- Configure Apple Sign-In for web authentication
 - Ensure video assets are hosted on Supabase storage
+- Future mobile deployment via Ionic Capacitor
 
 ## EMDR Protocol Implementation
 
@@ -125,11 +114,12 @@ npm run android
 
 ## Technical Highlights
 
-- **Persistent Session Management**: AsyncStorage-based system with reliable pause/resume
+- **Persistent Session Management**: Local storage-based system with reliable pause/resume
 - **Video Integration**: Seamless therapist guidance with BLS synchronization  
-- **Native Mobile Experience**: Optimized specifically for iOS and Android devices with platform-specific features
+- **Cross-Platform Web Experience**: Responsive design optimized for all devices with PWA capabilities
 - **Professional UI/UX**: Ambient therapeutic design with accessibility considerations
 - **Scalable Architecture**: Microservices-ready backend with serverless database
+- **Mobile Deployment Ready**: Foundation prepared for native mobile apps via Ionic Capacitor
 
 ## License
 

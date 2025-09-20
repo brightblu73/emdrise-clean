@@ -3,7 +3,7 @@
 ## Current Project Status
 - Date: July 15, 2025
 - Status: Fully functional EMDR therapy app with therapist selection
-- Key Features: Maria/Alistair therapist videos, mobile app, BLS integration
+- Key Features: Maria/Alistair therapist videos, web app with PWA capabilities, BLS integration
 
 ## Manual Backup Methods
 
@@ -13,7 +13,7 @@ Important files to save separately:
 - `replit.md` - Project documentation and preferences
 - `client/src/pages/home.tsx` - Main therapist selection page
 - `shared/schema.ts` - Database schema
-- `mobile-app/` folder - React Native mobile app
+- `client/` folder - React web application (single source of truth)
 - `client/src/assets/maria-headshot.jpg` - Actual therapist photo
 - `client/src/assets/alistair-headshot.jpg` - Actual therapist photo
 
@@ -34,8 +34,9 @@ If main project is lost:
 4. Restore database with `npm run db:push`
 
 ## Current Architecture
-- Web app: React + TypeScript + Vite
-- Mobile app: React Native + Expo  
+- Web app: React + TypeScript + Vite (primary platform)
 - Backend: Node.js + Express + PostgreSQL
-- Authentication: Passport.js with sessions
-- Therapist videos: Maria and Alistair welcome scripts
+- Authentication: Supabase with Apple Sign-In
+- Payment processing: Stripe integration
+- Therapist videos: Maria and Alistair complete EMDR protocol
+- Future mobile: Prepared for Ionic Capacitor deployment
