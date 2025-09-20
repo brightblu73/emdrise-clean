@@ -7,17 +7,8 @@ import bcrypt from "bcrypt";
 import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import Stripe from "stripe";
 import { createClient } from '@supabase/supabase-js';
 import { handleRevenueCatWebhook, verifyRevenueCatWebhook } from './revenuecat-webhook';
-
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-07-30.basil",
-});
 
 declare global {
   namespace Express {
@@ -25,8 +16,6 @@ declare global {
       id: number;
       username: string;
       email: string;
-      stripeCustomerId?: string | null;
-      stripeSubscriptionId?: string | null;
       subscriptionStatus: string | null;
       trialEndsAt?: Date | null;
     }
@@ -86,8 +75,6 @@ async function verifySupabaseJWT(req: Request, res: Response, next: NextFunction
           id: parseInt(user.id) || 0, // Convert UUID to number for Express compatibility
           username: user.user_metadata?.username || user.email?.split('@')[0] || '',
           email: user.email || '',
-          stripeCustomerId: user.user_metadata?.stripeCustomerId || null,
-          stripeSubscriptionId: user.user_metadata?.stripeSubscriptionId || null,
           subscriptionStatus: user.user_metadata?.subscriptionStatus || 'trial',
           trialEndsAt: user.user_metadata?.trialEndsAt ? new Date(user.user_metadata.trialEndsAt) : null,
         };
@@ -112,38 +99,13 @@ async function verifySupabaseJWT(req: Request, res: Response, next: NextFunction
 
 
 
-function readPriceId() {
-  // Some env UIs accidentally include spaces/newlines or quotes when pasting.
-  // Clean it up defensively before validating/using.
-  let v = process.env.STRIPE_PRICE_ID || "";
-  // strip wrapping quotes/backticks and whitespace
-  v = v.trim().replace(/^['"`]|['"`]$/g, "");
-  // common paste artifact: backticks around values (from code blocks)
-  v = v.replace(/^`|`$/g, "");
-  return v;
-}
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health/env check (does not leak secrets)
-  app.get('/api/health/stripe', (req, res) => {
-    const price = readPriceId();
-    res.json({
-      has_secret: !!process.env.STRIPE_SECRET_KEY,
-      has_price: !!price,
-      has_publishable: !!process.env.VITE_STRIPE_PUBLIC_KEY,
-      price_format_ok: /^price_[A-Za-z0-9]+$/.test(price),
-      // extra debug (safe): show length and first/last 4 chars only
-      price_len: price.length,
-      price_preview: price ? `${price.slice(0,4)}…${price.slice(-4)}` : ""
-    });
-  });
 
   // Development auth debug route
   app.get('/api/dev/auth', (req, res) => {
     const sessionUser = req.user || null;
     const subscriptionData = sessionUser ? {
-      stripeCustomerId: sessionUser.stripeCustomerId,
-      stripeSubscriptionId: sessionUser.stripeSubscriptionId,
       subscriptionStatus: sessionUser.subscriptionStatus,
       trialEndsAt: sessionUser.trialEndsAt
     } : "placeholder";
@@ -212,8 +174,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         const expressUser: Express.User = {
           ...user,
-          stripeCustomerId: user.stripeCustomerId || undefined,
-          stripeSubscriptionId: user.stripeSubscriptionId || undefined,
           subscriptionStatus: user.subscriptionStatus || 'trial',
           trialEndsAt: user.trialEndsAt || undefined,
         };
@@ -239,8 +199,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const expressUser: Express.User = {
         ...user,
-        stripeCustomerId: user.stripeCustomerId || undefined,
-        stripeSubscriptionId: user.stripeSubscriptionId || undefined,
         subscriptionStatus: user.subscriptionStatus || 'trial',
         trialEndsAt: user.trialEndsAt || undefined,
       };
@@ -272,8 +230,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: hashedPassword
       });
       
-      // Update subscription info after creation
-      await storage.updateUserSubscriptionStatus(user.id, "trial");
+      // Update subscription info after creation (trial user)
+      await storage.updateUserSubscriptionStatus(user.id.toString(), {
+        hasActiveSubscription: true, // Trial is considered active
+        subscriptionId: `trial_${user.id}`,
+        customerId: `trial_customer_${user.id}`,
+        productId: 'trial',
+        expirationDate: trialEndDate
+      });
 
       req.login(user, (err) => {
         if (err) return res.status(500).json({ message: "Login failed" });
@@ -413,28 +377,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
-  // Stripe payment route for one-time payments
-  app.post("/api/create-payment-intent", async (req, res) => {
-    try {
-      // Fail fast IF malformed AFTER normalization
-      const price = readPriceId();
-      if (!price || !/^price_[A-Za-z0-9]+$/.test(price)) {
-        console.error('Invalid or missing STRIPE_PRICE_ID env');
-        return res.status(500).json({ error: 'Server not configured (price id)' });
-      }
-
-      const { amount } = req.body;
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency: "gbp", // Changed to GBP for UK pricing
-      });
-      res.json({ clientSecret: paymentIntent.client_secret });
-    } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Error creating payment intent: " + error.message });
-    }
-  });
 
   // Subscription routes
   app.post('/api/create-subscription', async (req, res) => {
@@ -464,269 +406,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Stripe Checkout session endpoint for subscription with trial
-  app.post('/api/create-checkout-session', async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.sendStatus(401);
-    }
 
-    let user = req.user!;
-
-    if (user.stripeSubscriptionId) {
-      try {
-        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-        if (['active', 'trialing', 'past_due'].includes(subscription.status)) {
-          console.log('[stripe] User already has active subscription:', subscription.id);
-          // User already has an active subscription, redirect to homepage with success message
-          const baseUrl = process.env.NODE_ENV === 'development' 
-            ? 'http://localhost:5000' 
-            : `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
-          return res.json({
-            url: `${baseUrl}?trial_started=true`
-          });
-        }
-      } catch (error) {
-        console.error('Error retrieving subscription:', error);
-      }
-    }
-    
-    if (!user.email) {
-      throw new Error('No user email on file');
-    }
-
-    try {
-      let customer;
-      
-      // First, check if user already has a Stripe customer ID
-      if (user.stripeCustomerId) {
-        console.log('[stripe] Retrieving existing customer:', user.stripeCustomerId);
-        try {
-          customer = await stripe.customers.retrieve(user.stripeCustomerId);
-          console.log('[stripe] Successfully retrieved existing customer');
-        } catch (error) {
-          console.error('[stripe] Failed to retrieve customer, will create new one:', error);
-          customer = null; // Will create new customer below
-        }
-      }
-      
-      // If no customer ID or retrieval failed, check if a customer already exists by email
-      if (!customer) {
-        console.log('[stripe] Searching for existing customer by email:', user.email);
-        const existingCustomers = await stripe.customers.list({
-          email: user.email,
-          limit: 1
-        });
-        
-        if (existingCustomers.data.length > 0) {
-          customer = existingCustomers.data[0];
-          console.log('[stripe] Found existing customer by email:', customer.id);
-          // Update user record with the found customer ID
-          await storage.updateUserStripeInfo(user.id, customer.id, '');
-        } else {
-          console.log('[stripe] Creating new customer for:', user.email);
-          customer = await stripe.customers.create({
-            email: user.email,
-            name: user.username,
-          });
-          console.log('[stripe] Created new customer:', customer.id);
-          // Update user with new Stripe customer ID
-          await storage.updateUserStripeInfo(user.id, customer.id, '');
-        }
-      }
-
-      // Check if customer already has an active subscription
-      console.log('[stripe] Checking for existing subscriptions for customer:', customer.id);
-      const existingSubscriptions = await stripe.subscriptions.list({
-        customer: customer.id,
-        status: 'all',
-        limit: 10
-      });
-      
-      // Look for active, trialing, or past_due subscriptions
-      const activeSubscription = existingSubscriptions.data.find(sub => 
-        ['active', 'trialing', 'past_due'].includes(sub.status)
-      );
-      
-      if (activeSubscription) {
-        console.log('[stripe] Found existing active subscription:', activeSubscription.id);
-        // Update user record with existing subscription
-        await storage.updateUserStripeInfo(user.id, customer.id, activeSubscription.id);
-        
-        // User already has an active subscription, redirect to homepage with success message
-        const baseUrl = 'https://14facb85-f01b-45d6-b44f-890bfbec4a96-00-t0829fmlj73n.picard.replit.dev';
-        return res.json({
-          url: `${baseUrl}/`
-        });
-      }
-
-      // Get price ID
-      const price = readPriceId();
-      if (!price || !/^price_[A-Za-z0-9]+$/.test(price)) {
-        console.error('Invalid or missing STRIPE_PRICE_ID env');
-        throw new Error('Server not configured (price id)');
-      }
-
-      // Create Stripe Checkout session
-      const baseUrl = 'https://14facb85-f01b-45d6-b44f-890bfbec4a96-00-t0829fmlj73n.picard.replit.dev';
-
-      console.log('[stripe] Creating checkout session for customer:', customer.id);
-      
-      const session = await stripe.checkout.sessions.create({
-        customer: customer.id,
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price: price,
-            quantity: 1,
-          },
-        ],
-        mode: 'subscription',
-        subscription_data: {
-          trial_period_days: 7,
-          metadata: {
-            user_id: user.id.toString(),
-          },
-        },
-        success_url: `${baseUrl}/`,
-        cancel_url: `${baseUrl}/`,
-        allow_promotion_codes: true,
-        billing_address_collection: 'auto',
-        customer_update: {
-          address: 'auto',
-        },
-      });
-
-      console.log('[stripe] Created checkout session:', session.id);
-      
-      res.json({
-        url: session.url
-      });
-    } catch (error: any) {
-      console.error('Checkout session creation error:', error);
-      return res.status(400).send({ error: { message: error.message } });
-    }
-  });
-
-  // Check subscription status endpoint
-  app.get('/api/subscription-status', async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
-    try {
-      const user = req.user;
-      let hasActiveSubscription = false;
-
-      if (user.stripeSubscriptionId) {
-        try {
-          const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-          hasActiveSubscription = subscription.status === 'active' || subscription.status === 'trialing';
-        } catch (error) {
-          console.error('Error checking subscription status:', error);
-        }
-      }
-
-      res.json({ 
-        hasActiveSubscription,
-        subscriptionId: user.stripeSubscriptionId,
-        customerId: user.stripeCustomerId
-      });
-    } catch (error) {
-      console.error('Subscription status check error:', error);
-      res.status(500).json({ error: 'Failed to check subscription status' });
-    }
-  });
 
   // RevenueCat webhook to handle iOS/Android subscription events
   app.post('/api/revenuecat-webhook', express.json(), verifyRevenueCatWebhook, handleRevenueCatWebhook);
 
-  // Webhook to handle successful Stripe Checkout sessions
-  app.post('/api/stripe-checkout-webhook', express.raw({type: 'application/json'}), async (req, res) => {
-    const sig = req.headers['stripe-signature'];
-    let event;
 
-    try {
-      // In production, you should set this webhook secret in environment variables
-      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-      if (webhookSecret) {
-        event = stripe.webhooks.constructEvent(req.body, sig as string, webhookSecret);
-      } else {
-        // For development, just parse the JSON body
-        event = JSON.parse(req.body.toString());
-      }
-    } catch (err: any) {
-      console.error('Webhook signature verification failed:', err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    console.log('[stripe-webhook] Event type:', event.type);
-
-    try {
-      switch (event.type) {
-        case 'checkout.session.completed':
-          const session = event.data.object;
-          console.log('[stripe-webhook] Checkout session completed:', session.id);
-          
-          if (session.mode === 'subscription' && session.subscription) {
-            const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-            const customerId = session.customer as string;
-            
-            // Find user by customer ID and update subscription info
-            const customer = await stripe.customers.retrieve(customerId);
-            if (customer && !customer.deleted && customer.email) {
-              // Update user subscription status in database
-              console.log('[stripe-webhook] Updating subscription for customer:', customer.email);
-              // Note: You may need to implement a method to find user by email and update subscription
-            }
-          }
-          break;
-
-        case 'customer.subscription.created':
-        case 'customer.subscription.updated':
-          const subscription = event.data.object;
-          console.log('[stripe-webhook] Subscription event:', event.type, subscription.id);
-          
-          if (subscription.metadata?.user_id) {
-            const userId = parseInt(subscription.metadata.user_id);
-            await storage.updateUserStripeInfo(userId, subscription.customer as string, subscription.id);
-            console.log('[stripe-webhook] Updated user subscription info for user:', userId);
-          }
-          break;
-
-        case 'customer.subscription.deleted':
-          const deletedSubscription = event.data.object;
-          console.log('[stripe-webhook] Subscription cancelled:', deletedSubscription.id);
-          
-          if (deletedSubscription.metadata?.user_id) {
-            const userId = parseInt(deletedSubscription.metadata.user_id);
-            await storage.updateUserSubscriptionStatus(userId, 'cancelled');
-            console.log('[stripe-webhook] Updated user subscription status to cancelled for user:', userId);
-          }
-          break;
-
-        default:
-          console.log('[stripe-webhook] Unhandled event type:', event.type);
-      }
-
-      res.json({ received: true });
-    } catch (error) {
-      console.error('[stripe-webhook] Error processing webhook:', error);
-      res.status(500).json({ error: 'Webhook processing failed' });
-    }
-  });
-
-  // Handle successful checkout session return
-  app.get('/emdr-session', (req, res, next) => {
-    const sessionId = req.query.session_id as string;
-    
-    if (sessionId) {
-      console.log('[checkout-success] User returned from successful checkout:', sessionId);
-      // You can verify the session here if needed
-      // For now, just continue to the normal EMDR session route handling
-    }
-    
-    next(); // Continue to normal route handling
-  });
 
   // Protected middleware
   const requireAuth = (req: any, res: any, next: any) => {
