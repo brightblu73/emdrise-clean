@@ -139,7 +139,8 @@ export default function EMDRJourneyTimeline() {
                   sideOffset={12}
                   collisionPadding={24}
                   avoidCollisions={true}
-                  className="max-w-[240px] bg-primary-green/15 text-primary-blue border border-primary-green/25 rounded-lg p-4 text-sm shadow-2xl backdrop-blur-md z-50 leading-relaxed"
+                  className="max-w-[240px] bg-primary-green/15 text-primary-blue border border-primary-green/25 rounded-lg p-4 text-sm font-semibold shadow-2xl backdrop-blur-md z-50 leading-relaxed"
+                  style={{ color: 'hsl(217, 88%, 45%)' }}
                   data-testid={`emdr-stage-tooltip-${step.label.toLowerCase().replace(/\s+/g, '-')}`}
                   id={`tooltip-${index}`}
                 >
