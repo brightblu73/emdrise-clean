@@ -16,13 +16,17 @@ export default function EMDRJourneyTimeline() {
     return () => window.removeEventListener('resize', checkTouchDevice);
   }, []);
 
-  // Handle tooltip toggle for touch devices
+  // Handle tooltip toggle for touch devices (single-open behavior)
   const handleTooltipToggle = (index: number) => {
     if (isTouchDevice) {
-      setOpenTooltips(prev => ({
-        ...prev,
-        [index]: !prev[index]
-      }));
+      setOpenTooltips(prev => {
+        // If this tooltip is already open, close it
+        if (prev[index]) {
+          return {};
+        }
+        // Otherwise, close all others and open this one
+        return { [index]: true };
+      });
     }
   };
 
@@ -131,11 +135,11 @@ export default function EMDRJourneyTimeline() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent 
-                  side="top"
-                  sideOffset={8}
-                  collisionPadding={16}
+                  side="bottom"
+                  sideOffset={12}
+                  collisionPadding={24}
                   avoidCollisions={true}
-                  className="max-w-[220px] bg-primary-green/10 text-primary-blue border border-primary-green/20 rounded-md p-3 text-xs shadow-xl backdrop-blur-sm"
+                  className="max-w-[240px] bg-primary-green/15 text-primary-blue border border-primary-green/25 rounded-lg p-4 text-sm shadow-2xl backdrop-blur-md z-50 leading-relaxed"
                   data-testid={`emdr-stage-tooltip-${step.label.toLowerCase().replace(/\s+/g, '-')}`}
                   id={`tooltip-${index}`}
                 >
