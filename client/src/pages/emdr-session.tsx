@@ -63,8 +63,8 @@ export default function EMDRSession() {
   const [isSetupPhase, setIsSetupPhase] = useState(false);
   const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
   const [uiReady, setUiReady] = useState(false); // Optimized for fast Script 1 start
-  const [sudsTooltipOpen, setSudsTooltipOpen] = useState(false);
-  const [vocTooltipOpen, setVocTooltipOpen] = useState(false);
+  const [openTooltips, setOpenTooltips] = useState<{ [key: string]: boolean }>({});
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   // Client-side fix to prevent duplicate EMDR script blocks
   useEffect(() => {
@@ -152,6 +152,45 @@ export default function EMDRSession() {
       setUiReady(true);
     }
   }, [currentSession, selectedTherapist, uiReady]);
+
+  // Detect touch device (matching home screen helper pattern)
+  useEffect(() => {
+    const checkTouchDevice = () => {
+      setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    };
+    checkTouchDevice();
+    window.addEventListener('resize', checkTouchDevice);
+    return () => window.removeEventListener('resize', checkTouchDevice);
+  }, []);
+
+  // Handle tooltip toggle for touch devices (single-open behavior)
+  const handleTooltipToggle = (key: string) => {
+    if (isTouchDevice) {
+      setOpenTooltips(prev => {
+        // If this tooltip is already open, close it
+        if (prev[key]) {
+          return {};
+        }
+        // Otherwise, close all others and open this one
+        return { [key]: true };
+      });
+    }
+  };
+
+  // Close tooltip when clicking outside
+  const handleClickOutside = () => {
+    if (isTouchDevice) {
+      setOpenTooltips({});
+    }
+  };
+
+  // Add click outside listener
+  useEffect(() => {
+    if (isTouchDevice) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [isTouchDevice]);
 
   // Scroll to top when script changes - with delay to ensure DOM updates
   useEffect(() => {
@@ -829,41 +868,49 @@ export default function EMDRSession() {
                       <Star className="mr-2 h-5 w-5 text-amber-600" />
                       <h5 className="font-semibold text-amber-800">SUDS Rating</h5>
                       <Tooltip 
-                        open={sudsTooltipOpen} 
-                        onOpenChange={(open) => {
-                          setSudsTooltipOpen(open);
-                          if (open) setVocTooltipOpen(false); // Close other tooltip when this opens
-                        }}
-                        delayDuration={0}
-                        disableHoverableContent={false}
+                        open={isTouchDevice ? openTooltips['suds'] : undefined}
+                        onOpenChange={isTouchDevice ? undefined : undefined}
                       >
                         <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="ml-2 h-6 w-6 p-0 hover:bg-amber-100 rounded-full transition-colors"
+                            className="ml-2 h-6 w-6 p-0 hover:bg-amber-100 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/20"
                             aria-label="About SUDS rating"
                             data-testid="button-info-suds"
-                            onClick={() => {
-                              setSudsTooltipOpen(!sudsTooltipOpen);
-                              setVocTooltipOpen(false);
+                            onClick={(e) => {
+                              if (isTouchDevice) {
+                                e.stopPropagation();
+                                handleTooltipToggle('suds');
+                              }
                             }}
-                            onTouchStart={() => {
-                              setSudsTooltipOpen(!sudsTooltipOpen);
-                              setVocTooltipOpen(false);
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                if (isTouchDevice) {
+                                  handleTooltipToggle('suds');
+                                }
+                              }
+                              if (e.key === 'Escape') {
+                                setOpenTooltips({});
+                              }
                             }}
+                            role="button"
+                            aria-expanded={isTouchDevice ? !!openTooltips['suds'] : undefined}
+                            aria-describedby={isTouchDevice && openTooltips['suds'] ? 'suds-tooltip' : undefined}
                           >
                             <Info className="h-4 w-4 text-amber-600 hover:text-amber-700" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent
-                          side="top"
-                          align="start"
-                          sideOffset={8}
-                          collisionPadding={16}
+                          side="bottom"
+                          sideOffset={12}
+                          collisionPadding={24}
                           avoidCollisions={true}
-                          className="max-w-[280px] bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-sm shadow-lg font-medium"
+                          className="max-w-[240px] bg-primary-green/15 text-primary-blue border border-primary-green/25 rounded-lg p-4 text-sm font-semibold shadow-2xl backdrop-blur-md z-50 leading-relaxed"
+                          style={{ color: 'hsl(217, 88%, 45%)' }}
                           data-testid="tooltip-suds"
+                          id="suds-tooltip"
                         >
                           Aim to continue reprocessing until your distress reaches 0, or an ecological 1.
                         </TooltipContent>
@@ -1231,41 +1278,49 @@ export default function EMDRSession() {
                       <Star className="mr-2 h-5 w-5 text-green-600" />
                       <h5 className="font-semibold text-green-800">VOC Rating</h5>
                       <Tooltip 
-                        open={vocTooltipOpen} 
-                        onOpenChange={(open) => {
-                          setVocTooltipOpen(open);
-                          if (open) setSudsTooltipOpen(false); // Close other tooltip when this opens
-                        }}
-                        delayDuration={0}
-                        disableHoverableContent={false}
+                        open={isTouchDevice ? openTooltips['voc'] : undefined}
+                        onOpenChange={isTouchDevice ? undefined : undefined}
                       >
                         <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="ml-2 h-6 w-6 p-0 hover:bg-green-100 rounded-full transition-colors"
+                            className="ml-2 h-6 w-6 p-0 hover:bg-green-100 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/20"
                             aria-label="About VOC rating"
                             data-testid="button-info-voc"
-                            onClick={() => {
-                              setVocTooltipOpen(!vocTooltipOpen);
-                              setSudsTooltipOpen(false);
+                            onClick={(e) => {
+                              if (isTouchDevice) {
+                                e.stopPropagation();
+                                handleTooltipToggle('voc');
+                              }
                             }}
-                            onTouchStart={() => {
-                              setVocTooltipOpen(!vocTooltipOpen);
-                              setSudsTooltipOpen(false);
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                if (isTouchDevice) {
+                                  handleTooltipToggle('voc');
+                                }
+                              }
+                              if (e.key === 'Escape') {
+                                setOpenTooltips({});
+                              }
                             }}
+                            role="button"
+                            aria-expanded={isTouchDevice ? !!openTooltips['voc'] : undefined}
+                            aria-describedby={isTouchDevice && openTooltips['voc'] ? 'voc-tooltip' : undefined}
                           >
                             <Info className="h-4 w-4 text-green-600 hover:text-green-700" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent
-                          side="top"
-                          align="start"
-                          sideOffset={8}
-                          collisionPadding={16}
+                          side="bottom"
+                          sideOffset={12}
+                          collisionPadding={24}
                           avoidCollisions={true}
-                          className="max-w-[280px] bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-sm shadow-lg font-medium"
+                          className="max-w-[240px] bg-primary-green/15 text-primary-blue border border-primary-green/25 rounded-lg p-4 text-sm font-semibold shadow-2xl backdrop-blur-md z-50 leading-relaxed"
+                          style={{ color: 'hsl(217, 88%, 45%)' }}
                           data-testid="tooltip-voc"
+                          id="voc-tooltip"
                         >
                           Aim to continue installing the positive belief until you reach 7.
                         </TooltipContent>
