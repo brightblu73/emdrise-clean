@@ -170,18 +170,6 @@ export default function EMDRSession() {
     }
   }, [currentSession?.currentScript]);
 
-  // Close tooltips when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setSudsTooltipOpen(false);
-      setVocTooltipOpen(false);
-    };
-
-    if (sudsTooltipOpen || vocTooltipOpen) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [sudsTooltipOpen, vocTooltipOpen]);
 
   // Reset BLS when script changes - but only if BLS is actually shown
   useEffect(() => {
@@ -840,27 +828,32 @@ export default function EMDRSession() {
                     <div className="flex items-center mb-3">
                       <Star className="mr-2 h-5 w-5 text-amber-600" />
                       <h5 className="font-semibold text-amber-800">SUDS Rating</h5>
-                      <Tooltip open={sudsTooltipOpen} onOpenChange={setSudsTooltipOpen}>
+                      <Tooltip 
+                        open={sudsTooltipOpen} 
+                        onOpenChange={(open) => {
+                          setSudsTooltipOpen(open);
+                          if (open) setVocTooltipOpen(false); // Close other tooltip when this opens
+                        }}
+                      >
                         <TooltipTrigger asChild>
-                          <button
-                            className="ml-2 p-1 hover:bg-amber-100 rounded-full transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSudsTooltipOpen(!sudsTooltipOpen);
-                              setVocTooltipOpen(false); // Close other tooltip
-                            }}
-                            data-testid="suds-info-icon"
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-2 h-6 w-6 p-0 hover:bg-amber-100 rounded-full transition-colors"
+                            aria-label="About SUDS rating"
+                            data-testid="button-info-suds"
                           >
                             <Info className="h-4 w-4 text-amber-600 hover:text-amber-700" />
-                          </button>
+                          </Button>
                         </TooltipTrigger>
                         <TooltipContent
-                          side="bottom"
+                          side="top"
+                          align="start"
                           sideOffset={8}
                           collisionPadding={16}
                           avoidCollisions={true}
-                          className="max-w-[240px] bg-white text-slate-700 border border-slate-200 rounded-lg p-3 text-sm shadow-lg"
-                          data-testid="suds-tooltip"
+                          className="max-w-[280px] bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-sm shadow-lg font-medium"
+                          data-testid="tooltip-suds"
                         >
                           Aim to continue reprocessing until your distress reaches 0, or an ecological 1.
                         </TooltipContent>
@@ -1227,27 +1220,32 @@ export default function EMDRSession() {
                     <div className="flex items-center mb-3">
                       <Star className="mr-2 h-5 w-5 text-green-600" />
                       <h5 className="font-semibold text-green-800">VOC Rating</h5>
-                      <Tooltip open={vocTooltipOpen} onOpenChange={setVocTooltipOpen}>
+                      <Tooltip 
+                        open={vocTooltipOpen} 
+                        onOpenChange={(open) => {
+                          setVocTooltipOpen(open);
+                          if (open) setSudsTooltipOpen(false); // Close other tooltip when this opens
+                        }}
+                      >
                         <TooltipTrigger asChild>
-                          <button
-                            className="ml-2 p-1 hover:bg-green-100 rounded-full transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setVocTooltipOpen(!vocTooltipOpen);
-                              setSudsTooltipOpen(false); // Close other tooltip
-                            }}
-                            data-testid="voc-info-icon"
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-2 h-6 w-6 p-0 hover:bg-green-100 rounded-full transition-colors"
+                            aria-label="About VOC rating"
+                            data-testid="button-info-voc"
                           >
                             <Info className="h-4 w-4 text-green-600 hover:text-green-700" />
-                          </button>
+                          </Button>
                         </TooltipTrigger>
                         <TooltipContent
-                          side="bottom"
+                          side="top"
+                          align="start"
                           sideOffset={8}
                           collisionPadding={16}
                           avoidCollisions={true}
-                          className="max-w-[240px] bg-white text-slate-700 border border-slate-200 rounded-lg p-3 text-sm shadow-lg"
-                          data-testid="voc-tooltip"
+                          className="max-w-[280px] bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-sm shadow-lg font-medium"
+                          data-testid="tooltip-voc"
                         >
                           Aim to continue installing the positive belief until you reach 7.
                         </TooltipContent>
