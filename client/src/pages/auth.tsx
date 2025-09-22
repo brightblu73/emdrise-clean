@@ -36,9 +36,7 @@ export default function Auth() {
         return;
       }
       
-      // Log access token immediately after successful login
-      const { data } = await supabase.auth.getSession();
-      console.log("Supabase access token:", data.session?.access_token);
+      // Session established successfully
       
       // Always redirect logged-in users to homepage - no subscription checking needed
       console.log('Login successful, redirecting to homepage...');

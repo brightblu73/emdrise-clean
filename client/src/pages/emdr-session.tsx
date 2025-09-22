@@ -887,9 +887,7 @@ export default function EMDRSession() {
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
-                                if (isTouchDevice) {
-                                  handleTooltipToggle('suds');
-                                }
+                                handleTooltipToggle('suds');
                               }
                               if (e.key === 'Escape') {
                                 setOpenTooltips({});
@@ -1297,9 +1295,7 @@ export default function EMDRSession() {
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
-                                if (isTouchDevice) {
-                                  handleTooltipToggle('voc');
-                                }
+                                handleTooltipToggle('voc');
                               }
                               if (e.key === 'Escape') {
                                 setOpenTooltips({});

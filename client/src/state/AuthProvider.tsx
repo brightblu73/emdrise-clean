@@ -37,10 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(s?.user ?? null);
       setLoading(false);
       
-      // Log access token when authentication state changes to SIGNED_IN
-      if (event === 'SIGNED_IN' && s?.access_token) {
-        console.log("Supabase access token:", s.access_token);
-      }
+      // Auth state changed successfully
     });
     
     return () => {
@@ -49,22 +46,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Reduced debugging - only log when session changes occur
+  // Session state management
   useEffect(() => {
     if (session?.user) {
-      console.log("Session debug log:");
-      console.log("- Session data:", session);
-      console.log("- Access token present:", !!session?.access_token);
-      console.log("- User ID:", session?.user?.id);
-      console.log("- User email:", session?.user?.email);
+      console.log("User authenticated successfully");
     } else if (!loading) {
-      console.log("Session debug log:");
-      console.log("- Session data:", null);
-      console.log("- Access token present:", false);
-      console.log("- User ID:", null);
-      console.log("- User email:", null);
+      console.log("No active session");
     }
-  }, [session, loading]); // Only log when session or loading state changes
+  }, [session, loading]);
 
   const signInWithEmail = async (email: string, password: string) => {
     setLoading(true);
