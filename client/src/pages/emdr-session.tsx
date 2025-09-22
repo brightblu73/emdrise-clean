@@ -13,9 +13,10 @@ import BLSOptionBox from "@/components/BLSOptionBox";
 import TherapistSelector from "@/components/therapist-selector";
 import CalmPlaceSetup from "@/components/calm-place-setup";
 import TargetMemorySetup from "@/components/target-memory-setup";
-import { Brain, ArrowRight, Clock, RotateCcw, Save, Star, ArrowLeft, Home, Volume2 } from "lucide-react";
+import { Brain, ArrowRight, Clock, RotateCcw, Save, Star, ArrowLeft, Home, Volume2, Info } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { supabase } from '@/lib/supabaseClient';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function EMDRSession() {
   const { user } = useAuth();
@@ -62,6 +63,8 @@ export default function EMDRSession() {
   const [isSetupPhase, setIsSetupPhase] = useState(false);
   const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
   const [uiReady, setUiReady] = useState(false); // Optimized for fast Script 1 start
+  const [sudsTooltipOpen, setSudsTooltipOpen] = useState(false);
+  const [vocTooltipOpen, setVocTooltipOpen] = useState(false);
 
   // Client-side fix to prevent duplicate EMDR script blocks
   useEffect(() => {
@@ -166,6 +169,19 @@ export default function EMDRSession() {
       return () => clearTimeout(scrollTimer);
     }
   }, [currentSession?.currentScript]);
+
+  // Close tooltips when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setSudsTooltipOpen(false);
+      setVocTooltipOpen(false);
+    };
+
+    if (sudsTooltipOpen || vocTooltipOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [sudsTooltipOpen, vocTooltipOpen]);
 
   // Reset BLS when script changes - but only if BLS is actually shown
   useEffect(() => {
@@ -824,6 +840,31 @@ export default function EMDRSession() {
                     <div className="flex items-center mb-3">
                       <Star className="mr-2 h-5 w-5 text-amber-600" />
                       <h5 className="font-semibold text-amber-800">SUDS Rating</h5>
+                      <Tooltip open={sudsTooltipOpen} onOpenChange={setSudsTooltipOpen}>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="ml-2 p-1 hover:bg-amber-100 rounded-full transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSudsTooltipOpen(!sudsTooltipOpen);
+                              setVocTooltipOpen(false); // Close other tooltip
+                            }}
+                            data-testid="suds-info-icon"
+                          >
+                            <Info className="h-4 w-4 text-amber-600 hover:text-amber-700" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="bottom"
+                          sideOffset={8}
+                          collisionPadding={16}
+                          avoidCollisions={true}
+                          className="max-w-[240px] bg-white text-slate-700 border border-slate-200 rounded-lg p-3 text-sm shadow-lg"
+                          data-testid="suds-tooltip"
+                        >
+                          Aim to continue reprocessing until your distress reaches 0, or an ecological 1.
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <p className="text-sm text-amber-700 mb-3">
                       Rate your distress level (0 = no distress, 10 = highest distress)
@@ -1186,6 +1227,31 @@ export default function EMDRSession() {
                     <div className="flex items-center mb-3">
                       <Star className="mr-2 h-5 w-5 text-green-600" />
                       <h5 className="font-semibold text-green-800">VOC Rating</h5>
+                      <Tooltip open={vocTooltipOpen} onOpenChange={setVocTooltipOpen}>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="ml-2 p-1 hover:bg-green-100 rounded-full transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setVocTooltipOpen(!vocTooltipOpen);
+                              setSudsTooltipOpen(false); // Close other tooltip
+                            }}
+                            data-testid="voc-info-icon"
+                          >
+                            <Info className="h-4 w-4 text-green-600 hover:text-green-700" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="bottom"
+                          sideOffset={8}
+                          collisionPadding={16}
+                          avoidCollisions={true}
+                          className="max-w-[240px] bg-white text-slate-700 border border-slate-200 rounded-lg p-3 text-sm shadow-lg"
+                          data-testid="voc-tooltip"
+                        >
+                          Aim to continue installing the positive belief until you reach 7.
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                     <p className="text-sm text-green-700 mb-3">
                       Rate how true your positive belief feels (1 = completely false, 7 = completely true)
