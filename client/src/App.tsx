@@ -45,7 +45,7 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
+        <TooltipProvider delayDuration={0} skipDelayDuration={0}>
           <div className="min-h-screen bg-therapeutic-bg">
             <Navigation />
             <Router />

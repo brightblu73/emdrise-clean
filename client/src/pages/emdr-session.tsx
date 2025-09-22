@@ -834,6 +834,8 @@ export default function EMDRSession() {
                           setSudsTooltipOpen(open);
                           if (open) setVocTooltipOpen(false); // Close other tooltip when this opens
                         }}
+                        delayDuration={0}
+                        disableHoverableContent={false}
                       >
                         <TooltipTrigger asChild>
                           <Button
@@ -842,6 +844,14 @@ export default function EMDRSession() {
                             className="ml-2 h-6 w-6 p-0 hover:bg-amber-100 rounded-full transition-colors"
                             aria-label="About SUDS rating"
                             data-testid="button-info-suds"
+                            onClick={() => {
+                              setSudsTooltipOpen(!sudsTooltipOpen);
+                              setVocTooltipOpen(false);
+                            }}
+                            onTouchStart={() => {
+                              setSudsTooltipOpen(!sudsTooltipOpen);
+                              setVocTooltipOpen(false);
+                            }}
                           >
                             <Info className="h-4 w-4 text-amber-600 hover:text-amber-700" />
                           </Button>
@@ -1226,6 +1236,8 @@ export default function EMDRSession() {
                           setVocTooltipOpen(open);
                           if (open) setSudsTooltipOpen(false); // Close other tooltip when this opens
                         }}
+                        delayDuration={0}
+                        disableHoverableContent={false}
                       >
                         <TooltipTrigger asChild>
                           <Button
@@ -1234,6 +1246,14 @@ export default function EMDRSession() {
                             className="ml-2 h-6 w-6 p-0 hover:bg-green-100 rounded-full transition-colors"
                             aria-label="About VOC rating"
                             data-testid="button-info-voc"
+                            onClick={() => {
+                              setVocTooltipOpen(!vocTooltipOpen);
+                              setSudsTooltipOpen(false);
+                            }}
+                            onTouchStart={() => {
+                              setVocTooltipOpen(!vocTooltipOpen);
+                              setSudsTooltipOpen(false);
+                            }}
                           >
                             <Info className="h-4 w-4 text-green-600 hover:text-green-700" />
                           </Button>
