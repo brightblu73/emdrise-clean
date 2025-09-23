@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "../state/AuthProvider";
 
 import { supabase } from '@/lib/supabase';
@@ -16,6 +17,8 @@ export default function Auth() {
   const { signInWithEmail } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showTermsError, setShowTermsError] = useState(false);
 
   // Supabase authentication handlers
   async function handleLogin(e?: React.FormEvent) {
@@ -58,7 +61,13 @@ export default function Auth() {
       alert('Please enter both email and password');
       return;
     }
+
+    if (!agreedToTerms) {
+      setShowTermsError(true);
+      return;
+    }
     
+    setShowTermsError(false);
     console.log('Starting sign up process for:', email);
     
     try {
@@ -111,6 +120,22 @@ export default function Auth() {
     } catch (error) {
       console.error('Apple sign in failed:', error);
       alert('Sign in failed. Please try email sign in.');
+    }
+  };
+
+  // Handle opening terms and privacy policy in WebView/in-app browser
+  const openInWebView = (url: string) => {
+    // For web/PWA, we'll use window.open with specific parameters to simulate in-app browser
+    // In a native mobile app with Capacitor, this could be replaced with the InAppBrowser plugin
+    const webViewWindow = window.open(
+      url,
+      'webview',
+      'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no'
+    );
+    
+    // Focus the new window
+    if (webViewWindow) {
+      webViewWindow.focus();
     }
   };
 
@@ -174,12 +199,65 @@ export default function Auth() {
                 />
               </div>
 
+              {/* Terms Agreement Checkbox */}
+              <div className="space-y-2">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="terms-agreement"
+                    checked={agreedToTerms}
+                    onCheckedChange={(checked) => {
+                      setAgreedToTerms(!!checked);
+                      setShowTermsError(false);
+                    }}
+                    data-testid="checkbox-terms-agreement"
+                    className="mt-0.5"
+                  />
+                  <div className="text-sm text-slate-600 leading-relaxed">
+                    <label htmlFor="terms-agreement" className="cursor-pointer">
+                      I agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={() => openInWebView('/terms-of-use')}
+                        className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
+                        data-testid="link-terms-of-use"
+                      >
+                        Terms of Use
+                      </button>
+                      {' '}and{' '}
+                      <button
+                        type="button"
+                        onClick={() => openInWebView('/privacy-policy')}
+                        className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
+                        data-testid="link-privacy-policy"
+                      >
+                        Privacy Policy
+                      </button>
+                      .
+                    </label>
+                  </div>
+                </div>
+                {showTermsError && (
+                  <p 
+                    className="text-red-600 text-sm mt-1 ml-6" 
+                    data-testid="error-terms-required"
+                  >
+                    You must agree to the Terms of Use and Privacy Policy to continue.
+                  </p>
+                )}
+              </div>
+
               {/* Create Account / Start Free Trial - Move to top */}
               <Button 
                 type="button" 
-                className="w-full text-white" 
+                className={`w-full text-white transition-all duration-200 ${
+                  !agreedToTerms 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:shadow-lg'
+                }`}
                 style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
                 onClick={handleSignUp}
+                disabled={!agreedToTerms}
+                data-testid="button-create-account"
               >
                 Create Account / Start Free Trial
               </Button>
