@@ -17,21 +17,21 @@ export default function PrivacyPolicy() {
               Privacy Policy
             </h1>
             <p className="text-center text-slate-600 mb-8 text-lg">
-              <strong>Last updated: 6 September 2025</strong>
+              <strong>Last updated: 22 September 2025</strong>
             </p>
 
             <div className="space-y-8 text-slate-700 leading-relaxed">
               <section>
                 <h2 className="text-2xl font-bold text-primary-blue mb-4">1. Introduction</h2>
                 <p>
-                  This Privacy Policy explains how GC Psychotherapy (we, us, our) collects, uses, shares and protects personal information when you use the EMDRise mobile and web application, our websites and related services. Protecting your privacy is important to us, and we comply with applicable data protection laws, including the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018. By using our services, you agree to the collection and use of information in accordance with this policy.
+                  This Privacy Policy explains how EMDRISE Ltd (we, us, our) collects, uses, shares and protects personal information when you use the EMDRise mobile and web application, our websites and related services. Protecting your privacy is important to us, and we comply with applicable data protection laws, including the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018. By using our services, you agree to the collection and use of information in accordance with this policy.
                 </p>
               </section>
 
               <section>
                 <h2 className="text-2xl font-bold text-primary-blue mb-4">2. Who We Are & Scope</h2>
                 <p>
-                  EMDRise is owned and operated by GC Psychotherapy, a company based in the United Kingdom. This policy applies to information we process through our mobile application, web platform, and related services. It does not apply to third‑party websites, services, or applications, even if accessible through our services.
+                  EMDRise is owned and operated by EMDRISE Ltd, a private limited company incorporated in England and Wales with company registration number 16733416 and registered office at 20 Wenlock Road, London N1 7GU.
                 </p>
               </section>
 
@@ -74,8 +74,8 @@ export default function PrivacyPolicy() {
 
               <section>
                 <h2 className="text-2xl font-bold text-primary-blue mb-4">4. How We Use Your Information</h2>
-                <p className="mb-4">
-                  We use the information we collect to provide and improve EMDRise, including to create and manage your account, deliver sessions, manage your pause and resume flow, and ensure that you can access the content offline. We process subscriptions and billing, communicate with you about your account, send important service notifications and customer support messages, and may send newsletters or promotional emails, which you can opt out of at any time. We analyse usage and performance metrics to improve the app and develop new features.
+                <p>
+                  We use the information we collect to provide and improve EMDRise, including to create and manage your account, deliver sessions, manage your pause and resume flow, and ensure that you can access the content offline. We process subscriptions and billing, communicate with you about your account, send important service notifications and customer support messages, and may send newsletters or promotional emails, which you can opt out of at any time. We analyse usage and performance to improve the app and develop new features.
                 </p>
               </section>
 
@@ -123,15 +123,16 @@ export default function PrivacyPolicy() {
 
               <section>
                 <h2 className="text-2xl font-bold text-primary-blue mb-4">11. Your Rights</h2>
-                <p className="mb-4">
-                  You have certain rights under data protection laws, including the right to access, correct, or delete your personal data, object to or restrict processing, and request data portability. You may also withdraw consent for marketing communications at any time. To exercise your rights, please contact us at <a href="mailto:support@emdrise.com" className="text-[#1E90FF] underline">support@emdrise.com</a>. If you reside in the UK or EU, you also have the right to lodge a complaint with the Information Commissioner's Office or your local data protection authority.
+                <p>
+                  You have certain rights under data protection laws, including the right to access, correct, or delete your personal data, object to or restrict processing, and request data portability. You may also withdraw consent for marketing communications at any time. To exercise your rights, please contact us at{' '}
+                  <a href="mailto:support@emdrise.com" className="text-primary-blue underline">support@emdrise.com</a>. If you reside in the UK or EU, you also have the right to lodge a complaint with the Information Commissioner's Office (ICO) or your local supervisory authority.
                 </p>
               </section>
 
               <section>
                 <h2 className="text-2xl font-bold text-primary-blue mb-4">12. Children's Privacy</h2>
                 <p>
-                  EMDRise is intended for adults. We do not knowingly collect personal data from children under 16. If we become aware that a child has provided us with personal information, we will take steps to delete such information.
+                  EMDRise is intended for adults aged 18 and over. We do not knowingly allow use or collect data from users under the age of 16. If we become aware that a child has provided us with personal information, we will take steps to delete such information.
                 </p>
               </section>
 
@@ -161,7 +162,7 @@ export default function PrivacyPolicy() {
                 <p>
                   If you have any questions or concerns about this Privacy Policy or your personal information, please contact us at:
                   <br />
-                  <strong className="text-[#1E90FF] text-lg">support@emdrise.com</strong>
+                  <strong className="text-primary-blue text-lg">support@emdrise.com</strong>
                 </p>
               </section>
             </div>
