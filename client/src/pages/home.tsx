@@ -469,8 +469,8 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center">
             <p className="text-sm text-primary-blue/80">
-              © {new Date().getFullYear()} EMDRise. All rights reserved. 
-              EMDRise is not a substitute for professional mental health care.
+              © {new Date().getFullYear()} EMDRise Ltd. All rights reserved. 
+              EMDRise Ltd is not a substitute for professional mental health care.
             </p>
           </div>
         </div>
