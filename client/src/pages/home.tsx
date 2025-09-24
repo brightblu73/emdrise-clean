@@ -212,8 +212,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-white">
               <h1 className="ny-heading mb-6">
-                Professional EMDR Therapy
-                <span className="block text-secondary-green">In Your Own Space</span>
+                Professional Self-Directed EMDR In Your Own Space
               </h1>
               <p className="text-xl mb-8 text-blue-100">
                 Led by a therapist-designed video guide. Walking with you step by step offering structure, support, and connection when you need it most.
