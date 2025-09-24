@@ -1,14 +1,9 @@
 import React from 'react';
-import { Logo } from '@/components/ui/logo';
 
 export default function TermsOfUse() {
   return (
     <div className="min-h-screen py-8 px-4" style={{background: 'linear-gradient(135deg, var(--therapeutic-bg), var(--safe-space))'}}>
       <div className="max-w-4xl mx-auto">
-        {/* Logo Header */}
-        <div className="text-center mb-8">
-          <Logo variant="hero" className="mx-auto mb-4" />
-        </div>
 
         {/* Main Content Card */}
         <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
