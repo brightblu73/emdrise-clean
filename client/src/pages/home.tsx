@@ -229,19 +229,27 @@ export default function Home() {
                       <p className="text-green-700 text-sm">Your 7-day free trial is now active. Start your EMDR journey below.</p>
                     </div>
                   )}
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Button 
-                      onClick={() => setLocation('/emdr-session')}
-                      size="lg" 
-                      className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
-                    >
-                      <span className="block sm:inline">
-                        {userName ? `Welcome back ${userName}!` : 'Welcome back!'} 
-                      </span>
-                      <span className="block sm:inline sm:ml-1">
+                  <div className="text-center space-y-4">
+                    {/* Welcome Message */}
+                    <div className="text-white">
+                      <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+                        {userName ? `Welcome back, ${userName}!` : 'Welcome back!'}
+                      </h2>
+                      <p className="text-lg sm:text-xl text-blue-100">
                         Choose Your Therapist and Continue Your Healing
-                      </span>
-                    </Button>
+                      </p>
+                    </div>
+                    
+                    {/* Action Button */}
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button 
+                        onClick={() => setLocation('/emdr-session')}
+                        size="lg" 
+                        className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
+                      >
+                        Start EMDR Session
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : (
