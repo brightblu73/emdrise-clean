@@ -449,7 +449,7 @@ export default function Auth() {
               </button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 min-h-[600px]">
             {/* Apple Sign In - only show on registration */}
             {isSignUpMode && (
               <>
