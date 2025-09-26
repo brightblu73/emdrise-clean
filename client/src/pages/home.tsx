@@ -245,9 +245,9 @@ export default function Home() {
                       <Button 
                         onClick={() => setLocation('/emdr-session')}
                         size="lg" 
-                        className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
+                        className="w-full max-w-xs mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
                       >
-                        Start EMDR Session
+                        Begin EMDR Session
                       </Button>
                     </div>
                   </div>
