@@ -284,8 +284,7 @@ export default function Auth() {
         try {
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
-            refresh_token: refreshToken,
-            expires_in: parseInt(expiresIn || '3600', 10)
+            refresh_token: refreshToken
           });
           
           if (error) {
@@ -329,10 +328,6 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: 'var(--safe-space)'}}>
       <div className="max-w-md w-full mx-4">
-        <div className="text-center mb-8">
-          <Logo variant="hero" className="mx-auto mb-4" />
-          <p className="text-slate-600">Begin your journey to emotional freedom</p>
-        </div>
 
         {/* Password Reset Error Message - shown outside form gating */}
         {passwordResetMessage && !showPasswordResetForm && (

@@ -42,15 +42,12 @@ function Router() {
 }
 
 function App() {
-  const [location] = useLocation();
-  const hideNavigation = location === '/auth';
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={0} skipDelayDuration={0}>
           <div className="min-h-screen bg-therapeutic-bg">
-            {!hideNavigation && <Navigation />}
+            <Navigation />
             <Router />
             <Toaster />
           </div>
