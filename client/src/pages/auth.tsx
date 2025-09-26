@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,6 +21,12 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTermsError, setShowTermsError] = useState(false);
+  
+  // Forgot password state
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
+  const [resetMessageType, setResetMessageType] = useState<'success' | 'error' | null>(null);
 
   // Supabase authentication handlers
   async function handleLogin(e?: React.FormEvent) {
@@ -142,6 +149,56 @@ export default function Auth() {
       webViewWindow.focus();
     }
   };
+
+  // Forgot password handler
+  async function handleForgotPassword(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    
+    if (!resetEmail.trim()) {
+      setResetMessage('Please enter your email address');
+      setResetMessageType('error');
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: `${window.location.origin}/auth?reset=true`
+      });
+      
+      if (error) {
+        console.error('Password reset error:', error);
+        setResetMessage('There was a problem sending the reset link. Please try again.');
+        setResetMessageType('error');
+        return;
+      }
+      
+      setResetMessage('Password reset link sent! Please check your email.');
+      setResetMessageType('success');
+      
+      // Close modal after short delay
+      setTimeout(() => {
+        setShowForgotPasswordModal(false);
+        setResetEmail('');
+        setResetMessage('');
+        setResetMessageType(null);
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Password reset exception:', error);
+      setResetMessage('There was a problem sending the reset link. Please try again.');
+      setResetMessageType('error');
+    }
+  }
+
+  // Check for password reset URL parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reset') === 'true') {
+      alert('Your password has been updated successfully. You can now log in with your new password.');
+      // Clear the reset parameter from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: 'var(--safe-space)'}}>
@@ -293,10 +350,85 @@ export default function Auth() {
               >
                 Sign In
               </Button>
+
+              {/* Forgot Password Link */}
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPasswordModal(true)}
+                  className="text-primary-blue hover:text-primary-blue/80 underline text-sm font-medium"
+                  data-testid="link-forgot-password"
+                >
+                  Forgot your password?
+                </button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Forgot Password Modal */}
+        <Dialog open={showForgotPasswordModal} onOpenChange={setShowForgotPasswordModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reset Password</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <p className="text-sm text-slate-600">
+                Enter your email address and we'll send you a link to reset your password.
+              </p>
+              
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    required
+                    data-testid="input-reset-email"
+                  />
+                </div>
+
+                {resetMessage && (
+                  <div className={`p-3 rounded-md text-sm ${
+                    resetMessageType === 'success' 
+                      ? 'bg-green-50 text-green-700 border border-green-200' 
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                  }`} data-testid="reset-message">
+                    {resetMessage}
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => {
+                      setShowForgotPasswordModal(false);
+                      setResetEmail('');
+                      setResetMessage('');
+                      setResetMessageType(null);
+                    }}
+                    className="flex-1"
+                    data-testid="button-cancel-reset"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    className="flex-1 text-white"
+                    style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
+                    data-testid="button-send-reset"
+                  >
+                    Send Reset Link
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </DialogContent>
+        </Dialog>
 
       </div>
     </div>
