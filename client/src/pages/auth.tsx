@@ -15,6 +15,7 @@ import { Logo } from "@/components/ui/logo";
 export default function Auth() {
   const [, setLocation] = useLocation();
   const { signInWithEmail } = useAuth();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -57,8 +58,8 @@ export default function Auth() {
   async function handleSignUp(e?: React.FormEvent) {
     if (e) e.preventDefault();
     
-    if (!email || !password) {
-      alert('Please enter both email and password');
+    if (!name.trim() || !email || !password) {
+      alert('Please enter your name, email, and password');
       return;
     }
 
@@ -75,7 +76,10 @@ export default function Auth() {
         email, 
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth-callback`
+          emailRedirectTo: `${window.location.origin}/auth-callback`,
+          data: {
+            full_name: name.trim()
+          }
         }
       });
       
@@ -172,8 +176,21 @@ export default function Auth() {
               </div>
             </div>
 
-            {/* Email and Password Form */}
+            {/* Name, Email and Password Form */}
             <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e)=>setName(e.target.value)}
+                  required
+                  data-testid="input-name"
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
