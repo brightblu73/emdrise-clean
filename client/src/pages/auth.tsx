@@ -7,6 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "../state/AuthProvider";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { authRegistrationSchema, authLoginSchema, type AuthRegistration, type AuthLogin } from "@shared/schema";
 
 import { supabase } from '@/lib/supabase';
 import { apiRequest } from '@/lib/queryClient';
@@ -16,11 +20,7 @@ import { Logo } from "@/components/ui/logo";
 export default function Auth() {
   const [, setLocation] = useLocation();
   const { signInWithEmail } = useAuth();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [showTermsError, setShowTermsError] = useState(false);
+  const [isSignUpMode, setIsSignUpMode] = useState(true); // Toggle between sign up and sign in
   
   // Forgot password state
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
@@ -37,19 +37,34 @@ export default function Auth() {
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [showResetSuccessMessage, setShowResetSuccessMessage] = useState(false);
 
-  // Supabase authentication handlers
-  async function handleLogin(e?: React.FormEvent) {
-    if (e) e.preventDefault();
-    
-    if (!email || !password) {
-      alert('Please enter both email and password');
-      return;
+  // React Hook Form setup for registration
+  const registrationForm = useForm<AuthRegistration>({
+    resolver: zodResolver(authRegistrationSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      dateOfBirth: '',
+      password: '',
+      confirmPassword: '',
+      agreeToTerms: false
     }
-    
-    console.log('Starting sign in process for:', email);
+  });
+
+  // React Hook Form setup for login
+  const loginForm = useForm<AuthLogin>({
+    resolver: zodResolver(authLoginSchema),
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  });
+
+  // Supabase authentication handlers
+  async function handleLogin(data: AuthLogin) {
+    console.log('Starting sign in process for:', data.email);
     
     try {
-      const { error } = await signInWithEmail(email, password);
+      const { error } = await signInWithEmail(data.email, data.password);
       if (error) {
         console.error('Login error:', error);
         alert(error.message);
@@ -71,31 +86,25 @@ export default function Auth() {
     }
   }
 
-  async function handleSignUp(e?: React.FormEvent) {
-    if (e) e.preventDefault();
-    
-    if (!name.trim() || !email || !password) {
-      alert('Please enter your name, email, and password');
-      return;
-    }
-
-    if (!agreedToTerms) {
-      setShowTermsError(true);
-      return;
-    }
-    
-    setShowTermsError(false);
-    console.log('Starting sign up process for:', email);
+  async function handleSignUp(data: AuthRegistration) {
+    console.log('Starting sign up process for:', data.email);
     
     try {
-      const { data, error } = await supabase.auth.signUp({ 
-        email, 
-        password,
+      const userMetadata: any = {
+        full_name: data.name.trim()
+      };
+      
+      // Add date of birth to metadata if provided
+      if (data.dateOfBirth && data.dateOfBirth.trim()) {
+        userMetadata.date_of_birth = data.dateOfBirth.trim();
+      }
+      
+      const { data: signUpData, error } = await supabase.auth.signUp({ 
+        email: data.email, 
+        password: data.password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth-callback`,
-          data: {
-            full_name: name.trim()
-          }
+          data: userMetadata
         }
       });
       
@@ -105,11 +114,11 @@ export default function Auth() {
         return;
       }
       
-      console.log('Sign up response:', data);
+      console.log('Sign up response:', signUpData);
       
-      if (data.user && !data.user.email_confirmed_at) {
+      if (signUpData.user && !signUpData.user.email_confirmed_at) {
         alert('Check your email to verify your account. After verification, you\'ll be redirected to complete your trial setup.');
-      } else if (data.user && data.user.email_confirmed_at) {
+      } else if (signUpData.user && signUpData.user.email_confirmed_at) {
         // User is already confirmed, redirect to auth-callback to handle Stripe
         console.log('User already confirmed, redirecting to auth-callback');
         setLocation('/auth-callback');
@@ -405,167 +414,251 @@ export default function Auth() {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Start Your 7-Day Free Trial</CardTitle>
-            <p className="text-sm text-slate-600">Choose your sign-in method</p>
+            <CardTitle className="text-center">
+              {isSignUpMode ? 'Create Account' : 'Welcome Back'}
+            </CardTitle>
+            <p className="text-sm text-slate-600 text-center">
+              {isSignUpMode ? 'Register to start your EMDR therapy journey' : 'Sign in to access your EMDR sessions'}
+            </p>
+            
+            {/* Toggle Buttons */}
+            <div className="flex rounded-lg bg-slate-100 p-1 mt-4">
+              <button
+                type="button"
+                onClick={() => setIsSignUpMode(false)}
+                className={`flex-1 rounded-md py-2 px-4 text-sm font-medium transition-colors ${
+                  !isSignUpMode
+                    ? 'bg-white text-primary-blue shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                data-testid="toggle-login"
+              >
+                Login
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSignUpMode(true)}
+                className={`flex-1 rounded-md py-2 px-4 text-sm font-medium transition-colors ${
+                  isSignUpMode
+                    ? 'bg-white text-primary-blue shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+                data-testid="toggle-register"
+              >
+                Register
+              </button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Apple Sign In */}
-            <Button 
-              variant="outline" 
-              className="w-full justify-start" 
-              onClick={handleAppleSignIn}
-            >
-              <Apple className="mr-2 h-4 w-4" />
-              Sign in with Apple
-            </Button>
+            {/* Apple Sign In - only show on registration */}
+            {isSignUpMode && (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start" 
+                  onClick={handleAppleSignIn}
+                >
+                  <Apple className="mr-2 h-4 w-4" />
+                  Sign in with Apple
+                </Button>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-              </div>
-            </div>
-
-            {/* Name, Email and Password Form */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e)=>setName(e.target.value)}
-                  required
-                  data-testid="input-name"
-                />
-              </div>
-
-              {/* Password Reset Success Message */}
-              {showResetSuccessMessage && (
-                <div className="p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200" data-testid="reset-success-message">
-                  Password updated successfully! You can now log in with your new password.
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e)=>setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e)=>setPassword(e.target.value)}
-                  required
-                />
-              </div>
-
-              {/* Terms Agreement Checkbox */}
-              <div className="space-y-2">
-                <div className="flex items-start space-x-3">
-                  <Checkbox
-                    id="terms-agreement"
-                    checked={agreedToTerms}
-                    onCheckedChange={(checked) => {
-                      setAgreedToTerms(!!checked);
-                      setShowTermsError(false);
-                    }}
-                    data-testid="checkbox-terms-agreement"
-                    className="mt-0.5"
-                  />
-                  <div className="text-sm text-slate-600 leading-relaxed">
-                    <label htmlFor="terms-agreement" className="cursor-pointer">
-                      I agree to the{' '}
-                      <button
-                        type="button"
-                        onClick={() => openInWebView('/terms-of-use')}
-                        className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
-                        data-testid="link-terms-of-use"
-                      >
-                        Terms of Use
-                      </button>
-                      {' '}and{' '}
-                      <button
-                        type="button"
-                        onClick={() => openInWebView('/privacy-policy')}
-                        className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
-                        data-testid="link-privacy-policy"
-                      >
-                        Privacy Policy
-                      </button>
-                      .
-                    </label>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
                   </div>
                 </div>
-                {showTermsError && (
-                  <p 
-                    className="text-red-600 text-sm mt-1 ml-6" 
-                    data-testid="error-terms-required"
+              </>
+            )}
+
+            {/* Registration Form */}
+            {isSignUpMode ? (
+              <Form {...registrationForm}>
+                <form onSubmit={registrationForm.handleSubmit(handleSignUp)} className="space-y-4">
+                  <FormField
+                    control={registrationForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John Doe" {...field} data-testid="input-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registrationForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="you@example.com" type="email" {...field} data-testid="input-email" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registrationForm.control}
+                    name="dateOfBirth"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date of Birth (Optional)</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} data-testid="input-date-of-birth" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registrationForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input placeholder="••••••••" type="password" {...field} data-testid="input-password" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registrationForm.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <Input placeholder="••••••••" type="password" {...field} data-testid="input-confirm-password" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={registrationForm.control}
+                    name="agreeToTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-terms-agreement"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm text-slate-600 leading-relaxed cursor-pointer">
+                            By creating an account, you agree to our{' '}
+                            <button
+                              type="button"
+                              onClick={() => openInWebView('/terms-of-use')}
+                              className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
+                              data-testid="link-terms-of-use"
+                            >
+                              Terms of Service
+                            </button>
+                            {' '}and{' '}
+                            <button
+                              type="button"
+                              onClick={() => openInWebView('/privacy-policy')}
+                              className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
+                              data-testid="link-privacy-policy"
+                            >
+                              Privacy Policy
+                            </button>
+                            .
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button 
+                    type="submit"
+                    className="w-full text-white"
+                    style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
+                    data-testid="button-create-account"
                   >
-                    You must agree to the Terms of Use and Privacy Policy to continue.
-                  </p>
+                    Create Account
+                  </Button>
+                </form>
+              </Form>
+            ) : (
+              // Sign In Form
+              <>
+                {/* Password Reset Success Message */}
+                {showResetSuccessMessage && (
+                  <div className="p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200" data-testid="reset-success-message">
+                    Password updated successfully! You can now log in with your new password.
+                  </div>
                 )}
-              </div>
-
-              {/* Create Account / Start Free Trial - Move to top */}
-              <Button 
-                type="button" 
-                className={`w-full text-white transition-all duration-200 ${
-                  !agreedToTerms 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : 'hover:shadow-lg'
-                }`}
-                style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
-                onClick={handleSignUp}
-                disabled={!agreedToTerms}
-                data-testid="button-create-account"
-              >
-                Create Account / Start Free Trial
-              </Button>
-
-              {/* Separator */}
-              <div className="text-center">
-                <p className="text-sm text-slate-600">Already have an account? Sign in below.</p>
-              </div>
-              
-              {/* Sign In Button */}
-              <Button 
-                type="button"
-                className="w-full text-white"
-                style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
-                onClick={handleLogin}
-              >
-                Sign In
-              </Button>
-
-              {/* Forgot Password Link */}
-              <div className="text-center mt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPasswordModal(true)}
-                  className="text-primary-blue hover:text-primary-blue/80 underline text-sm font-medium"
-                  data-testid="link-forgot-password"
-                >
-                  Forgot your password?
-                </button>
-              </div>
-            </div>
+                
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="you@example.com" type="email" {...field} data-testid="input-login-email" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex justify-between items-center">
+                            <span>Password</span>
+                            <button
+                              type="button"
+                              onClick={() => setShowForgotPasswordModal(true)}
+                              className="text-primary-blue hover:text-primary-blue/80 underline text-sm font-medium"
+                              data-testid="link-forgot-password"
+                            >
+                              Forgot password?
+                            </button>
+                          </FormLabel>
+                          <FormControl>
+                            <Input placeholder="••••••••" type="password" {...field} data-testid="input-login-password" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button 
+                      type="submit"
+                      className="w-full text-white"
+                      style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
+                      data-testid="button-sign-in"
+                    >
+                      Sign In
+                    </Button>
+                  </form>
+                </Form>
+              </>
+            )}
           </CardContent>
         </Card>
         </>
