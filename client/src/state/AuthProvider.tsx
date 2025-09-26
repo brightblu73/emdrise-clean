@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 
 type Ctx = {
   user: any; session: any; loading: boolean;
+  userName: string | null;
   signInWithEmail: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 };
@@ -12,6 +13,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Derive userName from user metadata
+  const userName = user?.user_metadata?.full_name || null;
 
   useEffect(() => {
     let mounted = true;
@@ -69,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   };
 
-  return <AuthCtx.Provider value={{ user, session, loading, signInWithEmail, signOut }}>{children}</AuthCtx.Provider>;
+  return <AuthCtx.Provider value={{ user, session, loading, userName, signInWithEmail, signOut }}>{children}</AuthCtx.Provider>;
 }
 export function useAuth() {
   const v = useContext(AuthCtx);
