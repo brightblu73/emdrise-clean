@@ -28,6 +28,15 @@ export default function Auth() {
   const [resetMessage, setResetMessage] = useState('');
   const [resetMessageType, setResetMessageType] = useState<'success' | 'error' | null>(null);
 
+  // Password reset form state
+  const [showPasswordResetForm, setShowPasswordResetForm] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordResetMessage, setPasswordResetMessage] = useState('');
+  const [passwordResetMessageType, setPasswordResetMessageType] = useState<'success' | 'error' | null>(null);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [showResetSuccessMessage, setShowResetSuccessMessage] = useState(false);
+
   // Supabase authentication handlers
   async function handleLogin(e?: React.FormEvent) {
     if (e) e.preventDefault();
@@ -190,10 +199,127 @@ export default function Auth() {
     }
   }
 
-  // Check for password reset URL parameter
+  // Password update handler
+  async function handlePasswordUpdate(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    
+    if (!newPassword.trim()) {
+      setPasswordResetMessage('Please enter a new password');
+      setPasswordResetMessageType('error');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setPasswordResetMessage('Password must be at least 6 characters long');
+      setPasswordResetMessageType('error');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      setPasswordResetMessage('Passwords do not match');
+      setPasswordResetMessageType('error');
+      return;
+    }
+    
+    setIsUpdatingPassword(true);
+    setPasswordResetMessage('');
+    
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) {
+        console.error('Password update error:', error);
+        setPasswordResetMessage('Failed to update password. Please try again.');
+        setPasswordResetMessageType('error');
+        setIsUpdatingPassword(false);
+        return;
+      }
+      
+      setPasswordResetMessage('Password updated successfully! Redirecting to login...');
+      setPasswordResetMessageType('success');
+      
+      // Clear form and redirect after delay
+      setTimeout(async () => {
+        // Sign out user and redirect to fresh login
+        await supabase.auth.signOut();
+        setShowPasswordResetForm(false);
+        setNewPassword('');
+        setConfirmPassword('');
+        setPasswordResetMessage('');
+        setPasswordResetMessageType(null);
+        setIsUpdatingPassword(false);
+        
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Show success message in normal login form
+        setShowResetSuccessMessage(true);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Password update exception:', error);
+      setPasswordResetMessage('Failed to update password. Please try again.');
+      setPasswordResetMessageType('error');
+      setIsUpdatingPassword(false);
+    }
+  }
+
+  // Check for password reset URL parameters and recovery tokens
   useEffect(() => {
+    // Parse recovery tokens from hash fragment (Supabase sends them here)
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const type = hashParams.get('type');
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+    const expiresIn = hashParams.get('expires_in');
+    
+    // Also check query params for fallback cases
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('reset') === 'true') {
+    
+    if (type === 'recovery' && accessToken && refreshToken) {
+      // User clicked password reset link in email - establish session first
+      const establishRecoverySession = async () => {
+        try {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            expires_in: parseInt(expiresIn || '3600', 10)
+          });
+          
+          if (error) {
+            console.error('Failed to establish recovery session:', error);
+            setPasswordResetMessage('Invalid or expired reset link. Please request a new password reset.');
+            setPasswordResetMessageType('error');
+            // Do NOT show password reset form when session establishment fails
+            return;
+          }
+          
+          // Session established successfully - show password reset form
+          setShowPasswordResetForm(true);
+          
+          // Clear recovery tokens from URL hash after session is established
+          if (window.location.hash) {
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+          }
+          
+        } catch (error) {
+          console.error('Recovery session exception:', error);
+          setPasswordResetMessage('Failed to process reset link. Please request a new password reset.');
+          setPasswordResetMessageType('error');
+          // Do NOT show password reset form when there's an exception
+        }
+      };
+      
+      establishRecoverySession();
+    } else if (type === 'recovery') {
+      // Recovery type but missing tokens - show error message but not the form
+      setPasswordResetMessage('Invalid reset link. Please request a new password reset.');
+      setPasswordResetMessageType('error');
+      // Do NOT show password reset form when tokens are missing
+    } else if (urlParams.get('reset') === 'true') {
+      // Fallback for old-style reset confirmation
       alert('Your password has been updated successfully. You can now log in with your new password.');
       // Clear the reset parameter from URL
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -207,6 +333,80 @@ export default function Auth() {
           <Logo variant="hero" className="mx-auto mb-4" />
           <p className="text-slate-600">Begin your journey to emotional freedom</p>
         </div>
+
+        {/* Password Reset Error Message - shown outside form gating */}
+        {passwordResetMessage && !showPasswordResetForm && (
+          <div className={`mb-6 p-3 rounded-md text-sm ${
+            passwordResetMessageType === 'success' 
+              ? 'bg-green-50 text-green-700 border border-green-200' 
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`} data-testid="password-reset-error-message">
+            {passwordResetMessage}
+          </div>
+        )}
+
+        {/* Password Reset Form - shown when user comes from reset email */}
+        {showPasswordResetForm ? (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Set New Password</CardTitle>
+              <p className="text-sm text-slate-600">Enter your new password below</p>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handlePasswordUpdate} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    disabled={isUpdatingPassword}
+                    data-testid="input-new-password"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    disabled={isUpdatingPassword}
+                    data-testid="input-confirm-password"
+                  />
+                </div>
+
+                {passwordResetMessage && (
+                  <div className={`p-3 rounded-md text-sm ${
+                    passwordResetMessageType === 'success' 
+                      ? 'bg-green-50 text-green-700 border border-green-200' 
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                  }`} data-testid="password-reset-message">
+                    {passwordResetMessage}
+                  </div>
+                )}
+
+                <Button 
+                  type="submit"
+                  className="w-full text-white"
+                  style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
+                  disabled={isUpdatingPassword}
+                  data-testid="button-update-password"
+                >
+                  {isUpdatingPassword ? 'Updating Password...' : 'Update Password'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        ) : (
+          // Normal authentication forms - shown when not in password reset mode
+          <>
 
         <Card className="mb-6">
           <CardHeader>
@@ -248,6 +448,14 @@ export default function Auth() {
                   data-testid="input-name"
                 />
               </div>
+
+              {/* Password Reset Success Message */}
+              {showResetSuccessMessage && (
+                <div className="p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200" data-testid="reset-success-message">
+                  Password updated successfully! You can now log in with your new password.
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -365,6 +573,8 @@ export default function Auth() {
             </div>
           </CardContent>
         </Card>
+        </>
+        )}
 
         {/* Forgot Password Modal */}
         <Dialog open={showForgotPasswordModal} onOpenChange={setShowForgotPasswordModal}>
