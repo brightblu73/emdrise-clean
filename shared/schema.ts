@@ -229,3 +229,25 @@ export type InsertBilateralSession = z.infer<typeof insertBilateralSessionSchema
 
 export type ScriptProgression = typeof scriptProgression.$inferSelect;
 export type InsertScriptProgression = z.infer<typeof insertScriptProgressionSchema>;
+
+// Authentication schemas for frontend forms
+export const authRegistrationSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100, "Name must be less than 100 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  dateOfBirth: z.string().optional(),
+  password: z.string().min(8, "Password must be at least 8 characters").max(100, "Password must be less than 100 characters"),
+  confirmPassword: z.string(),
+  agreeToTerms: z.boolean().refine(val => val === true, "You must agree to the Terms of Service and Privacy Policy")
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"]
+});
+
+export const authLoginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required")
+});
+
+// Types for authentication
+export type AuthRegistration = z.infer<typeof authRegistrationSchema>;
+export type AuthLogin = z.infer<typeof authLoginSchema>;
