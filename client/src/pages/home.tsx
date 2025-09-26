@@ -19,7 +19,7 @@ import { Logo } from "@/components/ui/logo";
 
 
 export default function Home() {
-  const { user, loading } = useAuth();
+  const { user, loading, userName } = useAuth();
   const [, setLocation] = useLocation();
   const [isVisualBLSActive, setIsVisualBLSActive] = useState(false);
   const [isAudioBLSActive, setIsAudioBLSActive] = useState(false);
@@ -235,7 +235,12 @@ export default function Home() {
                       size="lg" 
                       className="w-full max-w-md mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
                     >
-                      Choose Therapist & Continue Your Journey
+                      <span className="block sm:inline">
+                        {userName ? `Welcome back ${userName}!` : 'Welcome back!'} 
+                      </span>
+                      <span className="block sm:inline sm:ml-1">
+                        Choose Your Therapist and Continue Your Healing
+                      </span>
                     </Button>
                   </div>
                 </div>
