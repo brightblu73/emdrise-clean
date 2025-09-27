@@ -29,7 +29,7 @@ export default function Home() {
     password: ""
   });
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(() => {
-    // Get saved therapist from localStorage
+    // Get saved guide from localStorage
     return (localStorage.getItem('selectedTherapist') as 'female' | 'male') || null;
   });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -91,9 +91,9 @@ export default function Home() {
 
 
 
-  const handleTherapistSelect = (therapist: 'female' | 'male') => {
-    setSelectedTherapist(therapist);
-    localStorage.setItem('selectedTherapist', therapist);
+  const handleGuideSelect = (guide: 'female' | 'male') => {
+    setSelectedTherapist(guide);
+    localStorage.setItem('selectedTherapist', guide);
   };
 
 
@@ -120,7 +120,7 @@ export default function Home() {
 
   const handleStartFreeTrial = () => {
     if (!selectedTherapist) {
-      alert("Please select a therapist before starting your EMDR journey.");
+      alert("Please select a guide before starting your EMDR journey.");
       return;
     }
     // Navigate to sign-in
@@ -365,7 +365,7 @@ export default function Home() {
                         ? 'border-primary-green bg-primary-green/10' 
                         : 'border-transparent hover:border-primary-green'
                     }`}
-                    onClick={() => handleTherapistSelect('female')}
+                    onClick={() => handleGuideSelect('female')}
                   >
                     <div className="text-center">
                       <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-primary-green transition-colors cursor-pointer bg-white shadow-sm">
@@ -385,7 +385,7 @@ export default function Home() {
                         ? 'border-secondary-blue bg-secondary-blue/10' 
                         : 'border-transparent hover:border-secondary-blue'
                     }`}
-                    onClick={() => handleTherapistSelect('male')}
+                    onClick={() => handleGuideSelect('male')}
                   >
                     <div className="text-center">
                       <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-secondary-blue transition-colors cursor-pointer bg-white shadow-sm">

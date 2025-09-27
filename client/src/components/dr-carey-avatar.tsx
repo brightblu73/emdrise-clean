@@ -15,11 +15,11 @@ export default function DrCareyAvatar({ isActive = true, showControls = true }: 
         <div className="text-center">
           <img 
             src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300" 
-            alt="therapist, professional female therapist with shoulder-length hair and glasses" 
+            alt="guide, professional female guide with shoulder-length hair and glasses" 
             className="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-4 border-primary/20"
           />
           
-          <h3 className="font-semibold text-slate-800 mb-1">therapist</h3>
+          <h3 className="font-semibold text-slate-800 mb-1">Guide</h3>
           <p className="text-sm text-slate-600 mb-4">Your EMDR Guide</p>
           
           {isActive && (

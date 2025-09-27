@@ -210,7 +210,7 @@ export function useEMDRSession() {
       },
       5: {
         title: "Reprocessing Continued",
-        description: "Bilateral stimulation processing cycles with therapist guidance",
+        description: "Bilateral stimulation processing cycles with guide guidance",
         videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5-reprocessing-continued.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5-reprocessing-continued.mp4',

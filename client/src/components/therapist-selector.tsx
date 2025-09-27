@@ -5,31 +5,31 @@ import { UserCheck } from "lucide-react";
 import mariaPortrait from "@/assets/maria-portrait.svg";
 import alistairPortrait from "@/assets/alistair-portrait.svg";
 
-interface TherapistSelectorProps {
-  onSelect: (therapist: "female" | "male") => void;
-  selectedTherapist?: "female" | "male";
+interface GuideSelectorProps {
+  onSelect: (guide: "female" | "male") => void;
+  selectedGuide?: "female" | "male";
 }
 
-export default function TherapistSelector({ onSelect, selectedTherapist }: TherapistSelectorProps) {
-  const [selected, setSelected] = useState<"female" | "male" | null>(selectedTherapist || null);
+export default function GuideSelector({ onSelect, selectedGuide }: GuideSelectorProps) {
+  const [selected, setSelected] = useState<"female" | "male" | null>(selectedGuide || null);
 
-  const handleSelect = (therapist: "female" | "male") => {
-    setSelected(therapist);
-    onSelect(therapist);
+  const handleSelect = (guide: "female" | "male") => {
+    setSelected(guide);
+    onSelect(guide);
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Therapist</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Guide</h1>
         <p className="text-lg text-gray-600">
-          Select the therapist you'd like to guide you through your EMDR journey. 
-          Both therapists provide identical professional guidance.
+          Select the guide you'd like to guide you through your EMDR journey. 
+          Both guides provide identical professional guidance.
         </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Female Therapist - Maria */}
+        {/* Female Guide - Maria */}
         <Card 
           className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
             selected === "female" 
@@ -57,7 +57,7 @@ export default function TherapistSelector({ onSelect, selectedTherapist }: Thera
           </CardContent>
         </Card>
 
-        {/* Male Therapist - Alistair */}
+        {/* Male Guide - Alistair */}
         <Card 
           className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
             selected === "male" 

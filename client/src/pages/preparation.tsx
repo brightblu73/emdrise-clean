@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import TherapistOffice from "@/components/therapist-office";
+import GuideOffice from "@/components/therapist-office";
 import AudioGuide from "@/components/audio-guide";
 import VisualModal from "@/components/VisualModal";
 import AuditoryModal from "@/components/AuditoryModal";

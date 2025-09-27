@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Volume2, VolumeX, Lightbulb, Eye, Waves } from "lucide-react";
-import therapistImage from "@assets/therapist_1751129297089.jpg";
+import guideImage from "@assets/therapist_1751129297089.jpg";
 
 interface TherapyEnvironmentProps {
   isActive: boolean;
@@ -104,8 +104,8 @@ export default function TherapyEnvironment({ isActive, onEnvironmentReady }: The
             {/* Therapist Presence */}
             <div className="absolute right-4 bottom-4 w-24 h-32 rounded-lg overflow-hidden shadow-lg border-2 border-white/20">
               <img 
-                src={therapistImage} 
-                alt="Your therapist"
+                src={guideImage} 
+                alt="Your guide"
                 className="w-full h-full object-cover object-top"
                 style={{ filter: `brightness(${0.9 + (lightingLevel[0] / 100) * 0.1})` }}
               />

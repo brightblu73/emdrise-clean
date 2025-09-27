@@ -33,7 +33,7 @@ export default function EMDRJourney({ currentScript = 1, onScriptChange }) {
         return (
           <div className="emdr-script">
             <h2>Script 1: Welcome & Introduction</h2>
-            <p>Beginning your EMDR journey with your therapist.</p>
+            <p>Beginning your EMDR journey with your guide.</p>
             <button onClick={handleNext} className="continue-btn">
               Continue to Calm Place Setup
             </button>

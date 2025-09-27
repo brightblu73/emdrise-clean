@@ -10,7 +10,7 @@ import { useAuth } from "../state/AuthProvider";
 import EMDRVideoPlayer from "@/components/emdr-video-player";
 import BilateralStimulation from "@/components/bilateral-stimulation";
 import BLSOptionBox from "@/components/BLSOptionBox";
-import TherapistSelector from "@/components/therapist-selector";
+import GuideSelector from "@/components/therapist-selector";
 import CalmPlaceSetup from "@/components/calm-place-setup";
 import TargetMemorySetup from "@/components/target-memory-setup";
 import { Brain, ArrowRight, Clock, RotateCcw, Save, Star, ArrowLeft, Home, Volume2, Info } from "lucide-react";
@@ -61,7 +61,7 @@ export default function EMDRSession() {
   const [disturbanceLevel, setDisturbanceLevel] = useState([0]);
   const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(null);
   const [isSetupPhase, setIsSetupPhase] = useState(false);
-  const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
+  const [setupStep, setSetupStep] = useState<'guide' | 'calm-place' | 'target' | 'complete'>('guide');
   const [uiReady, setUiReady] = useState(false); // Optimized for fast Script 1 start
   const [openTooltips, setOpenTooltips] = useState<{ [key: string]: boolean }>({});
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -139,10 +139,10 @@ export default function EMDRSession() {
       const defaultTherapist = 'male'; // Default to Alistair only if none selected
       setSelectedTherapist(defaultTherapist);
       localStorage.setItem('selectedTherapist', defaultTherapist);
-      console.log('No therapist selected, defaulting to:', defaultTherapist);
+      console.log('No guide selected, defaulting to:', defaultTherapist);
     } else {
       setSelectedTherapist(savedTherapist);
-      console.log('Using saved therapist selection:', savedTherapist);
+      console.log('Using saved guide selection:', savedTherapist);
     }
   }, []);
 
@@ -329,9 +329,9 @@ export default function EMDRSession() {
   };
 
   // Therapist selection handler
-  const handleTherapistSelect = (therapist: 'female' | 'male') => {
-    setSelectedTherapist(therapist);
-    localStorage.setItem('selectedTherapist', therapist);
+  const handleGuideSelect = (guide: 'female' | 'male') => {
+    setSelectedTherapist(guide);
+    localStorage.setItem('selectedTherapist', guide);
   };
 
   // Helper function to go back to previous script - optimized with debouncing
@@ -553,7 +553,7 @@ export default function EMDRSession() {
                 <EMDRVideoPlayer
                   videoUrl={currentScriptInfo.videoUrl || "/EMDR.mp4"}
                   title={currentScriptInfo.title}
-                  description="Your therapist introduces EMDR therapy and what to expect in your session."
+                  description="Your guide introduces EMDR therapy and what to expect in your session."
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
                   onClose={handleVideoClose}
