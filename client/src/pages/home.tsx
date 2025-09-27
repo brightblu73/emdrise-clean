@@ -236,7 +236,7 @@ export default function Home() {
                         {userName ? `Welcome back, ${userName}!` : 'Welcome back!'}
                       </h2>
                       <p className="text-lg sm:text-xl text-blue-100">
-                        Choose Your Therapist and Continue Your Healing
+                        Choose Your Guide and Continue Your Healing
                       </p>
                     </div>
                     
@@ -268,7 +268,7 @@ export default function Home() {
 
                   {/* Login to Continue Journey CTA */}
                   <p className="text-blue-100 text-sm text-center mb-2">
-                    Already signed up? Log in and continue your journey after selecting your therapist.
+                    Already signed up? Log in and continue your journey after selecting your guide.
                   </p>
                   <Button
                     onClick={handleStartTrial}
@@ -276,7 +276,7 @@ export default function Home() {
                     size="lg" 
                     className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
                   >
-                    {isCreatingSubscription ? 'Setting up...' : 'Choose Therapist & Continue'}
+                    {isCreatingSubscription ? 'Setting up...' : 'Choose Guide & Continue'}
                   </Button>
                 </div>
               )}
@@ -294,7 +294,7 @@ export default function Home() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Select Your Therapist & Continue Your Journey</DialogTitle>
+                    <DialogTitle>Select Your Guide & Continue Your Journey</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <form onSubmit={async (e) => {
@@ -352,9 +352,9 @@ export default function Home() {
             </div>
             <div className="relative">
               <Card className="therapeutic-bg p-8 text-center">
-                <h2 className="text-2xl font-bold text-slate-800 mb-4">Choose Your Therapist</h2>
+                <h2 className="text-2xl font-bold text-slate-800 mb-4">Choose Your Guide</h2>
                 <p className="text-slate-600 mb-6">
-                  Select your preferred therapist to guide your EMDR journey
+                  Select your preferred guide for your EMDR journey
                 </p>
 
                 {/* Therapist Selection */}
@@ -403,7 +403,7 @@ export default function Home() {
 
                 {/* Note about therapist selection */}
                 {!selectedGuide && (
-                  <p className="text-sm text-slate-500 mb-4">Please select a therapist to continue</p>
+                  <p className="text-sm text-slate-500 mb-4">Please select a guide to continue</p>
                 )}
               </Card>
             </div>

@@ -101,7 +101,7 @@ export default function TherapyEnvironment({ isActive, onEnvironmentReady }: The
             {/* Background Environment */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
             
-            {/* Therapist Presence */}
+            {/* Guide Presence */}
             <div className="absolute right-4 bottom-4 w-24 h-32 rounded-lg overflow-hidden shadow-lg border-2 border-white/20">
               <img 
                 src={guideImage} 

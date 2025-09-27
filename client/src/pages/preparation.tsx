@@ -56,7 +56,7 @@ export default function Preparation() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Therapist Guidance */}
+          {/* Guide Guidance */}
           <div className="lg:col-span-1">
             <Card className="therapeutic-card">
               <CardContent className="p-6 text-center">
