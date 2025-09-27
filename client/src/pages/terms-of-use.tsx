@@ -33,7 +33,7 @@ export default function TermsOfUse() {
               <section>
                 <h2 className="text-2xl font-bold text-primary-blue mb-4">3. Description of the Services</h2>
                 <p>
-                  EMDRise provides guided Eye Movement Desensitisation and Reprocessing (EMDR) sessions via professionally recorded videos, bilateral stimulation (visual, auditory, haptic) and intelligent session management that allows you to pause and resume. The application follows the standard eight-phase EMDR protocol and offers a choice of virtual guides. Our services are delivered for general informational and self‑help purposes only. They are not a substitute for professional mental health care and should be used in conjunction with, not instead of, appropriate professional support.
+                  EMDRise provides guided Eye Movement Desensitisation and Reprocessing (EMDR) sessions via professionally recorded videos, bilateral stimulation (visual, auditory, haptic) and intelligent session management that allows you to pause and resume. The application follows the standard eight-phase EMDR protocol and offers a choice of virtual therapists. Our services are delivered for general informational and self‑help purposes only. They are not a substitute for professional mental health care and should be used in conjunction with, not instead of, appropriate professional support.
                 </p>
               </section>
 

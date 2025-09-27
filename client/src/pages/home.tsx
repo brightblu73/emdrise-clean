@@ -28,9 +28,9 @@ export default function Home() {
     email: "",
     password: ""
   });
-  const [selectedGuide, setSelectedGuide] = useState<'female' | 'male' | null>(() => {
-    // Get saved guide from localStorage
-    return (localStorage.getItem('selectedGuide') as 'female' | 'male') || null;
+  const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(() => {
+    // Get saved therapist from localStorage
+    return (localStorage.getItem('selectedTherapist') as 'female' | 'male') || null;
   });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
@@ -91,9 +91,9 @@ export default function Home() {
 
 
 
-  const handleGuideSelect = (guide: 'female' | 'male') => {
-    setSelectedGuide(guide);
-    localStorage.setItem('selectedGuide', guide);
+  const handleTherapistSelect = (therapist: 'female' | 'male') => {
+    setSelectedTherapist(therapist);
+    localStorage.setItem('selectedTherapist', therapist);
   };
 
 
@@ -119,8 +119,8 @@ export default function Home() {
   };
 
   const handleStartFreeTrial = () => {
-    if (!selectedGuide) {
-      alert("Please select a guide before starting your EMDR journey.");
+    if (!selectedTherapist) {
+      alert("Please select a therapist before starting your EMDR journey.");
       return;
     }
     // Navigate to sign-in
@@ -236,7 +236,7 @@ export default function Home() {
                         {userName ? `Welcome back, ${userName}!` : 'Welcome back!'}
                       </h2>
                       <p className="text-lg sm:text-xl text-blue-100">
-                        Choose Your Guide and Continue Your Healing
+                        Choose Your Therapist and Continue Your Healing
                       </p>
                     </div>
                     
@@ -268,7 +268,7 @@ export default function Home() {
 
                   {/* Login to Continue Journey CTA */}
                   <p className="text-blue-100 text-sm text-center mb-2">
-                    Already signed up? Log in and continue your journey after selecting your guide.
+                    Already signed up? Log in and continue your journey after selecting your therapist.
                   </p>
                   <Button
                     onClick={handleStartTrial}
@@ -276,7 +276,7 @@ export default function Home() {
                     size="lg" 
                     className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
                   >
-                    {isCreatingSubscription ? 'Setting up...' : 'Choose Guide & Continue'}
+                    {isCreatingSubscription ? 'Setting up...' : 'Choose Therapist & Continue'}
                   </Button>
                 </div>
               )}
@@ -294,7 +294,7 @@ export default function Home() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Select Your Guide & Continue Your Journey</DialogTitle>
+                    <DialogTitle>Select Your Therapist & Continue Your Journey</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <form onSubmit={async (e) => {
@@ -352,27 +352,27 @@ export default function Home() {
             </div>
             <div className="relative">
               <Card className="therapeutic-bg p-8 text-center">
-                <h2 className="text-2xl font-bold text-slate-800 mb-4">Choose Your Guide</h2>
+                <h2 className="text-2xl font-bold text-slate-800 mb-4">Choose Your Therapist</h2>
                 <p className="text-slate-600 mb-6">
-                  Select your preferred guide for your EMDR journey
+                  Select your preferred therapist to guide your EMDR journey
                 </p>
 
                 {/* Therapist Selection */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <Card 
                     className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${
-                      selectedGuide === 'female' 
+                      selectedTherapist === 'female' 
                         ? 'border-primary-green bg-primary-green/10' 
                         : 'border-transparent hover:border-primary-green'
                     }`}
-                    onClick={() => handleGuideSelect('female')}
+                    onClick={() => handleTherapistSelect('female')}
                   >
                     <div className="text-center">
                       <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-primary-green transition-colors cursor-pointer bg-white shadow-sm">
                         <img src={mariaPortrait} alt="Maria" className="w-full h-full object-cover object-top" />
                       </div>
                       <h3 className="font-semibold text-slate-800 mb-1">Maria</h3>
-                      {selectedGuide === 'female' && (
+                      {selectedTherapist === 'female' && (
                         <div className="mt-2">
                           <CheckCircle className="h-5 w-5 text-primary-green mx-auto" />
                         </div>
@@ -381,18 +381,18 @@ export default function Home() {
                   </Card>
                   <Card 
                     className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${
-                      selectedGuide === 'male' 
+                      selectedTherapist === 'male' 
                         ? 'border-secondary-blue bg-secondary-blue/10' 
                         : 'border-transparent hover:border-secondary-blue'
                     }`}
-                    onClick={() => handleGuideSelect('male')}
+                    onClick={() => handleTherapistSelect('male')}
                   >
                     <div className="text-center">
                       <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-secondary-blue transition-colors cursor-pointer bg-white shadow-sm">
                         <img src={alistairPortrait} alt="Alistair" className="w-full h-full object-cover object-top" />
                       </div>
                       <h3 className="font-semibold text-slate-800 mb-1">Alistair</h3>
-                      {selectedGuide === 'male' && (
+                      {selectedTherapist === 'male' && (
                         <div className="mt-2">
                           <CheckCircle className="h-5 w-5 text-secondary-blue mx-auto" />
                         </div>
@@ -402,8 +402,8 @@ export default function Home() {
                 </div>
 
                 {/* Note about therapist selection */}
-                {!selectedGuide && (
-                  <p className="text-sm text-slate-500 mb-4">Please select a guide to continue</p>
+                {!selectedTherapist && (
+                  <p className="text-sm text-slate-500 mb-4">Please select a therapist to continue</p>
                 )}
               </Card>
             </div>

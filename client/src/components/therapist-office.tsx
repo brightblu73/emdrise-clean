@@ -1,13 +1,13 @@
 import React from "react";
 import { useLocation } from "wouter";
 
-export default function GuideOffice() {
+export default function TherapistOffice() {
   const [, setLocation] = useLocation();
 
   return (
     <div style={{ padding: "1rem" }}>
       <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>
-        Meet Your Guide
+        Meet Your Therapist
       </h2>
       <video controls width="100%" style={{ borderRadius: "8px" }}>
         <source src="/EMDR.mp4" type="video/mp4" />

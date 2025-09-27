@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import GuideOffice from "@/components/guide-office";
+import TherapistOffice from "@/components/therapist-office";
 import AudioGuide from "@/components/audio-guide";
 import VisualModal from "@/components/VisualModal";
 import AuditoryModal from "@/components/AuditoryModal";
@@ -56,7 +56,7 @@ export default function Preparation() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Guide Guidance */}
+          {/* Therapist Guidance */}
           <div className="lg:col-span-1">
             <Card className="therapeutic-card">
               <CardContent className="p-6 text-center">

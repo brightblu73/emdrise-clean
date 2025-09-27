@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import GuideOffice from "@/components/guide-office";
+import TherapistOffice from "@/components/therapist-office";
 import AudioGuide from "@/components/audio-guide";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -127,7 +127,7 @@ export default function Assessment() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Guide Guidance */}
+          {/* Therapist Guidance */}
           <div className="lg:col-span-1">
             <Card className="therapeutic-card">
               <CardContent className="p-6 text-center">

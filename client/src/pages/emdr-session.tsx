@@ -10,7 +10,7 @@ import { useAuth } from "../state/AuthProvider";
 import EMDRVideoPlayer from "@/components/emdr-video-player";
 import BilateralStimulation from "@/components/bilateral-stimulation";
 import BLSOptionBox from "@/components/BLSOptionBox";
-import GuideSelector from "@/components/guide-selector";
+import TherapistSelector from "@/components/therapist-selector";
 import CalmPlaceSetup from "@/components/calm-place-setup";
 import TargetMemorySetup from "@/components/target-memory-setup";
 import { Brain, ArrowRight, Clock, RotateCcw, Save, Star, ArrowLeft, Home, Volume2, Info } from "lucide-react";
@@ -59,9 +59,9 @@ export default function EMDRSession() {
   const [bodyScanStep, setBodyScanStep] = useState<'scanning' | 'disturbance' | 'clearing' | 'complete'>('scanning');
   const [localVideoCompleted, setLocalVideoCompleted] = useState(false);
   const [disturbanceLevel, setDisturbanceLevel] = useState([0]);
-  const [selectedGuide, setSelectedGuide] = useState<'female' | 'male' | null>(null);
+  const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(null);
   const [isSetupPhase, setIsSetupPhase] = useState(false);
-  const [setupStep, setSetupStep] = useState<'guide' | 'calm-place' | 'target' | 'complete'>('guide');
+  const [setupStep, setSetupStep] = useState<'therapist' | 'calm-place' | 'target' | 'complete'>('therapist');
   const [uiReady, setUiReady] = useState(false); // Optimized for fast Script 1 start
   const [openTooltips, setOpenTooltips] = useState<{ [key: string]: boolean }>({});
   const [isTouchDevice, setIsTouchDevice] = useState(false);
@@ -134,24 +134,24 @@ export default function EMDRSession() {
 
   // Use the therapist selected from localStorage, or default to Alistair if none selected
   useEffect(() => {
-    const savedGuide = localStorage.getItem('selectedGuide') as 'female' | 'male' | null;
+    const savedTherapist = localStorage.getItem('selectedTherapist') as 'female' | 'male' | null;
     if (!savedTherapist) {
       const defaultTherapist = 'male'; // Default to Alistair only if none selected
-      setSelectedGuide(defaultTherapist);
-      localStorage.setItem('selectedGuide', defaultTherapist);
-      console.log('No guide selected, defaulting to:', defaultTherapist);
+      setSelectedTherapist(defaultTherapist);
+      localStorage.setItem('selectedTherapist', defaultTherapist);
+      console.log('No therapist selected, defaulting to:', defaultTherapist);
     } else {
-      setSelectedGuide(savedGuide);
-      console.log('Using saved guide selection:', savedTherapist);
+      setSelectedTherapist(savedTherapist);
+      console.log('Using saved therapist selection:', savedTherapist);
     }
   }, []);
 
   // Set UI ready when currentSession is available
   useEffect(() => {
-    if (currentSession && selectedGuide && !uiReady) {
+    if (currentSession && selectedTherapist && !uiReady) {
       setUiReady(true);
     }
-  }, [currentSession, selectedGuide, uiReady]);
+  }, [currentSession, selectedTherapist, uiReady]);
 
   // Detect touch device (matching home screen helper pattern)
   useEffect(() => {
@@ -220,13 +220,13 @@ export default function EMDRSession() {
 
   // New script mapping for 10-script sequence with therapist-specific videos
   const getScriptInfo = (scriptNumber: number | string) => {
-    const guidePrefix = selectedGuide === 'female' ? 'maria' : 'alistair';
-    console.log(`Getting script info for Script ${scriptNumber}, selectedGuide: ${selectedGuide}, prefix: ${guidePrefix}`);
+    const therapistPrefix = selectedTherapist === 'female' ? 'maria' : 'alistair';
+    console.log(`Getting script info for Script ${scriptNumber}, selectedTherapist: ${selectedTherapist}, prefix: ${therapistPrefix}`);
     const scripts: Record<string | number, { title: string; phase: string; videoUrl: string; needsSetup?: boolean; hasBLS?: boolean; isLoop?: boolean; description?: string }> = {
       1: { 
         title: "Welcome & Introduction to EMDR", 
         phase: "introduction", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script1-welcome.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script1-welcome.mp4',
         needsSetup: true 
@@ -234,7 +234,7 @@ export default function EMDRSession() {
       2: { 
         title: "Setting up your Calm Place", 
         phase: "calm_place_setup", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script2-calmplace.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script2-calmplace.mp4',
         needsSetup: true 
@@ -242,7 +242,7 @@ export default function EMDRSession() {
       3: { 
         title: "Setting up the Target Memory", 
         phase: "target_setup", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script3-target.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script3-target.mp4',
         needsSetup: true 
@@ -250,7 +250,7 @@ export default function EMDRSession() {
       4: { 
         title: "Desensitization and Reprocessing", 
         phase: "desensitization_setup", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script4-reprocessing.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script4-reprocessing.mp4',
         needsSetup: true 
@@ -258,7 +258,7 @@ export default function EMDRSession() {
       5: { 
         title: "Reprocessing", 
         phase: "reprocessing", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5-reprocessing-continued.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5-reprocessing-continued.mp4',
         hasBLS: true, 
@@ -267,7 +267,7 @@ export default function EMDRSession() {
       '5a': { 
         title: "Continue Reprocessing After an Incomplete Session", 
         phase: "reprocessing_resumption", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5a-continue-reprocessing.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5a-continue-reprocessing.mp4',
         hasBLS: true, 
@@ -276,7 +276,7 @@ export default function EMDRSession() {
       6: { 
         title: "Installation of Positive Belief", 
         phase: "installation", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script6-installation.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script6-installation.mp4',
         hasBLS: true 
@@ -284,7 +284,7 @@ export default function EMDRSession() {
       7: { 
         title: "Installation Continued", 
         phase: "installation_continued", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script7-installation-continued.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script7-installation-continued.mp4',
         hasBLS: true, 
@@ -293,7 +293,7 @@ export default function EMDRSession() {
       8: { 
         title: "Body Scan", 
         phase: "body_scan", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script8-body-scan.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script8-body-scan.mp4',
         hasBLS: true, 
@@ -302,7 +302,7 @@ export default function EMDRSession() {
       9: { 
         title: "Calm Place Return", 
         phase: "calm_place_return", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script9-calm-place.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script9-calm-place.mp4',
         needsSetup: true 
@@ -310,7 +310,7 @@ export default function EMDRSession() {
       10: { 
         title: "Aftercare", 
         phase: "aftercare", 
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script10-aftercare.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script10-aftercare.mp4'
       }
@@ -329,9 +329,9 @@ export default function EMDRSession() {
   };
 
   // Therapist selection handler
-  const handleGuideSelect = (guide: 'female' | 'male') => {
-    setSelectedGuide(guide);
-    localStorage.setItem('selectedGuide', guide);
+  const handleTherapistSelect = (therapist: 'female' | 'male') => {
+    setSelectedTherapist(therapist);
+    localStorage.setItem('selectedTherapist', therapist);
   };
 
   // Helper function to go back to previous script - optimized with debouncing
@@ -496,7 +496,7 @@ export default function EMDRSession() {
   // Memoize currentScriptInfo to prevent unnecessary re-renders
   const currentScriptInfo = useMemo(() => {
     return currentSession ? getScriptInfo(currentSession?.currentScript) : null;
-  }, [currentSession?.currentScript, selectedGuide]);
+  }, [currentSession?.currentScript, selectedTherapist]);
 
   if (isLoading) {
     return (
@@ -553,7 +553,7 @@ export default function EMDRSession() {
                 <EMDRVideoPlayer
                   videoUrl={currentScriptInfo.videoUrl || "/EMDR.mp4"}
                   title={currentScriptInfo.title}
-                  description="Your guide introduces EMDR therapy and what to expect in your session."
+                  description="Your therapist introduces EMDR therapy and what to expect in your session."
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
                   onClose={handleVideoClose}

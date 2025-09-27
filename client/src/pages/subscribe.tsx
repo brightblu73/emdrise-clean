@@ -58,7 +58,7 @@ export default function Subscribe() {
                 <div className="flex items-start space-x-3">
                   <CheckCircle className="text-primary-green h-5 w-5 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-slate-800">Professional Guide Videos</h4>
+                    <h4 className="font-medium text-slate-800">Professional Therapist Videos</h4>
                     <p className="text-sm text-slate-600">Choose between Maria and Alistair for guided sessions</p>
                   </div>
                 </div>

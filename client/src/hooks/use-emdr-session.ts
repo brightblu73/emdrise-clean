@@ -169,15 +169,15 @@ export function useEMDRSession() {
 
   // Get script information based on current script number - Updated per amendments
   const getScriptInfo = (scriptNumber: number) => {
-    // Get selected guide from localStorage for video URL
-    const selectedGuide = localStorage.getItem('selectedGuide');
-    const guidePrefix = selectedGuide === 'female' ? 'maria' : 'alistair';
+    // Get selected therapist from localStorage for video URL
+    const selectedTherapist = localStorage.getItem('selectedTherapist');
+    const therapistPrefix = selectedTherapist === 'female' ? 'maria' : 'alistair';
     
     const scriptMap: Record<string | number, { title: string; description: string; videoUrl?: string; isLoop: boolean; needsSetup?: boolean; hasBLS?: boolean; canPause?: boolean }> = {
       1: {
         title: "Welcome and Introduction to EMDR",
         description: "Introduction to EMDR therapy and what to expect",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script1-welcome.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script1-welcome.mp4',
         isLoop: false,
@@ -185,7 +185,7 @@ export function useEMDRSession() {
       2: {
         title: "Setting up your Calm Place",
         description: "Set up your safe, calm place for grounding during and after reprocessing",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script2-calmplace.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script2-calmplace.mp4',
         isLoop: false,
@@ -193,7 +193,7 @@ export function useEMDRSession() {
       3: {
         title: "Setting up the Target Memory",
         description: "Identifying the target memory to be reprocessed",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script3-target.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script3-target.mp4',
         isLoop: false,
@@ -201,7 +201,7 @@ export function useEMDRSession() {
       4: {
         title: "Desensitisation and Reprocessing",
         description: "Preparing for bilateral stimulation and reprocessing",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script4-reprocessing.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script4-reprocessing.mp4',
         isLoop: false,
@@ -210,8 +210,8 @@ export function useEMDRSession() {
       },
       5: {
         title: "Reprocessing Continued",
-        description: "Bilateral stimulation processing cycles with guide guidance",
-        videoUrl: guidePrefix === 'maria' 
+        description: "Bilateral stimulation processing cycles with therapist guidance",
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5-reprocessing-continued.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5-reprocessing-continued.mp4',
         isLoop: true,
@@ -222,7 +222,7 @@ export function useEMDRSession() {
       "5a": {
         title: "Continue Reprocessing After an Incomplete Session",
         description: "Resume reprocessing from where you left off in your previous session",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script5a-continue-reprocessing.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script5a-continue-reprocessing.mp4',
         isLoop: true,
@@ -232,7 +232,7 @@ export function useEMDRSession() {
       6: {
         title: "Installation of Positive Belief",
         description: "Strengthening positive beliefs and new neural pathways",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script6-installation.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script6-installation.mp4',
         isLoop: false,
@@ -241,7 +241,7 @@ export function useEMDRSession() {
       7: {
         title: "Installation of Positive Belief Continued",
         description: "Continued positive belief installation and reinforcement",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script7-installation-continued.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script7-installation-continued.mp4',
         isLoop: true,
@@ -250,7 +250,7 @@ export function useEMDRSession() {
       8: {
         title: "Body Scan",
         description: "Scanning for remaining disturbance in the body for reprocessing",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script8-body-scan.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script8-body-scan.mp4',
         isLoop: false,
@@ -258,7 +258,7 @@ export function useEMDRSession() {
       9: {
         title: "Calm Place",
         description: "Return to your calm place for grounding",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script9-calm-place.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script9-calm-place.mp4',
         isLoop: false,
@@ -266,7 +266,7 @@ export function useEMDRSession() {
       10: {
         title: "Aftercare",
         description: "Session completion instructions",
-        videoUrl: guidePrefix === 'maria' 
+        videoUrl: therapistPrefix === 'maria' 
           ? 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//maria-script10-aftercare.mp4'
           : 'https://jxhjghgectlpgrpwpkfd.supabase.co/storage/v1/object/public/videos//alistair-script10-aftercare.mp4',
         isLoop: false,
