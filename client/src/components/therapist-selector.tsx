@@ -23,8 +23,8 @@ export default function GuideSelector({ onSelect, selectedGuide }: GuideSelector
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Guide</h1>
         <p className="text-lg text-gray-600">
-          Select the guide you'd like to guide you through your EMDR journey. 
-          Both guides provide identical professional guidance.
+          Select the guide you'd like to work with on your EMDR journey. 
+          Both guides provide identical professional support.
         </p>
       </div>
 

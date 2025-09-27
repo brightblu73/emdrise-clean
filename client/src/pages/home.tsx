@@ -28,9 +28,9 @@ export default function Home() {
     email: "",
     password: ""
   });
-  const [selectedTherapist, setSelectedTherapist] = useState<'female' | 'male' | null>(() => {
+  const [selectedGuide, setSelectedGuide] = useState<'female' | 'male' | null>(() => {
     // Get saved guide from localStorage
-    return (localStorage.getItem('selectedTherapist') as 'female' | 'male') || null;
+    return (localStorage.getItem('selectedGuide') as 'female' | 'male') || null;
   });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
@@ -92,8 +92,8 @@ export default function Home() {
 
 
   const handleGuideSelect = (guide: 'female' | 'male') => {
-    setSelectedTherapist(guide);
-    localStorage.setItem('selectedTherapist', guide);
+    setSelectedGuide(guide);
+    localStorage.setItem('selectedGuide', guide);
   };
 
 
@@ -119,7 +119,7 @@ export default function Home() {
   };
 
   const handleStartFreeTrial = () => {
-    if (!selectedTherapist) {
+    if (!selectedGuide) {
       alert("Please select a guide before starting your EMDR journey.");
       return;
     }
@@ -361,7 +361,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <Card 
                     className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${
-                      selectedTherapist === 'female' 
+                      selectedGuide === 'female' 
                         ? 'border-primary-green bg-primary-green/10' 
                         : 'border-transparent hover:border-primary-green'
                     }`}
@@ -372,7 +372,7 @@ export default function Home() {
                         <img src={mariaPortrait} alt="Maria" className="w-full h-full object-cover object-top" />
                       </div>
                       <h3 className="font-semibold text-slate-800 mb-1">Maria</h3>
-                      {selectedTherapist === 'female' && (
+                      {selectedGuide === 'female' && (
                         <div className="mt-2">
                           <CheckCircle className="h-5 w-5 text-primary-green mx-auto" />
                         </div>
@@ -381,7 +381,7 @@ export default function Home() {
                   </Card>
                   <Card 
                     className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${
-                      selectedTherapist === 'male' 
+                      selectedGuide === 'male' 
                         ? 'border-secondary-blue bg-secondary-blue/10' 
                         : 'border-transparent hover:border-secondary-blue'
                     }`}
@@ -392,7 +392,7 @@ export default function Home() {
                         <img src={alistairPortrait} alt="Alistair" className="w-full h-full object-cover object-top" />
                       </div>
                       <h3 className="font-semibold text-slate-800 mb-1">Alistair</h3>
-                      {selectedTherapist === 'male' && (
+                      {selectedGuide === 'male' && (
                         <div className="mt-2">
                           <CheckCircle className="h-5 w-5 text-secondary-blue mx-auto" />
                         </div>
@@ -402,7 +402,7 @@ export default function Home() {
                 </div>
 
                 {/* Note about therapist selection */}
-                {!selectedTherapist && (
+                {!selectedGuide && (
                   <p className="text-sm text-slate-500 mb-4">Please select a therapist to continue</p>
                 )}
               </Card>
