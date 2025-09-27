@@ -10,7 +10,7 @@ import { useAuth } from "../state/AuthProvider";
 import EMDRVideoPlayer from "@/components/emdr-video-player";
 import BilateralStimulation from "@/components/bilateral-stimulation";
 import BLSOptionBox from "@/components/BLSOptionBox";
-import GuideSelector from "@/components/therapist-selector";
+import GuideSelector from "@/components/guide-selector";
 import CalmPlaceSetup from "@/components/calm-place-setup";
 import TargetMemorySetup from "@/components/target-memory-setup";
 import { Brain, ArrowRight, Clock, RotateCcw, Save, Star, ArrowLeft, Home, Volume2, Info } from "lucide-react";
@@ -330,8 +330,8 @@ export default function EMDRSession() {
 
   // Therapist selection handler
   const handleGuideSelect = (guide: 'female' | 'male') => {
-    setSelectedTherapist(guide);
-    localStorage.setItem('selectedTherapist', guide);
+    setSelectedGuide(guide);
+    localStorage.setItem('selectedGuide', guide);
   };
 
   // Helper function to go back to previous script - optimized with debouncing
@@ -496,7 +496,7 @@ export default function EMDRSession() {
   // Memoize currentScriptInfo to prevent unnecessary re-renders
   const currentScriptInfo = useMemo(() => {
     return currentSession ? getScriptInfo(currentSession?.currentScript) : null;
-  }, [currentSession?.currentScript, selectedTherapist]);
+  }, [currentSession?.currentScript, selectedGuide]);
 
   if (isLoading) {
     return (
