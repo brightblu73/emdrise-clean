@@ -12,7 +12,7 @@ export const users = pgTable("users", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionStatus: text("subscription_status").default("trial"), // trial, active, cancelled, expired
-  preferredTherapist: text("preferred_therapist").default("female"), // female, male
+  preferredGuide: text("preferred_therapist").default("female"), // female, male
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
