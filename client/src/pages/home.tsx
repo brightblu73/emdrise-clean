@@ -215,7 +215,7 @@ export default function Home() {
                 Professional Self-Directed EMDR In Your Own Space
               </h1>
               <p className="text-xl mb-8 text-blue-100">
-                Led by a therapist-designed video guide. Walking with you step by step offering structure, support, and connection when you need it most.
+                EMDRise guides you step by step with therapist-designed videos that provide structure, reassurance, and support whenever you need it.
               </p>
               {loading ? (
                 <div className="flex justify-center">
