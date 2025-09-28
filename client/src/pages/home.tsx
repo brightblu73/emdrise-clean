@@ -164,17 +164,17 @@ export default function Home() {
 
       setIsCreatingSubscription(true);
 
-      // Call checkout session endpoint
-      const response = await apiRequest('POST', '/api/create-checkout-session');
+      // Call subscription endpoint (trial setup)
+      const response = await apiRequest('POST', '/api/create-subscription');
       const data = await response.json();
 
-      if (data.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
+      if (data.success) {
+        // Trial access granted, redirect to therapy selection
+        setLocation('/therapist-selection');
       } else {
         // Handle any subscription setup issues
-        console.error('Checkout session creation failed:', data);
-        alert('Unable to create checkout session. Please try again.');
+        console.error('Trial setup failed:', data);
+        alert('Unable to set up trial access. Please try again.');
       }
     } catch (error) {
       console.error('Subscription flow error:', error);

@@ -26,7 +26,7 @@ export default function AuthCallback() {
           setStatus('Welcome back! Redirecting...');
           
           // Always redirect to homepage - let the homepage handle subscription status
-          // Only redirect to Stripe if user explicitly starts a trial flow
+          // Trial setup handled through homepage trial flow
           setTimeout(() => setLocation('/'), 500);
         } else {
           // No session, redirect to auth

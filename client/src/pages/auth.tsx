@@ -119,7 +119,7 @@ export default function Auth() {
       if (signUpData.user && !signUpData.user.email_confirmed_at) {
         alert('Check your email to verify your account. After verification, you\'ll be redirected to complete your trial setup.');
       } else if (signUpData.user && signUpData.user.email_confirmed_at) {
-        // User is already confirmed, redirect to auth-callback to handle Stripe
+        // User is already confirmed, redirect to auth-callback to handle trial setup
         console.log('User already confirmed, redirecting to auth-callback');
         setLocation('/auth-callback');
       }
