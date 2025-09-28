@@ -14,16 +14,14 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User>;
-  updateUserStripeInfo(id: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User>;
+  updateUserRevenueCatInfo(id: number, revenueCatSubscriberId: string): Promise<User>;
   updateUserSubscriptionStatus(userId: string, subscriptionData: {
     hasActiveSubscription: boolean;
-    subscriptionId: string;
-    customerId: string;
-    productId?: string;
+    subscriptionStatus: 'trial' | 'active' | 'expired' | 'cancelled';
     expirationDate?: Date | null;
   }): Promise<void>;
   updateUserTrialEndDate?(id: number, trialEndDate: Date): Promise<User>;
-  getUserByStripeCustomerId(customerId: string): Promise<User | undefined>;
+  getUserByRevenueCatSubscriberId(subscriberId: string): Promise<User | undefined>;
   
   // Session methods
   createSession(session: InsertSession): Promise<Session>;
@@ -105,10 +103,10 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUserStripeInfo(id: number, stripeCustomerId: string, stripeSubscriptionId: string): Promise<User> {
+  async updateUserRevenueCatInfo(id: number, revenueCatSubscriberId: string): Promise<User> {
     const [user] = await db
       .update(users)
-      .set({ stripeCustomerId, stripeSubscriptionId })
+      .set({ revenueCatSubscriberId })
       .where(eq(users.id, id))
       .returning();
     return user;
@@ -116,9 +114,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserSubscriptionStatus(userId: string, subscriptionData: {
     hasActiveSubscription: boolean;
-    subscriptionId: string;
-    customerId: string;
-    productId?: string;
+    subscriptionStatus: 'trial' | 'active' | 'expired' | 'cancelled';
     expirationDate?: Date | null;
   }): Promise<void> {
     // First try to find user by Supabase user ID (string format)
@@ -127,9 +123,8 @@ export class DatabaseStorage implements IStorage {
       await db
         .update(users)
         .set({ 
-          subscriptionStatus: subscriptionData.hasActiveSubscription ? 'active' : 'expired',
-          stripeCustomerId: subscriptionData.customerId,
-          stripeSubscriptionId: subscriptionData.subscriptionId,
+          subscriptionStatus: subscriptionData.subscriptionStatus,
+          trialEndsAt: subscriptionData.expirationDate
         })
         .where(eq(users.id, user.id));
     }
@@ -144,11 +139,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getUserByStripeCustomerId(customerId: string): Promise<User | undefined> {
+  async getUserByRevenueCatSubscriberId(subscriberId: string): Promise<User | undefined> {
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.stripeCustomerId, customerId));
+      .where(eq(users.revenueCatSubscriberId, subscriberId));
     return user || undefined;
   }
 

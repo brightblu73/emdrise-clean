@@ -233,9 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update subscription info after creation (trial user)
       await storage.updateUserSubscriptionStatus(user.id.toString(), {
         hasActiveSubscription: true, // Trial is considered active
-        subscriptionId: `trial_${user.id}`,
-        customerId: `trial_customer_${user.id}`,
-        productId: 'trial',
+        subscriptionStatus: 'trial',
         expirationDate: trialEndDate
       });
 
@@ -322,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Note: In a production app, you might also want to:
-      // - Cancel any active Stripe subscriptions
+      // - Cancel any active RevenueCat subscriptions
       // - Delete user data from your local database
       // - Clean up any file uploads or other associated data
       // For now, Supabase deletion handles the auth cleanup
@@ -397,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return;
     }
 
-    // For actual paid subscriptions (when trial expires), redirect to Stripe
+    // For actual paid subscriptions (when trial expires), use RevenueCat App Store subscriptions
     // For now, just confirm trial access for testing
     res.json({ 
       success: true, 

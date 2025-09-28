@@ -8,8 +8,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
+  revenueCatSubscriberId: text("revenuecat_subscriber_id"),
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionStatus: text("subscription_status").default("trial"), // trial, active, cancelled, expired
   preferredTherapist: text("preferred_therapist").default("female"), // female, male
