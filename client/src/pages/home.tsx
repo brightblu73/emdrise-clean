@@ -420,7 +420,7 @@ export default function Home() {
             Start Your Healing Journey Today
           </h2>
           <p className="text-xl text-white/90 mb-12">
-            Experience professional EMDR therapy with expert therapeutic guidance
+            Experience professional Self-Directed EMDR with expert therapeutic guidance
           </p>
 
           <Card className="max-w-lg mx-auto shadow-2xl">
