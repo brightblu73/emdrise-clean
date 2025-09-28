@@ -15,9 +15,10 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User>;
   updateUserRevenueCatInfo(id: number, revenueCatSubscriberId: string): Promise<User>;
-  updateUserSubscriptionStatus(userId: string, subscriptionData: {
+  updateUserSubscriptionStatus(userIdOrEmail: string, subscriptionData: {
     hasActiveSubscription: boolean;
     subscriptionStatus: 'trial' | 'active' | 'expired' | 'cancelled';
+    entitlementStatus?: 'trial' | 'premium' | 'expired';
     expirationDate?: Date | null;
   }): Promise<void>;
   updateUserTrialEndDate?(id: number, trialEndDate: Date): Promise<User>;
@@ -112,21 +113,37 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUserSubscriptionStatus(userId: string, subscriptionData: {
+  async updateUserSubscriptionStatus(userIdOrEmail: string, subscriptionData: {
     hasActiveSubscription: boolean;
     subscriptionStatus: 'trial' | 'active' | 'expired' | 'cancelled';
+    entitlementStatus?: 'trial' | 'premium' | 'expired';
     expirationDate?: Date | null;
   }): Promise<void> {
-    // First try to find user by Supabase user ID (string format)
-    const user = await this.getUserByEmail(userId);
+    // Try to find user by email first (matches Supabase user identification)
+    let user = await this.getUserByEmail(userIdOrEmail);
+    
+    // If not found by email, try by RevenueCat subscriber ID
+    if (!user) {
+      user = await this.getUserByRevenueCatSubscriberId(userIdOrEmail);
+    }
+    
     if (user) {
+      const updateData: any = { 
+        subscriptionStatus: subscriptionData.subscriptionStatus,
+        trialEndsAt: subscriptionData.expirationDate
+      };
+      
+      // Add entitlementStatus if provided
+      if (subscriptionData.entitlementStatus) {
+        updateData.entitlementStatus = subscriptionData.entitlementStatus;
+      }
+      
       await db
         .update(users)
-        .set({ 
-          subscriptionStatus: subscriptionData.subscriptionStatus,
-          trialEndsAt: subscriptionData.expirationDate
-        })
+        .set(updateData)
         .where(eq(users.id, user.id));
+    } else {
+      console.error('User not found for subscription update:', userIdOrEmail);
     }
   }
 

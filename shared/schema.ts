@@ -8,9 +8,14 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
+  // Legacy Stripe fields (preserved for data safety)
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  // New RevenueCat fields
   revenueCatSubscriberId: text("revenuecat_subscriber_id"),
   trialEndsAt: timestamp("trial_ends_at"),
   subscriptionStatus: text("subscription_status").default("trial"), // trial, active, cancelled, expired
+  entitlementStatus: text("entitlement_status").default("trial"), // trial, premium, expired
   preferredTherapist: text("preferred_therapist").default("female"), // female, male
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
