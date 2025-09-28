@@ -276,7 +276,7 @@ export default function Home() {
                     size="lg" 
                     className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
                   >
-                    {isCreatingSubscription ? 'Setting up...' : 'Choose Therapist & Continue'}
+                    {isCreatingSubscription ? 'Setting up...' : 'Choose Guide & Continue'}
                   </Button>
                 </div>
               )}
