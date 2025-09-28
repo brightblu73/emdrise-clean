@@ -352,9 +352,6 @@ export default function Home() {
             </div>
             <div className="relative">
               <Card className="therapeutic-bg p-8 text-center">
-                <p className="text-slate-600 mb-6">
-                  Select your preferred therapist to guide your EMDR journey
-                </p>
 
                 {/* Therapist Selection */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
