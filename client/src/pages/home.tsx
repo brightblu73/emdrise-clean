@@ -268,7 +268,7 @@ export default function Home() {
 
                   {/* Login to Continue Journey CTA */}
                   <p className="text-blue-100 text-sm text-center mb-2">
-                    Already signed up? Log in and continue your journey after selecting your therapist.
+                    Already signed up? Log in and continue your journey after selecting your guide.
                   </p>
                   <Button
                     onClick={handleStartTrial}
