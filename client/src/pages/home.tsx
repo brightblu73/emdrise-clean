@@ -236,7 +236,7 @@ export default function Home() {
                         {userName ? `Welcome back, ${userName}!` : 'Welcome back!'}
                       </h2>
                       <p className="text-lg sm:text-xl text-blue-100">
-                        Choose Your Therapist and Continue Your Healing
+                        Choose Your Guide and Continue Your Healing
                       </p>
                     </div>
                     
@@ -294,7 +294,7 @@ export default function Home() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Select Your Therapist & Continue Your Journey</DialogTitle>
+                    <DialogTitle>Select Your Guide & Continue Your Journey</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <form onSubmit={async (e) => {
@@ -399,7 +399,7 @@ export default function Home() {
 
                 {/* Note about therapist selection */}
                 {!selectedTherapist && (
-                  <p className="text-sm text-slate-500 mb-4">Please select a therapist to continue</p>
+                  <p className="text-sm text-slate-500 mb-4">Please select a guide to continue</p>
                 )}
               </Card>
             </div>

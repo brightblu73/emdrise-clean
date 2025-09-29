@@ -21,10 +21,10 @@ export default function TherapistSelector({ onSelect, selectedTherapist }: Thera
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Therapist</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Guide</h1>
         <p className="text-lg text-gray-600">
-          Select the therapist you'd like to guide you through your EMDR journey. 
-          Both therapists provide identical professional guidance.
+          Select the guide you'd like to accompany you through your EMDR journey. 
+          Both guides provide identical professional guidance.
         </p>
       </div>
 
