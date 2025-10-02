@@ -40,20 +40,20 @@ const endorsements = [
 export default function EndorsementCarousel() {
 
   return (
-    <section className="py-20 emdr-gradient">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="w-full bg-white/10 backdrop-blur-sm rounded-xl p-8 overflow-hidden">{/* Removed faded edges */}
+    <section className="py-12 emdr-gradient">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full bg-white/10 backdrop-blur-sm rounded-xl p-6 overflow-hidden">
 
-          <h2 className="text-2xl font-bold text-white mb-4 text-center">
+          <h2 className="text-xl font-bold text-white mb-3 text-center">
             Leading Organisations That Endorse EMDR
           </h2>
-          <p className="text-white/90 text-center mb-8 text-sm">
+          <p className="text-white/90 text-center mb-6 text-sm">
             Swipe to see all endorsements →
           </p>
 
           <Swiper
             slidesPerView={1}
-            spaceBetween={20}
+            spaceBetween={16}
             pagination={{ 
               clickable: true,
               dynamicBullets: true
@@ -63,21 +63,21 @@ export default function EndorsementCarousel() {
             breakpoints={{
               640: { 
                 slidesPerView: 2,
-                spaceBetween: 20
+                spaceBetween: 16
               },
               1024: { 
                 slidesPerView: 3,
-                spaceBetween: 20
+                spaceBetween: 16
               },
             }}
             modules={[Pagination]}
           >
             {endorsements.map((org, idx) => (
               <SwiperSlide key={idx}>
-                <div className="h-[280px] flex flex-col justify-between bg-white border border-primary-blue/20 rounded-2xl p-6 shadow hover:shadow-md transition overflow-hidden">
+                <div className="h-[220px] flex flex-col justify-between bg-white border border-primary-blue/20 rounded-xl p-5 shadow hover:shadow-md transition overflow-hidden">
                   <div>
-                    <h3 className="text-lg font-semibold text-primary-blue mb-2">{org.name}</h3>
-                    <p className="text-sm text-slate-700 mb-4">{org.summary}</p>
+                    <h3 className="text-base font-semibold text-primary-blue mb-2">{org.name}</h3>
+                    <p className="text-sm text-slate-700 mb-3">{org.summary}</p>
                   </div>
                   <div className="text-sm text-primary-green font-medium mt-auto text-left">
                     Guidelines Available Online
