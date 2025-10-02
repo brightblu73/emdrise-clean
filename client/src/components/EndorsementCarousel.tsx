@@ -26,9 +26,9 @@ const endorsements = [
     link: 'https://www.ptsd.va.gov/understand_tx/emdr.asp',
   },
   {
-    name: 'NHS (National Health Service)',
-    summary: 'Lists EMDR as an effective trauma-focused therapy for PTSD.',
-    link: 'https://www.nhs.uk/mental-health/conditions/post-traumatic-stress-disorder-ptsd/',
+    name: 'SAMHSA (Substance Abuse and Mental Health Services Administration)',
+    summary: 'Recognizes EMDR as an effective treatment for veterans with PTSD.',
+    link: 'https://www.emdria.org/about-emdr-therapy/emdr-and-ptsd/',
   },
   {
     name: 'ISTSS (International Society for Traumatic Stress Studies)',
