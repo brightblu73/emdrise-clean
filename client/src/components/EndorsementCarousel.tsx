@@ -71,7 +71,6 @@ export default function EndorsementCarousel() {
               },
             }}
             modules={[Pagination]}
-            className="mb-8"
           >
             {endorsements.map((org, idx) => (
               <SwiperSlide key={idx}>
@@ -87,12 +86,6 @@ export default function EndorsementCarousel() {
               </SwiperSlide>
             ))}
           </Swiper>
-
-          <div className="text-center mt-6 px-4">
-            <p className="text-xs text-white/80">
-              The organisations listed above have endorsed EMDR as a treatment for PTSD. Their inclusion here reflects support for the EMDR method itself, not this specific app.
-            </p>
-          </div>
         </div>
       </div>
     </section>
