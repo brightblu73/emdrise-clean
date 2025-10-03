@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from '../state/AuthProvider';
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Menu, User, LogOut, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail, Trash2 } from "lucide-react";
+import { Heart, Menu, User, LogOut, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail, Trash2, Award } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { logout, redirectAfterLogout } from '@/lib/auth';
 
@@ -44,6 +44,7 @@ export default function Navigation() {
   const navItems = [
     { href: "/", label: "Home", icon: Brain },
     { href: "/emdr-session", label: "Therapy Session", icon: Brain },
+    { href: "/memory-cleared", label: "My Progress", icon: Award },
   ];
 
   const isActive = (path: string) => {
