@@ -21,15 +21,9 @@ export default function MemoryClearedDashboard() {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          const { data: profile } = await supabase
-            .from('users')
-            .select('memories_cleared')
-            .eq('email', user.email)
-            .single();
-          
-          if (profile) {
-            setMemoriesCleared(profile.memories_cleared || 0);
-          }
+          // Get count from user metadata
+          const count = user.user_metadata?.memories_cleared || 0;
+          setMemoriesCleared(count);
         }
       } catch (error) {
         console.error('Error fetching memories cleared:', error);

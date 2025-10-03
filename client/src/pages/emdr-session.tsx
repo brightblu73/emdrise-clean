@@ -447,29 +447,21 @@ export default function EMDRSession() {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          // First get the current count
-          const { data: profile, error: fetchError } = await supabase
-            .from('users')
-            .select('memories_cleared')
-            .eq('email', user.email)
-            .single();
+          // Get current count from user metadata
+          const currentCount = user.user_metadata?.memories_cleared || 0;
+          const newCount = currentCount + 1;
           
-          if (fetchError) {
-            console.error('Error fetching user profile:', fetchError);
-          } else {
-            const currentCount = profile?.memories_cleared || 0;
-            
-            // Update with incremented value
-            const { error: updateError } = await supabase
-              .from('users')
-              .update({ memories_cleared: currentCount + 1 })
-              .eq('email', user.email);
-            
-            if (updateError) {
-              console.error('Error incrementing memories cleared:', updateError);
-            } else {
-              console.log('Successfully incremented memories cleared to:', currentCount + 1);
+          // Update user metadata with incremented value
+          const { error: updateError } = await supabase.auth.updateUser({
+            data: {
+              memories_cleared: newCount
             }
+          });
+          
+          if (updateError) {
+            console.error('Error incrementing memories cleared:', updateError);
+          } else {
+            console.log('Successfully incremented memories cleared to:', newCount);
           }
         }
       } catch (error) {
