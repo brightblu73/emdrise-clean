@@ -462,8 +462,11 @@ export default function EMDRSession() {
         console.error('Error updating memories cleared:', error);
       }
       
-      // Clear active session
+      // Clear active session and reset settings
       localStorage.removeItem('emdrSession');
+      localStorage.removeItem('pausedEMDRSession');
+      sessionStorage.removeItem('blsSpeed'); // Reset BLS speed to default for next session
+      
       setLocation("/memory-cleared"); // Navigate to memory cleared dashboard
       return;
     }
@@ -1644,20 +1647,13 @@ export default function EMDRSession() {
                 {/* Session Complete Button */}
                 <div className="flex justify-center pt-4">
                   <Button 
-                    onClick={() => {
-                      // Complete the session and return to home
-                      localStorage.removeItem('emdrSession');
-                      localStorage.removeItem('pausedEMDRSession');
-                      
-                      // Reset BLS speed to default (7.0) for next session
-                      sessionStorage.removeItem('blsSpeed');
-                      
-                      window.location.href = '/';
-                    }}
+                    onClick={handleAdvanceScript}
                     className="bg-primary-green hover:bg-primary-green/90"
                     size="lg"
+                    disabled={isAdvancing}
+                    data-testid="button-complete-session"
                   >
-                    Complete Session
+                    {isAdvancing ? "Completing..." : "Complete Session"}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
