@@ -439,7 +439,7 @@ export default function EMDRSession() {
         return;
       }
       
-      // This is a full completion - increment memories cleared counter atomically
+      // This is a full completion - increment memories cleared counter
       console.log("Session completed, incrementing memories cleared counter");
       
       try {
@@ -447,15 +447,29 @@ export default function EMDRSession() {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          // Atomically increment the counter using SQL to avoid race conditions
-          const { error } = await supabase.rpc('increment_memories_cleared', {
-            user_email: user.email
-          });
+          // First get the current count
+          const { data: profile, error: fetchError } = await supabase
+            .from('users')
+            .select('memories_cleared')
+            .eq('email', user.email)
+            .single();
           
-          if (error) {
-            console.error('Error incrementing memories cleared:', error);
+          if (fetchError) {
+            console.error('Error fetching user profile:', fetchError);
           } else {
-            console.log('Successfully incremented memories cleared counter');
+            const currentCount = profile?.memories_cleared || 0;
+            
+            // Update with incremented value
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({ memories_cleared: currentCount + 1 })
+              .eq('email', user.email);
+            
+            if (updateError) {
+              console.error('Error incrementing memories cleared:', updateError);
+            } else {
+              console.log('Successfully incremented memories cleared to:', currentCount + 1);
+            }
           }
         }
       } catch (error) {
