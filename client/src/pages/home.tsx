@@ -425,7 +425,7 @@ export default function Home() {
 
           <Card className="max-w-lg mx-auto shadow-2xl">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl mb-2 text-primary-blue">EMDRise Premium</CardTitle>
+              <CardTitle className="text-2xl mb-2 text-primary-blue font-bold">EMDRise Premium</CardTitle>
               <div className="text-4xl font-bold text-primary mb-2">
                 £9.99<span className="text-lg text-slate-600">/month</span>
               </div>
