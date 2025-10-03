@@ -425,7 +425,7 @@ export default function Home() {
 
           <Card className="max-w-lg mx-auto shadow-2xl">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl mb-2">EMDRise Premium</CardTitle>
+              <CardTitle className="text-2xl mb-2 text-primary-blue">EMDRise Premium</CardTitle>
               <div className="text-4xl font-bold text-primary mb-2">
                 £9.99<span className="text-lg text-slate-600">/month</span>
               </div>
@@ -435,23 +435,27 @@ export default function Home() {
               <div className="space-y-3 text-left">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Complete eight phase EMDR protocol</span>
+                  <span className="text-sm">Full eight-phase EMDR protocol</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Professional EMDR therapist led video guidance</span>
+                  <span className="text-sm">Therapist-designed video guidance</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Multiple bilateral stimulation options</span>
+                  <span className="text-sm">Choice of bilateral stimulation</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Guided memory processing and calm place visualization</span>
+                  <span className="text-sm">Guided memory processing & calm place</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Therapeutic grounding resources and aftercare support</span>
+                  <span className="text-sm">Built-in aftercare support</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
+                  <span className="text-sm">Progress tracking</span>
                 </div>
               </div>
               <div className="pt-4">
