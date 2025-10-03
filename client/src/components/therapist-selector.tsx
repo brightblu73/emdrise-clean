@@ -29,7 +29,7 @@ export default function TherapistSelector({ onSelect, selectedTherapist }: Thera
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Female Therapist - Maria */}
+        {/* Female Guide - Maria */}
         <Card 
           className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
             selected === "female" 
@@ -57,7 +57,7 @@ export default function TherapistSelector({ onSelect, selectedTherapist }: Thera
           </CardContent>
         </Card>
 
-        {/* Male Therapist - Alistair */}
+        {/* Male Guide - Alistair */}
         <Card 
           className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
             selected === "male" 

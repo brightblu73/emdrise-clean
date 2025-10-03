@@ -120,7 +120,7 @@ export default function Home() {
 
   const handleStartFreeTrial = () => {
     if (!selectedTherapist) {
-      alert("Please select a therapist before starting your EMDR journey.");
+      alert("Please select a guide before starting your EMDR journey.");
       return;
     }
     // Navigate to sign-in
