@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   subscriptionStatus: text("subscription_status").default("trial"), // trial, active, cancelled, expired
   entitlementStatus: text("entitlement_status").default("trial"), // trial, premium, expired
   preferredTherapist: text("preferred_therapist").default("female"), // female, male
+  memoriesCleared: integer("memories_cleared").default(0).notNull(), // Track successfully processed memories
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
