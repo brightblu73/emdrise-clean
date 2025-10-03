@@ -421,15 +421,50 @@ export default function EMDRSession() {
     setLocalVideoCompleted(true);
   };
 
-  const handleAdvanceScript = () => {
+  const handleAdvanceScript = async () => {
     if (!currentSession || isAdvancing) return; // Prevent double-clicks
     
-    // Special handling for Script 10 - Complete Session and return to homepage
+    // Special handling for Script 10 - Complete Session
     if (currentSession.currentScript === 10) {
-      console.log("Session completed, redirecting to homepage");
-      // Clear active session but do NOT clear paused session if it exists
+      // Check if this is just a pause closure (not a full completion)
+      const pauseFlag = localStorage.getItem('emdrPauseFlag');
+      const pausedSession = localStorage.getItem('pausedEMDRSession');
+      const isJustPauseClosure = pauseFlag === 'true' || pausedSession !== null;
+      
+      if (isJustPauseClosure) {
+        // This is just closure after pausing - don't increment counter, go to homepage
+        console.log("Session paused - completing closure, returning to homepage");
+        localStorage.removeItem('emdrSession');
+        setLocation("/");
+        return;
+      }
+      
+      // This is a full completion - increment memories cleared counter atomically
+      console.log("Session completed, incrementing memories cleared counter");
+      
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Atomically increment the counter using SQL to avoid race conditions
+          const { error } = await supabase.rpc('increment_memories_cleared', {
+            user_email: user.email
+          });
+          
+          if (error) {
+            console.error('Error incrementing memories cleared:', error);
+          } else {
+            console.log('Successfully incremented memories cleared counter');
+          }
+        }
+      } catch (error) {
+        console.error('Error updating memories cleared:', error);
+      }
+      
+      // Clear active session
       localStorage.removeItem('emdrSession');
-      setLocation("/"); // Navigate to homepage
+      setLocation("/memory-cleared"); // Navigate to memory cleared dashboard
       return;
     }
     

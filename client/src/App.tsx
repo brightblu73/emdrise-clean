@@ -14,6 +14,7 @@ import Progress from "./pages/progress";
 import Subscribe from "./pages/subscribe";
 
 import EMDRSession from "./pages/emdr-session";
+import MemoryClearedDashboard from "./pages/memory-cleared-dashboard";
 import TermsOfUse from "./pages/terms-of-use";
 import PrivacyPolicy from "./pages/privacy-policy";
 import NotFound from "./pages/not-found";
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/subscribe" component={Subscribe} />
 
       <Route path="/emdr-session" component={EMDRSession} />
+      <Route path="/memory-cleared" component={MemoryClearedDashboard} />
       <Route path="/terms-of-use" component={TermsOfUse} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route component={NotFound} />
