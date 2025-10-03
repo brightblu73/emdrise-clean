@@ -13,6 +13,9 @@ export default function MemoryClearedDashboard() {
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
+    // Scroll to top when page loads
+    window.scrollTo(0, 0);
+    
     const fetchMemoriesCleared = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
