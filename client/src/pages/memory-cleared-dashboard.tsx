@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Sparkles, Home } from "lucide-react";
 import { useLocation } from "wouter";
 import { supabase } from "@/lib/supabaseClient";
-import { Logo } from "@/components/ui/logo";
 
 export default function MemoryClearedDashboard() {
   const [, setLocation] = useLocation();
@@ -47,10 +46,6 @@ export default function MemoryClearedDashboard() {
   return (
     <div className="min-h-screen emdr-gradient flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
-        <div className="text-center mb-8">
-          <Logo variant="header" />
-        </div>
-
         <Card className="therapeutic-card border-2 border-primary-green/30 shadow-2xl">
           <CardContent className="p-8 md:p-12 text-center space-y-6">
             <div className="relative inline-block">
