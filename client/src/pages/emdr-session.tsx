@@ -597,7 +597,7 @@ export default function EMDRSession() {
                 <EMDRVideoPlayer
                   videoUrl={currentScriptInfo.videoUrl || "/EMDR.mp4"}
                   title={currentScriptInfo.title}
-                  description="Your therapist introduces EMDR therapy and what to expect in your session."
+                  description="Your guide introduces EMDR therapy and what to expect in your session."
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
                   onClose={handleVideoClose}
