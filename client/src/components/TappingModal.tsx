@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { BLS_TOTAL_SETS } from "@/lib/blsConfig";
 
 interface TappingModalProps {
   onClose: () => void;
@@ -38,7 +39,6 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
   };
 
   // Professional BLS settings
-  const TOTAL_SETS = 22;
   const [speed, setSpeed] = useState(getSessionSpeed()); // Use same 1.0-10.0 scale as visual
   const speedRef = useRef<number>(getSessionSpeed()); // Use ref for immediate access in animation
 
@@ -91,10 +91,10 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
     let currentSideState: 'left' | 'right' = 'left';
 
     const showNextTap = () => {
-      if (movements >= TOTAL_SETS) {
+      if (movements >= BLS_TOTAL_SETS) {
         setPhase('complete');
         setIsActive(false);
-        // Auto-close immediately after completing 22 sets
+        // Auto-close immediately after completing 30 sets
         onSetComplete();
         return;
       }
@@ -177,7 +177,7 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
             <div className="bg-slate-700/80 px-4 py-2 rounded-lg text-white text-center">
               <div className="text-2xl font-bold">{setCount}</div>
-              <div className="text-sm text-slate-300">of {TOTAL_SETS} sets</div>
+              <div className="text-sm text-slate-300">of {BLS_TOTAL_SETS} sets</div>
             </div>
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
               <div className="text-center space-y-4">
                 <p className="text-slate-300">
                   Tap gently on your knees, alternating left and right hands.
-                  Follow the visual cues for {TOTAL_SETS} sets.
+                  Follow the visual cues for {BLS_TOTAL_SETS} sets.
                 </p>
                 <Button
                   onClick={startBLS}
@@ -235,7 +235,7 @@ export default function TappingModal({ onClose, onSetComplete }: TappingModalPro
                   </div>
                 </div>
                 <div className="text-lg text-purple-400">
-                  Tap {setCount} of {TOTAL_SETS}
+                  Tap {setCount} of {BLS_TOTAL_SETS}
                 </div>
               </div>
             )}

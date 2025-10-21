@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { BLS_TOTAL_SETS } from "@/lib/blsConfig";
 
 interface AuditoryModalProps {
   onClose: () => void;
@@ -40,7 +41,6 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
   };
 
   // Professional BLS settings  
-  const TOTAL_SETS = 22;
   const [speed, setSpeed] = useState(getSessionSpeed()); // Use same 1.0-10.0 scale as visual
   const speedRef = useRef<number>(getSessionSpeed()); // Use ref for immediate access in animation
   const TONE_FREQUENCY = 440; // Hz
@@ -165,10 +165,10 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
     let currentSideState: 'left' | 'right' = 'left';
 
     const playNextTone = () => {
-      if (movements >= TOTAL_SETS) {
+      if (movements >= BLS_TOTAL_SETS) {
         setPhase('complete');
         setIsActive(false);
-        // Auto-close immediately after completing 22 sets
+        // Auto-close immediately after completing 30 sets
         onSetComplete();
         return;
       }
@@ -234,7 +234,7 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
             <div className="bg-slate-700/80 px-4 py-2 rounded-lg text-white text-center">
               <div className="text-2xl font-bold">{setCount}</div>
-              <div className="text-sm text-slate-300">of {TOTAL_SETS} sets</div>
+              <div className="text-sm text-slate-300">of {BLS_TOTAL_SETS} sets</div>
             </div>
           </div>
         </div>
@@ -260,7 +260,7 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
                 </div>
                 <p className="text-slate-300">
                   Listen to the alternating tones in your left and right ears.
-                  The set will automatically complete after {TOTAL_SETS} sets.
+                  The set will automatically complete after {BLS_TOTAL_SETS} sets.
                 </p>
                 <Button
                   onClick={startBLS}
@@ -278,7 +278,7 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
                   Listen to the tones.
                 </p>
                 <div className="text-lg text-green-400">
-                  Set {setCount} of {TOTAL_SETS}
+                  Set {setCount} of {BLS_TOTAL_SETS}
                 </div>
                 {/* Speed Slider Control during active BLS */}
                 <div className="space-y-3">

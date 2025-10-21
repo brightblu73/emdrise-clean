@@ -64,7 +64,7 @@ EMDRise is a web and mobile application offering guided EMDR (Eye Movement Desen
 - **Core EMDR Features** (Web-Optimized):
     - **Video-Guided Therapy**: HTML5 video player with professional therapist content for all 10 EMDR protocol phases
     - **Session Flow Management**: Local storage-based pause/resume functionality with Script 5a continuation support
-    - **Web BLS System**: Web APIs for vibration, stereo audio, and visual stimulation optimized for all devices
+    - **Web BLS System**: Web APIs for vibration, stereo audio, and visual stimulation optimized for all devices (configured for 30 sets per BLS cycle via centralized `client/src/lib/blsConfig.ts`)
     - **Subscription Management**: Stripe-powered subscriptions with 7-day free trial support
     - **Cloud-First Architecture**: Video content served from Supabase cloud storage, optimized for web streaming
 
