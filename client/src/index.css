@@ -4,21 +4,21 @@
 
 /* Hide scrollbar for webkit browsers */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Safari and Chrome */
+  display: none;
 }
 
 /* Video player styles - optimized for both web and mobile */
 .emdr-video-portrait {
   width: 100%;
-  max-width: 400px; /* Prevent oversized on web */
+  max-width: 400px;
   height: auto;
   object-fit: cover;
   object-position: center;
-  margin: 0 auto; /* Center the video */
+  margin: 0 auto;
 }
 
 /* Swiper pagination custom styles */
@@ -110,6 +110,31 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
     font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* iOS Safe Area Support */
+@supports (padding: max(0px)) {
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .pt-safe {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  .pl-safe {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  .pr-safe {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  .p-safe {
+    padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  }
+  .min-h-safe {
+    min-height: calc(100vh + env(safe-area-inset-bottom));
+  }
+  .h-safe {
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   }
 }
 
@@ -266,4 +291,4 @@
   pointer-events: none !important;
   transition: none !important;
 }
-
+  display: none !important;
