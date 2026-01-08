@@ -1,0 +1,17 @@
+{
+  "appId": "com.emdrise.app",
+  "appName": "EMDRise",
+  "webDir": "dist/public",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "backgroundColor": "#1a1a2e",
+      "androidSplashResourceName": "splash",
+      "iosSplashResourceName": "Splash",
+      "showSpinner": false
+    }
+  },
+  "ios": {
+    "contentInset": "always"
+  }
+}
