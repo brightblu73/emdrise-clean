@@ -48,7 +48,7 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={0} skipDelayDuration={0}>
-          <div className="min-h-screen bg-therapeutic-bg pt-safe">
+          <div className="min-h-screen bg-therapeutic-bg">
             <Navigation />
             <Router />
             <Toaster />

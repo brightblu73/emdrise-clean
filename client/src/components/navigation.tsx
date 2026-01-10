@@ -122,7 +122,7 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-card shadow-sm border-b border-slate-200 sticky top-0 z-50 pt-safe">
+    <nav className="bg-card shadow-sm border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}

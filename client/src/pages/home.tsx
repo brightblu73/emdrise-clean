@@ -16,6 +16,7 @@ import alistairPortrait from "@/assets/alistair-headshot.jpg";
 import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
 import EndorsementCarousel from "@/components/EndorsementCarousel";
 import { Logo } from "@/components/ui/logo";
+import { SafeArea } from 'capacitor-plugin-safe-area';
 
 
 export default function Home() {
@@ -55,6 +56,35 @@ export default function Home() {
     oscillator.connect(panNode).connect(gainNode).connect(ctx.destination);
     oscillator.start();
     oscillator.stop(ctx.currentTime + 0.1);
+  };
+
+  const safeAreaConfig = async () => {
+    SafeArea.getSafeAreaInsets().then(({ insets }) => {
+      console.log(insets);
+      for (const [key, value] of Object.entries(insets)) {
+        document.documentElement.style.setProperty(
+          `--safe-area-inset-${key}`,
+          `${value}px`,
+        );
+      }
+    });
+
+    SafeArea.getStatusBarHeight().then(({ statusBarHeight }) => {
+      console.log(statusBarHeight, 'statusbarHeight');
+    });
+
+    await SafeArea.removeAllListeners();
+
+    // when safe-area changed
+    await SafeArea.addListener('safeAreaChanged', data => {
+      const { insets } = data;
+      for (const [key, value] of Object.entries(insets)) {
+        document.documentElement.style.setProperty(
+          `--safe-area-inset-${key}`,
+          `${value}px`,
+        );
+      }
+    });
   };
 
   useEffect(() => {
@@ -145,6 +175,8 @@ export default function Home() {
       // Clear the URL parameter
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+
+    safeAreaConfig();
   }, []);
 
   // No need to check subscription status on homepage
