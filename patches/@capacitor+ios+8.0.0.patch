@@ -1,0 +1,39 @@
+diff --git a/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPBridgeViewController.swift b/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPBridgeViewController.swift
+index a728521..4d78281 100644
+--- a/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPBridgeViewController.swift
++++ b/node_modules/@capacitor/ios/Capacitor/Capacitor/CAPBridgeViewController.swift
+@@ -375,7 +375,33 @@ extension CAPBridgeViewController {
+ 
+ extension CAPBridgeViewController: CAPBridgeDelegate {
+     public var bridgedWebView: WKWebView? {
+-        return webView
++       if let webView = webView {
++           if #available(iOS 13.0, *) {
++               if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
++                  let statusBarManager = windowScene.statusBarManager {
++                   let statusBarView = UIView(frame: statusBarManager.statusBarFrame)
++                   statusBarView.backgroundColor = UIColor(red: 246/255, green: 247/255, blue: 250/255, alpha: 1.0) // #3B82F6
++
++                   if let window = windowScene.windows.first {
++                       window.addSubview(statusBarView)
++                   }
++               }
++           } else {
++               if let statusBar = UIApplication.shared.value(forKey: "statusBar") as? UIView {
++                   statusBar.backgroundColor = UIColor(red: 246/255, green: 247/255, blue: 250/255, alpha: 1.0) // #3B82F6
++               }
++           }
++
++           if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
++              let statusBarManager = windowScene.statusBarManager {
++               webView.frame.origin = CGPoint(x: 0, y: statusBarManager.statusBarFrame.size.height)
++               webView.frame.size.height = UIScreen.main.bounds.size.height - statusBarManager.statusBarFrame.size.height
++           }
++
++           return webView
++       }
++
++       return nil
+     }
+     
+     public var bridgedViewController: UIViewController? {
