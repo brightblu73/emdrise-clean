@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -36,6 +36,37 @@ export default function Auth() {
   const [passwordResetMessageType, setPasswordResetMessageType] = useState<'success' | 'error' | null>(null);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [showResetSuccessMessage, setShowResetSuccessMessage] = useState(false);
+
+  // Add logic for next keyword form behaviour
+  const loginRef = useRef<HTMLInputElement | null>(null);
+  const loginPasswordRef = useRef<HTMLInputElement | null>(null);
+  const nameRef = useRef<HTMLInputElement | null>(null);
+  const emailRef = useRef<HTMLInputElement | null>(null);
+  const dateOfBirthRef = useRef<HTMLInputElement | null>(null);
+  const passwordRef = useRef<HTMLInputElement | null>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement | null>(null);
+
+  const handleReturnFocus = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    nextRef?: React.RefObject<HTMLInputElement>
+  ) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (nextRef?.current) {
+        nextRef.current.focus();
+        setTimeout(() => {
+          nextRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+      } else {
+        // Blur current element first, then hide keyboard
+        (e.target as HTMLInputElement).blur();
+        setTimeout(() => {
+          e.preventDefault();
+          return false;
+        }, 50);
+      }
+    }
+  };
 
   // React Hook Form setup for registration
   const registrationForm = useForm<AuthRegistration>({
@@ -75,7 +106,7 @@ export default function Auth() {
       
       // Always redirect logged-in users to homepage - no subscription checking needed
       console.log('Login successful, redirecting to homepage...');
-      
+
       // Small delay to ensure auth state is propagated
       setTimeout(() => {
         setLocation("/");
@@ -470,146 +501,226 @@ export default function Auth() {
                     <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
                   </div>
                 </div>
-              </>
-            )}
+              </CardHeader>
+              <CardContent className="space-y-4 min-h-[600px]">
+                {/* Apple Sign In - only show on registration */}
+                {isSignUpMode && (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={handleAppleSignIn}
+                    >
+                      <Apple className="mr-2 h-4 w-4" />
+                      Sign in with Apple
+                    </Button>
 
-            {/* Registration Form */}
-            {isSignUpMode ? (
-              <Form {...registrationForm}>
-                <form onSubmit={registrationForm.handleSubmit(handleSignUp)} className="space-y-4">
-                  <FormField
-                    control={registrationForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="John Doe" {...field} data-testid="input-name" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={registrationForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="you@example.com" type="email" {...field} data-testid="input-email" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={registrationForm.control}
-                    name="dateOfBirth"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Date of Birth (Optional)</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} data-testid="input-date-of-birth" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={registrationForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input placeholder="••••••••" type="password" {...field} data-testid="input-password" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={registrationForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <FormControl>
-                          <Input placeholder="••••••••" type="password" {...field} data-testid="input-confirm-password" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={registrationForm.control}
-                    name="agreeToTerms"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            data-testid="checkbox-terms-agreement"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel className="text-sm text-slate-600 leading-relaxed cursor-pointer">
-                            By creating an account, you agree to our{' '}
-                            <button
-                              type="button"
-                              onClick={() => openInWebView('/terms-of-use')}
-                              className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
-                              data-testid="link-terms-of-use"
-                            >
-                              Terms of Service
-                            </button>
-                            {' '}and{' '}
-                            <button
-                              type="button"
-                              onClick={() => openInWebView('/privacy-policy')}
-                              className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
-                              data-testid="link-privacy-policy"
-                            >
-                              Privacy Policy
-                            </button>
-                            .
-                          </FormLabel>
-                          <FormMessage />
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button 
-                    type="submit"
-                    className="w-full text-white"
-                    style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
-                    data-testid="button-create-account"
-                  >
-                    Create Account
-                  </Button>
-                </form>
-              </Form>
-            ) : (
-              // Sign In Form
-              <>
-                {/* Password Reset Success Message */}
-                {showResetSuccessMessage && (
-                  <div className="p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200" data-testid="reset-success-message">
-                    Password updated successfully! You can now log in with your new password.
-                  </div>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+                      </div>
+                    </div>
+                  </>
                 )}
-                
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-                    <FormField
+
+                {/* Registration Form */}
+                {isSignUpMode ? (
+                  <Form {...registrationForm}>
+                    <form onSubmit={registrationForm.handleSubmit(handleSignUp)} className="space-y-4">
+
+                      <FormField
+                        control={registrationForm.control}
+                        name="name"
+                        render={({ field: { ref, ...field } }) => (
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                ref={(el) => {
+                                  ref(el);
+                                  nameRef.current = el;
+                                }}
+                                {...field}
+                                onKeyDown={(e) => handleReturnFocus(e, emailRef)}
+                                placeholder="John Doe" {...field} data-testid="input-name"
+                                enterKeyHint="next"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={registrationForm.control}
+                        name="email"
+                        render={({ field: { ref, ...field } }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input
+                                ref={(el) => {
+                                  ref(el);
+                                  emailRef.current = el;
+                                }}
+                                {...field}
+                                type="email"
+                                onKeyDown={(e) => handleReturnFocus(e, passwordRef)}
+                                placeholder="you@example.com" {...field} data-testid="input-email"
+                                enterKeyHint="next"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={registrationForm.control}
+                        name="dateOfBirth"
+                        render={({ field }) => (
+                          <FormItem style={{ paddingRight: '17px' }}>
+                            <FormLabel>Date of Birth (Optional)</FormLabel>
+                            <FormControl>
+                              <Input type="date" {...field} data-testid="input-date-of-birth" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={registrationForm.control}
+                        name="password"
+                        render={({ field: { ref, ...field } }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <Input
+                                ref={(el) => {
+                                  ref(el);
+                                  passwordRef.current = el;
+                                }}
+                                type="password" {...field} data-testid="input-password"
+                                onKeyDown={(e) => handleReturnFocus(e, confirmPasswordRef)}
+                                enterKeyHint="next"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={registrationForm.control}
+                        name="confirmPassword"
+                        render={({ field: { ref, ...field } }) => (
+                          <FormItem>
+                            <FormLabel>Confirm Password</FormLabel>
+                            <FormControl>
+                              <Input
+                                ref={(el) => {
+                                  ref(el);
+                                  confirmPasswordRef.current = el;
+                                }}
+                                type="password"
+                                {...field}
+                                data-testid="input-confirm-password"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+
+                                    // Optionally blur the input to ensure keyboard dismisses
+                                    confirmPasswordRef.current?.blur();
+
+                                    return false;
+                                  }
+                                }}
+                                onBlur={(e) => {
+                                  field.onBlur?.();
+                                  // Additional blur handling if needed
+                                }}
+                                enterKeyHint="done"
+                                // Add these for better mobile behavior
+                                autoComplete="new-password"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={registrationForm.control}
+                        name="agreeToTerms"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                data-testid="checkbox-terms-agreement"
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="text-sm text-slate-600 leading-relaxed cursor-pointer">
+                                By creating an account, you agree to our{' '}
+                                <Link href="/terms-of-use">
+                                  <button
+                                    type="button"
+                                    className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
+                                    data-testid="link-terms-of-use"
+                                  >
+
+                                    Terms of Service
+                                  </button>
+                                </Link>
+                                {' '}and{' '}
+                                <Link href="/privacy-policy">
+                                  <button
+                                    type="button"
+                                    className="text-primary-blue hover:text-primary-blue/80 underline font-medium"
+                                    data-testid="link-privacy-policy"
+                                  >
+
+                                    Privacy Policy
+
+                                  </button>
+                                </Link>
+                                .
+                              </FormLabel>
+                              <FormMessage />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      <Button
+                        type="submit"
+                        className="w-full text-white"
+                        style={{ background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))' }}
+                        data-testid="button-create-account"
+                      >
+                        Create Account
+                      </Button>
+                    </form>
+                  </Form>
+                ) : (
+                  // Sign In Form
+                  <>
+                    {/* Password Reset Success Message */}
+                    {showResetSuccessMessage && (
+                      <div className="p-3 rounded-md text-sm bg-green-50 text-green-700 border border-green-200" data-testid="reset-success-message">
+                        Password updated successfully! You can now log in with your new password.
+                      </div>
+                    )}
+
+                    <Form {...loginForm}>
+                      <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                        {/* <FormField
                       control={loginForm.control}
                       name="email"
                       render={({ field }) => (
@@ -621,9 +732,32 @@ export default function Auth() {
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
-                    
-                    <FormField
+                    /> */}
+
+                        <FormField
+                          control={loginForm.control}
+                          name="email"
+                          render={({ field: { ref, ...field } }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  ref={(el) => {
+                                    ref(el);
+                                    emailRef.current = el;
+                                  }}
+                                  {...field}
+                                  onKeyDown={(e) => handleReturnFocus(e, loginPasswordRef)}
+                                  placeholder="you@example.com" type="email" {...field} data-testid="input-login-email"
+                                  enterKeyHint="next"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* <FormField
                       control={loginForm.control}
                       name="password"
                       render={({ field }) => (
@@ -645,23 +779,66 @@ export default function Auth() {
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
-                    
-                    <Button 
-                      type="submit"
-                      className="w-full text-white"
-                      style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
-                      data-testid="button-sign-in"
-                    >
-                      Sign In
-                    </Button>
-                  </form>
-                </Form>
-              </>
-            )}
-          </CardContent>
-        </Card>
-        </>
+                    /> */}
+
+                        <FormField
+                          control={loginForm.control}
+                          name="password"
+                          render={({ field: { ref, ...field } }) => (
+                            <FormItem>
+                              <FormLabel className="flex justify-between items-center">
+                                <span>Password</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowForgotPasswordModal(true)}
+                                  className="text-primary-blue hover:text-primary-blue/80 underline text-sm font-medium"
+                                  data-testid="link-forgot-password"
+                                >
+                                  Forgot password?
+                                </button>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  ref={(el) => {
+                                    ref(el);
+                                    loginPasswordRef.current = el;
+                                  }}
+                                  {...field}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                      e.preventDefault();
+
+                                      // Optionally blur the input to ensure keyboard dismisses
+                                      loginPasswordRef.current?.blur();
+
+                                      return false;
+                                    }
+                                  }}
+                                  placeholder="••••••••" type="password" {...field} data-testid="input-login-password"
+                                  enterKeyHint="done"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+
+                        <Button
+                          type="submit"
+                          className="w-full text-white"
+                          style={{ background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))' }}
+                          data-testid="button-sign-in"
+                        >
+                          Sign In
+                        </Button>
+                      </form>
+                    </Form>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </>
         )}
 
         {/* Forgot Password Modal */}

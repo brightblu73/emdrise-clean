@@ -387,16 +387,15 @@ export default function Home() {
 
                 {/* Therapist Selection */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <Card 
-                    className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${
-                      selectedTherapist === 'female' 
-                        ? 'border-primary-green bg-primary-green/10' 
-                        : 'border-transparent hover:border-primary-green'
-                    }`}
+   <Card
+                    className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${selectedTherapist === 'female'
+                        ? 'border-primary-green bg-primary-green/10'
+                        : 'border-transparent'
+                      }`}
                     onClick={() => handleTherapistSelect('female')}
                   >
                     <div className="text-center">
-                      <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-primary-green transition-colors cursor-pointer bg-white shadow-sm">
+                      <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 transition-colors cursor-pointer bg-white shadow-sm">
                         <img src={mariaPortrait} alt="Maria" className="w-full h-full object-cover object-top" />
                       </div>
                       <h3 className="font-semibold text-slate-800 mb-1">Maria</h3>
@@ -407,16 +406,15 @@ export default function Home() {
                       )}
                     </div>
                   </Card>
-                  <Card 
-                    className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${
-                      selectedTherapist === 'male' 
-                        ? 'border-secondary-blue bg-secondary-blue/10' 
-                        : 'border-transparent hover:border-secondary-blue'
-                    }`}
+                  <Card
+                    className={`p-4 hover:shadow-md transition-all cursor-pointer border-2 ${selectedTherapist === 'male'
+                        ? 'border-secondary-blue bg-secondary-blue/10'
+                        : 'border-transparent'
+                      }`}
                     onClick={() => handleTherapistSelect('male')}
                   >
                     <div className="text-center">
-                      <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 hover:border-secondary-blue transition-colors cursor-pointer bg-white shadow-sm">
+                      <div className="w-40 h-40 rounded-full mx-auto mb-3 overflow-hidden border-3 border-gray-200 transition-colors cursor-pointer bg-white shadow-sm">
                         <img src={alistairPortrait} alt="Alistair" className="w-full h-full object-cover object-top" />
                       </div>
                       <h3 className="font-semibold text-slate-800 mb-1">Alistair</h3>

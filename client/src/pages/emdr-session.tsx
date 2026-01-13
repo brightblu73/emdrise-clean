@@ -600,7 +600,7 @@ export default function EMDRSession() {
                   description="Your guide introduces EMDR therapy and what to expect in your session."
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* Always show BLS Testing and Headphone Advice - regardless of video completion */}
@@ -710,7 +710,7 @@ export default function EMDRSession() {
                   description="Set up your safe, calm place for grounding during and after processing."
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* Always show calm place setup form after video or if video was watched */}
@@ -734,7 +734,7 @@ export default function EMDRSession() {
                   description="Identifying the target memory to be reprocessed"
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* Always show target memory setup form after video or if video was watched */}
@@ -758,7 +758,7 @@ export default function EMDRSession() {
                   description={currentScriptInfo?.description || "Preparing for bilateral stimulation and reprocessing"}
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* BLS Testing Section */}
@@ -861,7 +861,7 @@ export default function EMDRSession() {
                   description={currentScriptInfo?.description || "Continue bilateral stimulation processing with what you notice now"}
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* BLS Processing with "What do you notice now?" prompts - always show */}
@@ -1054,7 +1054,7 @@ export default function EMDRSession() {
                   description={currentScriptInfo?.description || "Resume reprocessing from where you left off in your previous session"}
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* Resume Processing Info */}
@@ -1150,7 +1150,7 @@ export default function EMDRSession() {
                   description={currentScriptInfo?.description || "Strengthening positive beliefs and new neural pathways"}
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* BLS Processing with installation focus - always show */}
@@ -1269,7 +1269,7 @@ export default function EMDRSession() {
                   description={currentScriptInfo?.description || "Continue installation with bilateral stimulation and positive belief strengthening"}
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* BLS Processing with installation continuation focus - same layout as Script 5 */}
@@ -1450,7 +1450,7 @@ export default function EMDRSession() {
                   description={currentScriptInfo?.description || "Scan your body for any remaining disturbance and clear with BLS"}
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* Body Scan Processing with BLS integration */}
@@ -1544,7 +1544,7 @@ export default function EMDRSession() {
                   description="Return to your calm place for closure and grounding."
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* Calm Place Guidance - Always show regardless of video completion */}
@@ -1609,7 +1609,7 @@ export default function EMDRSession() {
                   description="Session closure and self-care guidance for after EMDR therapy."
                   onVideoComplete={handleVideoComplete}
                   isVideoCompleted={isVideoCompleted}
-                  onClose={handleVideoClose}
+                  // onClose={handleVideoClose}
                 />
                 
                 {/* Aftercare Guidance - Always show regardless of video completion */}

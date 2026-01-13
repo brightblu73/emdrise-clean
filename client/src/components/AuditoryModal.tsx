@@ -351,10 +351,8 @@ export default function AuditoryModal({ onClose, onSetComplete }: AuditoryModalP
             <div className="flex justify-center pt-4">
               <Button
                 onClick={forceClose}
-                onMouseDown={forceClose}
-                onTouchStart={forceClose}
                 variant="ghost"
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white hover:bg-transparent"
               >
                 Close BLS
               </Button>
