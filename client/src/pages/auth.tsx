@@ -101,9 +101,9 @@ export default function Auth() {
         alert(error.message);
         return;
       }
-      
+
       // Session established successfully
-      
+
       // Always redirect logged-in users to homepage - no subscription checking needed
       console.log('Login successful, redirecting to homepage...');
 
@@ -124,14 +124,14 @@ export default function Auth() {
       const userMetadata: any = {
         full_name: data.name.trim()
       };
-      
+
       // Add date of birth to metadata if provided
       if (data.dateOfBirth && data.dateOfBirth.trim()) {
         userMetadata.date_of_birth = data.dateOfBirth.trim();
       }
-      
-      const { data: signUpData, error } = await supabase.auth.signUp({ 
-        email: data.email, 
+
+      const { data: signUpData, error } = await supabase.auth.signUp({
+        email: data.email,
         password: data.password,
         options: {
           emailRedirectTo: `${window.location.origin}/auth-callback`,
@@ -443,63 +443,39 @@ export default function Auth() {
           // Normal authentication forms - shown when not in password reset mode
           <>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-center">
-              {isSignUpMode ? 'Create Account' : 'Welcome Back'}
-            </CardTitle>
-            <p className="text-sm text-slate-600 text-center">
-              {isSignUpMode ? 'Register to start your EMDR therapy journey' : 'Sign in to access your EMDR sessions'}
-            </p>
-            
-            {/* Toggle Buttons */}
-            <div className="flex rounded-lg bg-slate-100 p-1 mt-4">
-              <button
-                type="button"
-                onClick={() => setIsSignUpMode(false)}
-                className={`flex-1 rounded-md py-2 px-4 text-sm font-medium transition-colors ${
-                  !isSignUpMode
-                    ? 'bg-white text-primary-blue shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                data-testid="toggle-login"
-              >
-                Login
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsSignUpMode(true)}
-                className={`flex-1 rounded-md py-2 px-4 text-sm font-medium transition-colors ${
-                  isSignUpMode
-                    ? 'bg-white text-primary-blue shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                data-testid="toggle-register"
-              >
-                Register
-              </button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 min-h-[600px]">
-            {/* Apple Sign In - only show on registration */}
-            {isSignUpMode && (
-              <>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start" 
-                  onClick={handleAppleSignIn}
-                >
-                  <Apple className="mr-2 h-4 w-4" />
-                  Sign in with Apple
-                </Button>
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-center">
+                  {isSignUpMode ? 'Create Account' : 'Welcome Back'}
+                </CardTitle>
+                <p className="text-sm text-slate-600 text-center">
+                  {isSignUpMode ? 'Register to start your EMDR therapy journey' : 'Sign in to access your EMDR sessions'}
+                </p>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-                  </div>
+                {/* Toggle Buttons */}
+                <div className="flex rounded-lg bg-slate-100 p-1 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsSignUpMode(false)}
+                    className={`flex-1 rounded-md py-2 px-4 text-sm font-medium transition-colors ${!isSignUpMode
+                        ? 'bg-white text-primary-blue shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    data-testid="toggle-login"
+                  >
+                    Login
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsSignUpMode(true)}
+                    className={`flex-1 rounded-md py-2 px-4 text-sm font-medium transition-colors ${isSignUpMode
+                        ? 'bg-white text-primary-blue shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    data-testid="toggle-register"
+                  >
+                    Register
+                  </button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 min-h-[600px]">
@@ -851,7 +827,7 @@ export default function Auth() {
               <p className="text-sm text-slate-600">
                 Enter your email address and we'll send you a link to reset your password.
               </p>
-              
+
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="reset-email">Email</Label>
@@ -867,18 +843,17 @@ export default function Auth() {
                 </div>
 
                 {resetMessage && (
-                  <div className={`p-3 rounded-md text-sm ${
-                    resetMessageType === 'success' 
-                      ? 'bg-green-50 text-green-700 border border-green-200' 
+                  <div className={`p-3 rounded-md text-sm ${resetMessageType === 'success'
+                      ? 'bg-green-50 text-green-700 border border-green-200'
                       : 'bg-red-50 text-red-700 border border-red-200'
-                  }`} data-testid="reset-message">
+                    }`} data-testid="reset-message">
                     {resetMessage}
                   </div>
                 )}
 
                 <div className="flex gap-3">
-                  <Button 
-                    type="button" 
+                  <Button
+                    type="button"
                     variant="outline"
                     onClick={() => {
                       setShowForgotPasswordModal(false);
@@ -891,10 +866,10 @@ export default function Auth() {
                   >
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     type="submit"
                     className="flex-1 text-white"
-                    style={{background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))'}}
+                    style={{ background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-green))' }}
                     data-testid="button-send-reset"
                   >
                     Send Reset Link
