@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import { apiRequest } from '@/lib/queryClient';
 import { Brain, Apple, Mail } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
+import { SignInWithApple } from '@capacitor-community/apple-sign-in';
 
 export default function Auth() {
   const [, setLocation] = useLocation();
@@ -164,22 +165,117 @@ export default function Auth() {
 
 
 
-  // Apple Sign In with Supabase
+  // Native Apple Sign In with Capacitor
   const handleAppleSignIn = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo: `${window.location.origin}/auth-callback`
+      // Check if running on a native platform (Capacitor)
+      const { Capacitor } = await import('@capacitor/core');
+      const isNative = Capacitor.isNativePlatform();
+
+      if (!isNative) {
+        // Fallback to web-based OAuth for web platforms
+        console.log('Running on web, using OAuth fallback');
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'apple',
+          options: {
+            redirectTo: `${window.location.origin}/auth-callback`
+          }
+        });
+        if (error) {
+          console.error('Apple sign in error:', error);
+          alert(error.message);
         }
+        return;
+      }
+
+      // Check if we have a stored auth code from deep link
+      const storedCode = sessionStorage.getItem('apple_auth_code');
+      const storedState = sessionStorage.getItem('apple_auth_state');
+console.log('storedCode: ', storedCode);
+console.log('storedState: ', storedState);
+      if (storedCode) {
+        // Clear the stored data
+        sessionStorage.removeItem('apple_auth_code');
+        sessionStorage.removeItem('apple_auth_state');
+
+        // Use the authorization code to complete sign in
+        try {
+          console.log('trySignin');
+          const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'apple',
+            options: {
+              redirectTo: `${window.location.origin}/auth-callback`,
+              queryParams: {
+                code: storedCode,
+                state: storedState || ""
+              }
+            }
+          });
+
+          if (error) {
+            console.error('Supabase sign in error:', error);
+            alert(error.message);
+            return;
+          }
+
+          console.log('Apple sign in successful via deep link:', data);
+          // Redirect to home page
+          setTimeout(() => {
+            setLocation('/');
+          }, 500);
+          return;
+        } catch (error) {
+          console.error('Deep link sign in failed:', error);
+          // Fall through to try native sign in
+        }
+      }
+
+      // Use native Apple Sign-In on iOS with deep link redirect
+      const { response } = await SignInWithApple.authorize({
+        clientId: 'com.emdrise.app',
+        redirectURI: 'com.emdrise.app://auth/callback',
+        scopes: 'email name',
       });
-      if (error) {
-        console.error('Apple sign in error:', error);
-        alert(error.message);
+
+      if (response && response.identityToken) {
+        // Use the identity token to sign in with Supabase
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: response.identityToken,
+        });
+
+        if (error) {
+          console.error('Supabase sign in error:', error);
+          alert(error.message);
+          return;
+        }
+
+        console.log('Apple sign in successful:', data);
+        // Redirect to home page
+        setTimeout(() => {
+          setLocation('/');
+        }, 500);
+      } else {
+        throw new Error('No identity token received from Apple');
       }
     } catch (error) {
       console.error('Apple sign in failed:', error);
-      alert('Sign in failed. Please try email sign in.');
+      // Fallback to web OAuth if native fails
+      try {
+        const { error: oauthError } = await supabase.auth.signInWithOAuth({
+          provider: 'apple',
+          options: {
+            redirectTo: `${window.location.origin}/auth-callback`
+          }
+        });
+        if (oauthError) {
+          console.error('OAuth fallback also failed:', oauthError);
+          alert('Sign in failed. Please try email sign in.');
+        }
+      } catch (fallbackError) {
+        console.error('All sign in methods failed:', fallbackError);
+        alert('Sign in failed. Please try email sign in.');
+      }
     }
   };
 

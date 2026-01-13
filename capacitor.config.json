@@ -13,5 +13,9 @@
   },
   "ios": {
     "contentInset": "always"
+  },
+  "SignInWithApple": {
+    "clientId": "com.emdrise.app",
+    "redirectURI": "com.emdrise.app://auth/callback"
   }
 }
