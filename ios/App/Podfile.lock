@@ -10,6 +10,10 @@ PODS:
     - Capacitor
   - CapacitorSplashScreen (8.0.0):
     - Capacitor
+  - Sentry/HybridSDK (8.56.2)
+  - SentryCapacitor (2.4.1):
+    - Capacitor
+    - Sentry/HybridSDK (= 8.56.2)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
@@ -18,6 +22,11 @@ DEPENDENCIES:
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
   - CapacitorPluginSafeArea (from `../../node_modules/capacitor-plugin-safe-area`)
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
+  - "SentryCapacitor (from `../../node_modules/@sentry/capacitor`)"
+
+SPEC REPOS:
+  trunk:
+    - Sentry
 
 EXTERNAL SOURCES:
   Capacitor:
@@ -32,6 +41,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/capacitor-plugin-safe-area"
   CapacitorSplashScreen:
     :path: "../../node_modules/@capacitor/splash-screen"
+  SentryCapacitor:
+    :path: "../../node_modules/@sentry/capacitor"
 
 SPEC CHECKSUMS:
   Capacitor: 79e40e5e76f852965dce30406c65253fa154e24a
@@ -40,7 +51,9 @@ SPEC CHECKSUMS:
   CapacitorHaptics: 7a77ce744c4b516b3ffd7f8c96d3de574d77b898
   CapacitorPluginSafeArea: 5c90e7423e8129641686afe8ae6084b65b20527e
   CapacitorSplashScreen: 4b78177a21f0f73ccc1c78dd93b2a94854ac4b83
+  Sentry: b53951377b78e21a734f5dc8318e333dbfc682d7
+  SentryCapacitor: 5c982d1e23a6451685ff2013604a61e8736d61df
 
-PODFILE CHECKSUM: ab987639e3198cadb458a03ac2a28f5221d85bd9
+PODFILE CHECKSUM: 8b43ab6dc6abf5083af00fd840d619966b25e01a
 
 COCOAPODS: 1.16.2
