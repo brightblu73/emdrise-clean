@@ -146,8 +146,8 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="w-full min-h-screen flex justify-center items-center m-4" style={{backgroundColor: 'var(--safe-space)'}}>
-      <div className="max-w-md w-full">
+    <div className="flex justify-center pt-2 overflow-hidden" style={{backgroundColor: 'var(--safe-space)'}}>
+      <div className="max-w-md w-full mx-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-center">Reset Your Password</CardTitle>
