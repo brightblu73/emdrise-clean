@@ -28,12 +28,23 @@ try {
 // Handle deep links for Apple Sign-In
 CapacitorApp.addListener('appUrlOpen', (data) => {
   // Handle the deep link URL
-  const url = new URL(data.url);
+  const urlString = data.url;
+  if (!urlString || typeof urlString !== 'string') return;
+
+  // Extract hash and search parts manually
+  const hashIndex = urlString.indexOf('#');
+  const hash = hashIndex !== -1 ? urlString.substring(hashIndex) : '';
+  const searchIndex = urlString.indexOf('?');
+  const search = searchIndex !== -1 ? urlString.substring(searchIndex, hashIndex !== -1 ? hashIndex : undefined) : '';
+
+  console.log("appUrlOpen", JSON.stringify(data));
+  console.log("appUrlOpen hash", JSON.stringify(hash));
+  console.log("appUrlOpen search", JSON.stringify(search));
 
   // Check if this is an Apple Sign-In callback
-  if (url.pathname === '/auth/callback') {
+  if (urlString.includes('/auth/callback')) {
     // Extract the authorization code or other parameters from the URL
-    const params = new URLSearchParams(url.search);
+    const params = new URLSearchParams(search.substring(1)); // Remove the leading '?'
     const code = params.get('code');
     const state = params.get('state');
 
@@ -51,6 +62,18 @@ CapacitorApp.addListener('appUrlOpen', (data) => {
           detail: { code, state }
         }));
       }
+    }
+  }
+  // Check if this is a password reset deep link
+  else if (urlString.includes('/reset-password') && hash.includes('type=recovery')) {
+    // Password reset links contain recovery tokens in the hash
+    // Navigate to reset-password page with the hash intact so the component can process it
+    if (window.location.pathname !== '/reset-password') {
+      console.log("going to reset password", hash);
+      window.location.href = '/reset-password' + hash;
+    } else {
+      // If already on reset-password page, update the URL hash to trigger the useEffect
+      window.location.hash = hash;
     }
   }
 });

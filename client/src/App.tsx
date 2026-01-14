@@ -8,6 +8,7 @@ import Navigation from "./components/navigation";
 import Home from "./pages/home";
 import Auth from "./pages/auth";
 import AuthCallback from "./pages/auth-callback";
+import ResetPassword from "./pages/reset-password";
 import Therapist from "./pages/therapist";
 import Resources from "./pages/resources";
 import Progress from "./pages/progress";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/auth" component={Auth} />
       <Route path="/auth-callback" component={AuthCallback} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/therapist" component={Therapist} />
       {/* Redirect old routes to new video-guided workflow */}
       <Route path="/preparation" component={EMDRSession} />

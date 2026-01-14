@@ -306,8 +306,15 @@ console.log('storedState: ', storedState);
     }
     
     try {
+      // Check if running on a native platform (Capacitor)
+      const { Capacitor } = await import('@capacitor/core');
+      const isNative = Capacitor.isNativePlatform();
+
+      // Use custom URL scheme for native platforms, HTTP URL for web
+      const redirectTo = `com.emdrise.app://reset-password`;
+
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
-        redirectTo: `${window.location.origin}/auth?reset=true`
+        redirectTo: redirectTo
       });
       
       if (error) {
