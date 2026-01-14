@@ -327,7 +327,7 @@ export default function Navigation() {
                         ))}
 
                         {/* Support Section */}
-                        <div className="pt-6">
+                        {/* <div className="pt-6"> */}
                           <a href="mailto:support@emdrise.com">
                             <Button 
                               variant="ghost" 
@@ -341,31 +341,36 @@ export default function Navigation() {
                             </Button>
                           </a>
 
-                        </div>
+                        {/* </div> */}
 
                         {/* Legal Section */}
-                        <div className="pt-4">
+                        {/* <div className="pt-4"> */}
                           <Link href="/terms-of-use">
                             <Button 
                               variant="ghost" 
-                              className="w-full justify-start h-10 rounded-lg text-secondary-blue/80 hover:bg-white/60 hover:text-primary-green transition-all duration-200"
+                              className="w-full justify-start h-12 rounded-xl text-secondary-blue hover:bg-white/80 hover:text-primary-green hover:shadow-sm transition-all duration-200"
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
-                              <FileText className="h-3 w-3 mr-3 text-primary-green/70" />
-                              <span className="text-sm">Terms of Use</span>
+                              <div className="p-2 rounded-lg mr-3 bg-primary-green/20 text-primary-green">
+                                <FileText className="h-4 w-4" />
+                              </div>
+                              <span className="font-medium">Terms of Use</span>
+
                             </Button>
                           </Link>
                           <Link href="/privacy-policy">
                             <Button 
                               variant="ghost" 
-                              className="w-full justify-start h-10 rounded-lg text-secondary-blue/80 hover:bg-white/60 hover:text-primary-green transition-all duration-200"
+                              className="w-full justify-start h-12 rounded-xl text-secondary-blue hover:bg-white/80 hover:text-primary-green hover:shadow-sm transition-all duration-200"
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
-                              <Eye className="h-3 w-3 mr-3 text-primary-green/70" />
-                              <span className="text-sm">Privacy Policy</span>
+                            <div className="p-2 rounded-lg mr-3 bg-primary-green/20 text-primary-green">
+                              <Eye className="h-4 w-4" />
+                            </div>
+                            <span className="font-medium">Privacy Policy</span>
                             </Button>
                           </Link>
-                        </div>
+                        {/* </div> */}
 
                       </div>
 
@@ -471,30 +476,36 @@ export default function Navigation() {
                         </div>
 
                         {/* Legal for logged out users */}
-                        <div className="pt-2">
-                          <p className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3 px-2">Legal</p>
+                        {/* <div className="pt-2">
+                          <p className="text-xs font-medium text-secondary-blue/70 uppercase tracking-wider mb-3 px-2">Legal</p> */}
                           <Link href="/terms-of-use">
                             <Button 
                               variant="ghost" 
-                              className="w-full justify-start h-10 rounded-lg text-secondary-blue/80 hover:bg-white/60 hover:text-primary-green transition-all duration-200"
+                              className="w-full justify-start h-12 rounded-xl text-secondary-blue hover:bg-white/80 hover:text-primary-green hover:shadow-sm transition-all duration-200"
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
-                              <FileText className="h-3 w-3 mr-3 text-primary-green/70" />
-                              <span className="text-sm">Terms of Use</span>
+                              <div className="p-2 rounded-lg mr-3 bg-primary-green/20 text-primary-green">
+                                <FileText className="h-4 w-4" />
+                              </div>
+                              <span className="font-medium">Terms of Use</span>
+
                             </Button>
                           </Link>
                           <Link href="/privacy-policy">
                             <Button 
                               variant="ghost" 
-                              className="w-full justify-start h-10 rounded-lg text-secondary-blue/80 hover:bg-white/60 hover:text-primary-green transition-all duration-200"
+                              className="w-full justify-start h-12 rounded-xl text-secondary-blue hover:bg-white/80 hover:text-primary-green hover:shadow-sm transition-all duration-200"
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
-                              <Eye className="h-3 w-3 mr-3 text-primary-green/70" />
-                              <span className="text-sm">Privacy Policy</span>
+                              <div className="p-2 rounded-lg mr-3 bg-primary-green/20 text-primary-green">
+                                <Eye className="h-4 w-4" />
+                              </div>
+                              <span className="font-medium">Privacy Policy</span>
+
                             </Button>
                           </Link>
                         </div>
-                      </div>
+                      {/* </div> */}
                     </>
                   )}
                 </div>
