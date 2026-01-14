@@ -189,7 +189,7 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/95 z-50 flex items-center justify-center overflow-y-auto">
+    <div className="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto p-4 min-h-screen flex flex-col justify-center">
         
         {/* X Close Button */}

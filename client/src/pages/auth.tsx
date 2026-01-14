@@ -469,7 +469,7 @@ console.log('storedState: ', storedState);
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: 'var(--safe-space)'}}>
+    <div className="flex justify-center p-2 overflow-hidden" style={{backgroundColor: 'var(--safe-space)'}}>
       <div className="max-w-md w-full mx-4">
 
         {/* Password Reset Error Message - shown outside form gating */}
