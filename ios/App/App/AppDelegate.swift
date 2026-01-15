@@ -5,10 +5,38 @@ import Capacitor
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    var statusBarView: UIView?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        DispatchQueue.main.async {
+            if #available(iOS 13.0, *) {
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let statusBarManager = windowScene.statusBarManager {
+                    let statusBarView = UIView(frame: statusBarManager.statusBarFrame)
+                    statusBarView.backgroundColor = UIColor(red: 246/255, green: 247/255, blue: 250/255, alpha: 1.0) // #3B82F6
+                    self.statusBarView = statusBarView
+                    if let window = windowScene.windows.first {
+                        window.addSubview(statusBarView)
+                    }
+                    UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+                    NotificationCenter.default.addObserver(self, selector: #selector(self.orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
+                    self.orientationChanged()
+                }
+            } else {
+//                UIApplication.shared.statusBar?.backgroundColor = UIColor.white
+            }
+        }
         return true
+    }
+
+    @objc func orientationChanged() {
+        let orientation = UIDevice.current.orientation
+        if orientation == .portrait || orientation == .portraitUpsideDown {
+            statusBarView?.isHidden = false
+        } else if orientation == .landscapeLeft || orientation == .landscapeRight {
+            statusBarView?.isHidden = true
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

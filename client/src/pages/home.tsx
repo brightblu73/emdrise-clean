@@ -16,8 +16,6 @@ import alistairPortrait from "@/assets/alistair-headshot.jpg";
 import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
 import EndorsementCarousel from "@/components/EndorsementCarousel";
 import { Logo } from "@/components/ui/logo";
-import { SafeArea } from 'capacitor-plugin-safe-area';
-
 
 export default function Home() {
   const { user, loading, userName } = useAuth();
@@ -59,32 +57,32 @@ export default function Home() {
   };
 
   const safeAreaConfig = async () => {
-    SafeArea.getSafeAreaInsets().then(({ insets }) => {
-      console.log(insets);
-      for (const [key, value] of Object.entries(insets)) {
-        document.documentElement.style.setProperty(
-          `--safe-area-inset-${key}`,
-          `${value}px`,
-        );
-      }
-    });
+    // SafeArea.getSafeAreaInsets().then(({ insets }) => {
+    //   console.log(insets);
+    //   for (const [key, value] of Object.entries(insets)) {
+    //     document.documentElement.style.setProperty(
+    //       `--safe-area-inset-${key}`,
+    //       `${value}px`,
+    //     );
+    //   }
+    // });
 
-    SafeArea.getStatusBarHeight().then(({ statusBarHeight }) => {
-      console.log(statusBarHeight, 'statusbarHeight');
-    });
+    // SafeArea.getStatusBarHeight().then(({ statusBarHeight }) => {
+    //   console.log(statusBarHeight, 'statusbarHeight');
+    // });
 
-    await SafeArea.removeAllListeners();
+    // await SafeArea.removeAllListeners();
 
-    // when safe-area changed
-    await SafeArea.addListener('safeAreaChanged', data => {
-      const { insets } = data;
-      for (const [key, value] of Object.entries(insets)) {
-        document.documentElement.style.setProperty(
-          `--safe-area-inset-${key}`,
-          `${value}px`,
-        );
-      }
-    });
+    // // when safe-area changed
+    // await SafeArea.addListener('safeAreaChanged', data => {
+    //   const { insets } = data;
+    //   for (const [key, value] of Object.entries(insets)) {
+    //     document.documentElement.style.setProperty(
+    //       `--safe-area-inset-${key}`,
+    //       `${value}px`,
+    //     );
+    //   }
+    // });
   };
 
   useEffect(() => {

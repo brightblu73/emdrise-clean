@@ -8,8 +8,6 @@ PODS:
   - CapacitorCordova (8.0.0)
   - CapacitorHaptics (8.0.0):
     - Capacitor
-  - CapacitorPluginSafeArea (5.0.0):
-    - Capacitor
   - CapacitorSplashScreen (8.0.0):
     - Capacitor
   - Sentry/HybridSDK (8.56.2)
@@ -23,8 +21,7 @@ DEPENDENCIES:
   - "CapacitorCommunityAppleSignIn (from `../../node_modules/@capacitor-community/apple-sign-in`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
-  - CapacitorPluginSafeArea (from `../../node_modules/capacitor-plugin-safe-area`)
-  - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
+  - "CapacitorSplashScreen (from `../../../node_modules/@capacitor/splash-screen`)"
   - "SentryCapacitor (from `../../node_modules/@sentry/capacitor`)"
 
 SPEC REPOS:
@@ -42,10 +39,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorHaptics:
     :path: "../../node_modules/@capacitor/haptics"
-  CapacitorPluginSafeArea:
-    :path: "../../node_modules/capacitor-plugin-safe-area"
   CapacitorSplashScreen:
-    :path: "../../node_modules/@capacitor/splash-screen"
+    :path: "../../../node_modules/@capacitor/splash-screen"
   SentryCapacitor:
     :path: "../../node_modules/@sentry/capacitor"
 
@@ -55,11 +50,10 @@ SPEC CHECKSUMS:
   CapacitorCommunityAppleSignIn: 59bc8ade5677e6ea60a14bdca8d3f4bdc91069e2
   CapacitorCordova: 5dc3912d25ef770a3fe0f431bb65c9fbfa2e92f9
   CapacitorHaptics: 7a77ce744c4b516b3ffd7f8c96d3de574d77b898
-  CapacitorPluginSafeArea: 5c90e7423e8129641686afe8ae6084b65b20527e
   CapacitorSplashScreen: 4b78177a21f0f73ccc1c78dd93b2a94854ac4b83
   Sentry: b53951377b78e21a734f5dc8318e333dbfc682d7
   SentryCapacitor: 5c982d1e23a6451685ff2013604a61e8736d61df
 
-PODFILE CHECKSUM: 218f2da6691896c895f09ac1d76a78780c8b2bc2
+PODFILE CHECKSUM: d152428e57b681fe2070e92e8c2f535d26bc6370
 
 COCOAPODS: 1.16.2

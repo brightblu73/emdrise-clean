@@ -12,7 +12,7 @@
     }
   },
   "ios": {
-    "contentInset": "always"
+    "contentInset": "none"
   },
   "SignInWithApple": {
     "clientId": "com.emdrise.app",
