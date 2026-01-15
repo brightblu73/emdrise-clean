@@ -265,10 +265,10 @@ export default function Navigation() {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 overflow-y-auto p-0 bg-gradient-to-br from-blue-100 via-blue-50 to-green-100">
+              <SheetContent side="right" className="w-80 overflow-y-auto p-0 bg-gradient-to-br from-blue-100 via-blue-50 to-green-100 [&>button]:top-16 [&>button]:right-4">
                 <div className="flex flex-col min-h-full">
                   {/* Header with branding */}
-                  <div className="bg-gradient-to-r from-primary/20 via-primary-green/20 to-secondary-blue/20 p-6 border-b border-primary/30">
+                  <div className="pt-20 bg-gradient-to-r from-primary/20 via-primary-green/20 to-secondary-blue/20 pl-6 pr-6 border-b border-primary/30">
                     <Link href="/" className="flex items-center justify-center">
                       <Logo variant="mobile" />
                     </Link>
