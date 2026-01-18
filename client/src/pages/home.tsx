@@ -194,17 +194,33 @@ export default function Home() {
 
       setIsCreatingSubscription(true);
 
-      // Call subscription endpoint (trial setup)
-      const response = await apiRequest('POST', '/api/create-subscription');
-      const data = await response.json();
+      // Import RevenueCat service dynamically to avoid issues
+      const { revenueCatService } = await import('@/lib/revenuecat');
 
-      if (data.success) {
-        // Trial access granted, redirect to therapy selection
-        setLocation('/therapist-selection');
-      } else {
-        // Handle any subscription setup issues
-        console.error('Trial setup failed:', data);
-        alert('Unable to set up trial access. Please try again.');
+      // Initialize RevenueCat with the user's Supabase ID
+      await revenueCatService.initialize(currentUser.id);
+
+      // Attempt to purchase the subscription
+      try {
+        const customerInfo = await revenueCatService.purchaseSubscription();
+        if (customerInfo.success) {
+          console.log('Subscription purchase successful:', customerInfo);
+          // Navigate to EMDR session after successful purchase
+          setLocation('/emdr-session');
+        } else {
+          alert(customerInfo.error);
+        }
+        
+      } catch (error) {
+        // Handle purchase failure
+        console.error('Subscription purchase failed:', error);
+
+        // For web users, show a more helpful message
+        if (error instanceof Error && error.message?.includes('native mobile app')) {
+          alert('📱 Subscriptions are only available in the native EMDRise mobile app.\n\nPlease download the app from the App Store to access premium features and start your EMDR therapy journey.');
+        } else {
+          alert(error instanceof Error ? error.message : 'Unable to complete subscription. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Subscription flow error:', error);
