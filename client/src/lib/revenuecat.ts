@@ -6,7 +6,8 @@ const REVENUECAT_API_KEY = import.meta.env.VITE_REVENUECAT_API_KEY || 'appl_xewZ
 // Entitlement identifiers
 export const ENTITLEMENTS = {
   PREMIUM: 'premium_access',
-  TRIAL: 'trial_access'
+  TRIAL: 'trial_access',
+  FULL_ACCESS: 'EMDRise Monthly Plan'
 } as const;
 
 class RevenueCatService {
@@ -74,6 +75,7 @@ class RevenueCatService {
 
     try {
       const { customerInfo } = await Purchases.getCustomerInfo();
+      console.log("customerInfoRevenueCat: ", customerInfo);
       const premiumEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PREMIUM];
       const trialEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.TRIAL];
 
@@ -120,6 +122,10 @@ class RevenueCatService {
     }
   }
 
+  async hasFullAccess(): Promise<boolean> {
+    return this.checkEntitlementAccess(ENTITLEMENTS.FULL_ACCESS);
+  }
+  
   async restorePurchases(): Promise<void> {
     if (!this.initialized) return;
 

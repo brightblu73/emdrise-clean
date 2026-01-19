@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Heart, Menu, User, LogOut, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail, Trash2, Award } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { logout, redirectAfterLogout } from '@/lib/auth';
+import { revenueCatService } from '@/lib/revenuecat';
 
 export default function Navigation() {
   const { user, signOut } = useAuth();
@@ -37,15 +38,37 @@ export default function Navigation() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
+  // Check subscription status when user changes
+  useEffect(() => {
+    const checkSubscriptionStatus = async () => {
+      if (user) {
+        try {
+          // Initialize RevenueCat with the user's Supabase ID
+          await revenueCatService.initialize(user.id);
+          // Check if user has active subscription
+          const hasFullAccess = await revenueCatService.hasFullAccess();
+          console.log('navig hasfull: ', hasFullAccess);
+          setHasActiveSubscription(hasFullAccess);
+        } catch (error) {
+          console.error('Failed to check subscription status:', error);
+          setHasActiveSubscription(false);
+        }
+      } else {
+        setHasActiveSubscription(false);
+      }
+    };
 
+    checkSubscriptionStatus();
+  }, [user]);
 
 
   const navItems = [
     { href: "/", label: "Home", icon: Brain },
-    { href: "/emdr-session", label: "Therapy Session", icon: Brain },
-    { href: "/memory-cleared", label: "My Progress", icon: Award },
-  ];
+    hasActiveSubscription && { href: "/emdr-session", label: "Therapy Session", icon: Brain },
+    hasActiveSubscription && { href: "/memory-cleared", label: "My Progress", icon: Award },
+  ].filter(Boolean);
 
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
@@ -294,7 +317,7 @@ export default function Navigation() {
                               : 0} days left
                           </Badge>
                         )}
-                        {user.subscriptionStatus === 'active' && (
+                        {hasActiveSubscription && (
                           <Badge variant="default" className="bg-gradient-to-r from-primary-green to-green-600 text-white border-0">
                             ✓ Premium Active
                           </Badge>
