@@ -21,6 +21,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     }
                     UIDevice.current.beginGeneratingDeviceOrientationNotifications()
                     NotificationCenter.default.addObserver(self, selector: #selector(self.orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
+
+                    // Also listen to status bar orientation notifications for programmatic orientation changes
+                    NotificationCenter.default.addObserver(self, selector: #selector(self.orientationChanged), name: UIApplication.didChangeStatusBarOrientationNotification, object: nil)
+
                     self.orientationChanged()
                 }
             } else {
@@ -31,11 +35,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     @objc func orientationChanged() {
-        let orientation = UIDevice.current.orientation
-        if orientation == .portrait || orientation == .portraitUpsideDown {
+        // Check status bar orientation instead of device orientation for more reliable detection
+        // when orientation is changed programmatically by Capacitor plugins
+        let statusBarOrientation = UIApplication.shared.statusBarOrientation
+
+        switch statusBarOrientation {
+        case .portrait, .portraitUpsideDown:
             statusBarView?.isHidden = false
-        } else if orientation == .landscapeLeft || orientation == .landscapeRight {
+        case .landscapeLeft, .landscapeRight:
             statusBarView?.isHidden = true
+        @unknown default:
+            // For any unknown orientations, default to visible
+            statusBarView?.isHidden = false
         }
     }
 
