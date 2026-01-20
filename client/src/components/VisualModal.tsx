@@ -208,9 +208,9 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
         </div>
         
         {/* Visual BLS Area with Grey Background */}
-        <div 
+        <div
           ref={containerRef}
-          className="relative bg-gray-500 rounded-lg h-64 mb-6 overflow-hidden"
+          className="relative bg-gray-500 rounded-lg h-32 mb-6 overflow-hidden [@media(orientation:landscape)]:pt-8 [@media(orientation:landscape)]:mt-[10px]"
         >
           {/* Center reference line */}
           <div className="absolute top-1/2 left-1/2 w-1 h-8 bg-slate-600 transform -translate-x-1/2 -translate-y-1/2 opacity-30"></div>

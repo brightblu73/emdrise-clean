@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "../state/AuthProvider";
 import { Eye, Brain, Sprout, Clock, Play, Heart, CheckCircle, Volume2, Apple, Mail } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { supabase } from '@/lib/supabase';
 import { gotoAuthOrSession } from '@/utils/gotoAuthOrSession'
 import { apiRequest } from '@/lib/queryClient'
@@ -165,11 +166,18 @@ export default function Home() {
 
 
 
+  // Lock orientation to portrait when home page loads
+  useEffect(() => {
+    ScreenOrientation.lock({ orientation: 'portrait' }).catch((error) => {
+      console.warn('Failed to lock orientation to portrait on home page:', error);
+    });
+  }, []);
+
   // Check URL parameters for trial success and scroll to top
   useEffect(() => {
     // Always scroll to top when homepage loads
     window.scrollTo(0, 0);
-    
+
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('trial_started') === 'true') {
       setShowTrialSuccessMessage(true);
