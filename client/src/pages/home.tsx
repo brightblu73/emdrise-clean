@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "../state/AuthProvider";
+import { useSubscription } from "../state/SubscriptionProvider";
 import { Eye, Brain, Sprout, Clock, Play, Heart, CheckCircle, Volume2, Apple, Mail } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { ScreenOrientation } from '@capacitor/screen-orientation';
@@ -21,6 +22,7 @@ import { Logo } from "@/components/ui/logo";
 
 export default function Home() {
   const { user, loading, userName } = useAuth();
+  const { hasActiveSubscription, refreshSubscriptionStatus } = useSubscription();
   const [, setLocation] = useLocation();
   const [isVisualBLSActive, setIsVisualBLSActive] = useState(false);
   const [isAudioBLSActive, setIsAudioBLSActive] = useState(false);
@@ -37,7 +39,6 @@ export default function Home() {
   const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
   const [isRestoringPurchases, setIsRestoringPurchases] = useState(false);
   const [showTrialSuccessMessage, setShowTrialSuccessMessage] = useState(false);
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const intervalRef = useRef<number | null>(null);
@@ -185,31 +186,12 @@ export default function Home() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
+    refreshSubscriptionStatus();
+
     safeAreaConfig();
   }, []);
 
-  // Check subscription status when user changes
-  useEffect(() => {
-    const checkSubscriptionStatus = async () => {
-      if (user) {
-        try {
-          // Initialize RevenueCat with the user's Supabase ID
-          await revenueCatService.initialize(user.id);
-          // Check if user has active subscription
-          const hasFullAccess = await revenueCatService.hasFullAccess();
-          setHasActiveSubscription(hasFullAccess);
-        } catch (error) {
-          console.error('Failed to check subscription status:', error);
-          setHasActiveSubscription(false);
-        }
-      } else {
-        console.error('Failed to check subscription status: ??');
-        setHasActiveSubscription(false);
-      }
-    };
 
-    checkSubscriptionStatus();
-  }, [user]);
 
   // Handle subscription flow for authenticated users
   const handleSubscriptionFlow = async () => {
@@ -236,6 +218,9 @@ export default function Home() {
         const customerInfo = await revenueCatService.purchaseSubscription();
         if (customerInfo.success) {
           console.log('Subscription purchase successful:', customerInfo);
+
+          await refreshSubscriptionStatus();
+          
           // Navigate to EMDR session after successful purchase
           setLocation('/emdr-session');
         } else {
@@ -298,11 +283,11 @@ export default function Home() {
       // Attempt to restore purchases
       await revenueCatService.restorePurchases();
 
-      // Check subscription status after restore
-      const hasFullAccess = await revenueCatService.hasFullAccess();
-      setHasActiveSubscription(hasFullAccess);
+      // Refresh subscription status after restore
+      await refreshSubscriptionStatus();
 
-      if (hasFullAccess) {
+      // Check if restore was successful by checking current subscription status
+      if (hasActiveSubscription) {
         alert('✅ Purchases restored successfully! Your subscription is now active.');
         // Navigate to session if user is authenticated
         if (user) {
@@ -396,14 +381,14 @@ export default function Home() {
                   >
                     {isCreatingSubscription ? 'Setting up your trial...' : 'Start Your 7-Day Free Trial'}
                   </Button>
-                  <Button
+                  {/* <Button
                     onClick={handleRestorePurchases}
                     disabled={isRestoringPurchases}
                     size="lg"
                     className="w-full py-3 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
                   >
                     {isRestoringPurchases ? 'Restoring...' : 'Restore Purchases'}
-                  </Button>
+                  </Button> */}
                   <div className="text-sm text-blue-200 text-center mt-2">
                     ✓ 7-day free trial • £9.99/month after trial • ✓ Cancel anytime
                   </div>

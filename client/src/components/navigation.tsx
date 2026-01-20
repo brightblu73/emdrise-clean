@@ -26,6 +26,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from '../state/AuthProvider';
+import { useSubscription } from '../state/SubscriptionProvider';
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Menu, User, LogOut, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail, Trash2, Award } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
@@ -34,41 +35,18 @@ import { revenueCatService } from '@/lib/revenuecat';
 
 export default function Navigation() {
   const { user, signOut } = useAuth();
+  const { hasActiveSubscription, subscriptionStatus } = useSubscription();
   const { toast } = useToast();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-
-  // Check subscription status when user changes
-  useEffect(() => {
-    const checkSubscriptionStatus = async () => {
-      if (user) {
-        try {
-          // Initialize RevenueCat with the user's Supabase ID
-          await revenueCatService.initialize(user.id);
-          // Check if user has active subscription
-          const hasFullAccess = await revenueCatService.hasFullAccess();
-          console.log('navig hasfull: ', hasFullAccess);
-          setHasActiveSubscription(hasFullAccess);
-        } catch (error) {
-          console.error('Failed to check subscription status:', error);
-          setHasActiveSubscription(false);
-        }
-      } else {
-        setHasActiveSubscription(false);
-      }
-    };
-
-    checkSubscriptionStatus();
-  }, [user]);
 
 
   const navItems = [
     { href: "/", label: "Home", icon: Brain },
-    hasActiveSubscription && { href: "/emdr-session", label: "Therapy Session", icon: Brain },
-    hasActiveSubscription && { href: "/memory-cleared", label: "My Progress", icon: Award },
-  ].filter(Boolean);
+    ...(hasActiveSubscription ? [{ href: "/emdr-session", label: "Therapy Session", icon: Brain }] : []),
+    ...(hasActiveSubscription ? [{ href: "/memory-cleared", label: "My Progress", icon: Award }] : []),
+  ];
 
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;

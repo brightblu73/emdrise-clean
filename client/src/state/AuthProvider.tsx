@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
+import { SubscriptionProvider } from './SubscriptionProvider';
 
 type Ctx = {
   user: any; session: any; loading: boolean;
@@ -73,7 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   };
 
-  return <AuthCtx.Provider value={{ user, session, loading, userName, signInWithEmail, signOut }}>{children}</AuthCtx.Provider>;
+  return (
+    <AuthCtx.Provider value={{ user, session, loading, userName, signInWithEmail, signOut }}>
+      <SubscriptionProvider>
+        {children}
+      </SubscriptionProvider>
+    </AuthCtx.Provider>
+  );
 }
 export function useAuth() {
   const v = useContext(AuthCtx);
