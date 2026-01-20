@@ -417,6 +417,9 @@ console.log('storedState: ', storedState);
     const accessToken = hashParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token');
     const expiresIn = hashParams.get('expires_in');
+
+    // Always scroll to top when page loads
+    window.scrollTo(0, 0);
     
     // Also check query params for fallback cases
     const urlParams = new URLSearchParams(window.location.search);
