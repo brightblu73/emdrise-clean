@@ -92,7 +92,7 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
     } else if (activeModal === null) {
       // Unlock orientation and show status bar when VisualModal closes
       Promise.all([
-        ScreenOrientation.unlock().catch((error) => {
+        ScreenOrientation.lock({ orientation: 'portrait' }).catch((error) => {
           console.warn('Failed to unlock orientation:', error);
         }),
         StatusBar.setVisible({ visible: true }).catch((error) => {
@@ -115,7 +115,9 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
 
   const handleSetComplete = () => {
     setActiveModal(null);
-    onSetComplete?.();
+    setTimeout(() => {
+      onSetComplete?.();
+    }, 100);
   };
 
   const startBLS = (type: 'visual' | 'auditory' | 'tapping') => {
