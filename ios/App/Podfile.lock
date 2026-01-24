@@ -8,6 +8,8 @@ PODS:
   - CapacitorCordova (8.0.0)
   - CapacitorHaptics (8.0.0):
     - Capacitor
+  - CapacitorPluginAppTrackingTransparency (3.0.0):
+    - Capacitor
   - CapacitorScreenOrientation (8.0.0):
     - Capacitor
   - CapacitorSplashScreen (8.0.0):
@@ -29,6 +31,7 @@ DEPENDENCIES:
   - "CapacitorCommunityAppleSignIn (from `../../node_modules/@capacitor-community/apple-sign-in`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
+  - CapacitorPluginAppTrackingTransparency (from `../../node_modules/capacitor-plugin-app-tracking-transparency`)
   - "CapacitorScreenOrientation (from `../../node_modules/@capacitor/screen-orientation`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "RevenuecatPurchasesCapacitor (from `../../node_modules/@revenuecat/purchases-capacitor`)"
@@ -51,6 +54,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorHaptics:
     :path: "../../node_modules/@capacitor/haptics"
+  CapacitorPluginAppTrackingTransparency:
+    :path: "../../node_modules/capacitor-plugin-app-tracking-transparency"
   CapacitorScreenOrientation:
     :path: "../../node_modules/@capacitor/screen-orientation"
   CapacitorSplashScreen:
@@ -66,6 +71,7 @@ SPEC CHECKSUMS:
   CapacitorCommunityAppleSignIn: 59bc8ade5677e6ea60a14bdca8d3f4bdc91069e2
   CapacitorCordova: 5dc3912d25ef770a3fe0f431bb65c9fbfa2e92f9
   CapacitorHaptics: 7a77ce744c4b516b3ffd7f8c96d3de574d77b898
+  CapacitorPluginAppTrackingTransparency: c865112679beaad5bccd65a5bbac6e6eacaeb14b
   CapacitorScreenOrientation: 82b7c0bcc6189e97269ec66c613d0cd4f1c1c004
   CapacitorSplashScreen: 4b78177a21f0f73ccc1c78dd93b2a94854ac4b83
   PurchasesHybridCommon: fad1084d9781388e181c8b855caf7a5853cebcb3
@@ -74,6 +80,6 @@ SPEC CHECKSUMS:
   Sentry: b53951377b78e21a734f5dc8318e333dbfc682d7
   SentryCapacitor: 5c982d1e23a6451685ff2013604a61e8736d61df
 
-PODFILE CHECKSUM: b6ca9ca7d894ace731e1ee84a6d09e7661f8fef3
+PODFILE CHECKSUM: 018aaacbc051f2f656c437f474b7c9f10fff1ea4
 
 COCOAPODS: 1.16.2

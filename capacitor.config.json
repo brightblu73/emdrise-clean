@@ -22,7 +22,8 @@
       "SplashScreenPlugin",
       "PurchasesPlugin",
       "SentryCapacitorPlugin",
-      "StatusBarPlugin"
+      "StatusBarPlugin",
+      "AppTrackingTransparencyPlugin"
     ]
   },
   "SignInWithApple": {
