@@ -9,10 +9,22 @@
       "androidSplashResourceName": "splash",
       "iosSplashResourceName": "Splash",
       "showSpinner": false
-    }
+    },
+    "StatusBarPlugin": {}
   },
   "ios": {
-    "contentInset": "always"
+    "contentInset": "none",
+    "packageClassList": [
+      "SignInWithApple",
+      "AppPlugin",
+      "HapticsPlugin",
+      "ScreenOrientationPlugin",
+      "SplashScreenPlugin",
+      "PurchasesPlugin",
+      "SentryCapacitorPlugin",
+      "StatusBarPlugin",
+      "AppTrackingTransparencyPlugin"
+    ]
   },
   "SignInWithApple": {
     "clientId": "com.emdrise.app",

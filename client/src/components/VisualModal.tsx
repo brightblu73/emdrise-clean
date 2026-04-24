@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { X } from "lucide-react";
 import { BLS_TOTAL_SETS } from "@/lib/blsConfig";
+import { ScreenOrientation } from '@capacitor/screen-orientation';
+import StatusBar from '@/plugins/status-bar';
 
 interface VisualModalProps {
   onClose: () => void;
@@ -188,6 +190,35 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
     };
   }, []);
 
+  // Hide status bar when screen is switched to landscape
+  useEffect(() => {
+    const handleOrientationChange = (event: any) => {
+      if (event.type.includes('landscape')) {
+        StatusBar.setVisible({ visible: false }).catch((error) => {
+          console.warn('Failed to hide status bar:', error);
+        });
+      }
+    };
+
+    // Add orientation change listener
+    const listener = ScreenOrientation.addListener('orientationChange', handleOrientationChange);
+
+    // Check current orientation and hide status bar if already in landscape
+    ScreenOrientation.getCurrentOrientation().then((orientation) => {
+      if (orientation.type.includes('landscape')) {
+        StatusBar.setVisible({ visible: false }).catch((error) => {
+          console.warn('Failed to hide status bar:', error);
+        });
+      }
+    }).catch((error) => {
+      console.warn('Failed to get current orientation:', error);
+    });
+
+    return () => {
+      listener.remove();
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center overflow-y-auto">
       <div className="w-full max-w-4xl mx-auto p-4 min-h-screen flex flex-col justify-center">
@@ -208,9 +239,9 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
         </div>
         
         {/* Visual BLS Area with Grey Background */}
-        <div 
+        <div
           ref={containerRef}
-          className="relative bg-gray-500 rounded-lg h-64 mb-6 overflow-hidden"
+          className="relative bg-gray-500 rounded-lg h-16 mb-6 overflow-hidden [@media(orientation:landscape)]:pt-8 [@media(orientation:landscape)]:mt-[10px]"
         >
           {/* Center reference line */}
           <div className="absolute top-1/2 left-1/2 w-1 h-8 bg-slate-600 transform -translate-x-1/2 -translate-y-1/2 opacity-30"></div>
@@ -229,28 +260,27 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
           />
 
           {/* Set Counter */}
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
+          {/* <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
             <div className="bg-slate-800/90 px-4 py-2 rounded-lg text-white text-center">
               <div className="text-2xl font-bold">{setCount}</div>
               <div className="text-sm text-slate-300">of {BLS_TOTAL_SETS} sets</div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Control Panel */}
         <Card className="bg-slate-800 border-slate-600">
-          <CardHeader>
-            <CardTitle className="text-white text-center">
+            <div className="text-white text-center text-lg pt-2">
               {phase === 'ready' && 'Ready for Visual Bilateral Stimulation'}
               {phase === 'active' && 'Follow the Ball'}
               {phase === 'complete' && 'Set Complete'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </div>
+
+          <CardContent className="space-y-0 pt-2">
             
             {phase === 'ready' && (
-              <div className="text-center space-y-4">
-                <p className="text-slate-300">
+              <div className="text-center space-y-0 pt-2">
+                <p className="text-slate-300 mb-2">
                   Follow the white ball with your eyes as it moves smoothly from side to side.
                   The set will automatically complete after {BLS_TOTAL_SETS} movements.
                 </p>
@@ -265,14 +295,14 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
             )}
 
             {phase === 'active' && (
-              <div className="text-center space-y-4">
+              <div className="text-center space-y-0 pt-2">
                 <p className="text-slate-300">
                   Keep your head still and follow the ball with your eyes only.
                 </p>
                 
                 {/* Speed Slider Control */}
-                <div className="space-y-3">
-                  <label className="text-sm text-slate-300 text-center block">
+                <div className="space-y-0">
+                  <label className="text-sm text-slate-300 text-center block pt-1">
                     Adjust Speed
                   </label>
                   <div className="px-4">
@@ -297,7 +327,7 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
             )}
 
             {phase === 'complete' && (
-              <div className="text-center space-y-4">
+              <div className="text-center space-y-0 pt-2">
                 <p className="text-green-400 font-semibold">
                   Visual bilateral stimulation set complete
                 </p>
@@ -307,14 +337,14 @@ export default function VisualModal({ onClose, onSetComplete }: VisualModalProps
                     e.stopPropagation();
                     onClose();
                   }}
-                  className="bg-primary-green hover:bg-primary-green/90"
+                  className="bg-primary-green hover:bg-primary-green/90 mt-2"
                 >
                   Continue Session
                 </Button>
               </div>
             )}
 
-            <div className="flex justify-center pt-4">
+            <div className="flex justify-center pt-0">
               <Button
                 onClick={forceClose}
                 variant="ghost"

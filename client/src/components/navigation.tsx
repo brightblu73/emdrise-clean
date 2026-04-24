@@ -26,25 +26,26 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from '../state/AuthProvider';
+import { useSubscription } from '../state/SubscriptionProvider';
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Menu, User, LogOut, Brain, Shield, CreditCard, Scale, FileText, Eye, Mail, Trash2, Award } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { logout, redirectAfterLogout } from '@/lib/auth';
+import { revenueCatService } from '@/lib/revenuecat';
 
 export default function Navigation() {
   const { user, signOut } = useAuth();
+  const { hasActiveSubscription, subscriptionStatus } = useSubscription();
   const { toast } = useToast();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
 
-
-
   const navItems = [
     { href: "/", label: "Home", icon: Brain },
-    { href: "/emdr-session", label: "Therapy Session", icon: Brain },
-    { href: "/memory-cleared", label: "My Progress", icon: Award },
+    ...(hasActiveSubscription ? [{ href: "/emdr-session", label: "Therapy Session", icon: Brain }] : []),
+    ...(hasActiveSubscription ? [{ href: "/memory-cleared", label: "My Progress", icon: Award }] : []),
   ];
 
   const isActive = (path: string) => {
@@ -122,7 +123,7 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-card shadow-sm border-b border-slate-200 sticky top-0 z-50">
+    <nav className="bg-card shadow-sm border-b border-slate-200 sticky top-0 z-50 pt-safe-nav">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
@@ -265,10 +266,10 @@ export default function Navigation() {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-80 overflow-y-auto p-0 bg-gradient-to-br from-blue-100 via-blue-50 to-green-100">
+              <SheetContent side="right" className="w-80 overflow-y-auto p-0 bg-gradient-to-br from-blue-100 via-blue-50 to-green-100 [&>button]:top-16 [&>button]:right-4">
                 <div className="flex flex-col min-h-full">
                   {/* Header with branding */}
-                  <div className="bg-gradient-to-r from-primary/20 via-primary-green/20 to-secondary-blue/20 p-6 border-b border-primary/30">
+                  <div className="pt-20 bg-gradient-to-r from-primary/20 via-primary-green/20 to-secondary-blue/20 pl-6 pr-6 border-b border-primary/30">
                     <Link href="/" className="flex items-center justify-center">
                       <Logo variant="mobile" />
                     </Link>
@@ -294,7 +295,7 @@ export default function Navigation() {
                               : 0} days left
                           </Badge>
                         )}
-                        {user.subscriptionStatus === 'active' && (
+                        {hasActiveSubscription && (
                           <Badge variant="default" className="bg-gradient-to-r from-primary-green to-green-600 text-white border-0">
                             ✓ Premium Active
                           </Badge>

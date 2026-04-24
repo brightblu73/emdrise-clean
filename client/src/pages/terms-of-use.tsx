@@ -1,6 +1,12 @@
 import React from 'react';
+import { useEffect } from "react";
 
 export default function TermsOfUse() {
+    useEffect(() => {
+      // Always scroll to top when page loads
+      window.scrollTo(0, 0);
+    }, []);
+  
   return (
     <div className="min-h-screen py-8 px-4" style={{background: 'linear-gradient(135deg, var(--therapeutic-bg), var(--safe-space))'}}>
       <div className="max-w-4xl mx-auto">

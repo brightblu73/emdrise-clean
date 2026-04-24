@@ -5,6 +5,8 @@ import VisualModal from "./VisualModal";
 import AuditoryModal from "./AuditoryModal";
 import TappingModal from "./TappingModal";
 import BLSOptionBox from "./BLSOptionBox";
+import { ScreenOrientation } from '@capacitor/screen-orientation';
+import StatusBar from '@/plugins/status-bar';
 
 interface BilateralStimulationProps {
   isActive: boolean;
@@ -75,6 +77,31 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
     }
   }, [isActive, blsType, disableAutoStart, hasAutoStarted]); // Keep hasAutoStarted to track state properly
 
+  // Handle orientation locking and status bar visibility for VisualModal
+  useEffect(() => {
+    if (activeModal === 'visual') {
+      // Lock to landscape and hide status bar when VisualModal opens
+      Promise.all([
+        ScreenOrientation.lock({ orientation: 'landscape' }).catch((error) => {
+          console.warn('Failed to lock orientation to landscape:', error);
+        }),
+        StatusBar.setVisible({ visible: false }).catch((error) => {
+          console.warn('Failed to hide status bar:', error);
+        })
+      ]);
+    } else if (activeModal === null) {
+      // Unlock orientation and show status bar when VisualModal closes
+      Promise.all([
+        ScreenOrientation.lock({ orientation: 'portrait' }).catch((error) => {
+          console.warn('Failed to unlock orientation:', error);
+        }),
+        StatusBar.setVisible({ visible: true }).catch((error) => {
+          console.warn('Failed to show status bar:', error);
+        })
+      ]);
+    }
+  }, [activeModal]);
+
   const handleModalClose = () => {
     console.log('BLS Modal closing, current activeModal:', activeModal);
     setActiveModal(null);
@@ -88,7 +115,9 @@ export default function BilateralStimulation({ isActive, onComplete, onSetComple
 
   const handleSetComplete = () => {
     setActiveModal(null);
-    onSetComplete?.();
+    setTimeout(() => {
+      onSetComplete?.();
+    }, 100);
   };
 
   const startBLS = (type: 'visual' | 'auditory' | 'tapping') => {

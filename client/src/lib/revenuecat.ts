@@ -1,12 +1,13 @@
-import { Purchases } from '@revenuecat/purchases-js';
+import { Purchases, type CustomerInfo, type PurchasesOffering } from '@revenuecat/purchases-capacitor';
 
 // RevenueCat configuration
-const REVENUECAT_API_KEY = import.meta.env.VITE_REVENUECAT_API_KEY;
+const REVENUECAT_API_KEY = import.meta.env.VITE_REVENUECAT_API_KEY || 'appl_xewZcRiyLfkBnmDYaTktVHghPKz';
 
 // Entitlement identifiers
 export const ENTITLEMENTS = {
   PREMIUM: 'premium_access',
-  TRIAL: 'trial_access'
+  TRIAL: 'trial_access',
+  FULL_ACCESS: 'EMDRise Monthly Plan'
 } as const;
 
 class RevenueCatService {
@@ -33,7 +34,7 @@ class RevenueCatService {
 
       await Purchases.configure({
         apiKey: REVENUECAT_API_KEY,
-        ...(userId && { appUserId: userId })
+        ...(userId && { appUserID: userId })
       });
 
       this.initialized = true;
@@ -50,7 +51,7 @@ class RevenueCatService {
     }
 
     try {
-      await Purchases.logIn(userId);
+      await Purchases.logIn({ appUserID: userId });
       console.log('RevenueCat user ID set:', userId);
     } catch (error) {
       console.error('Failed to set RevenueCat user ID:', error);
@@ -73,7 +74,8 @@ class RevenueCatService {
     }
 
     try {
-      const customerInfo = await Purchases.getCustomerInfo();
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      console.log("customerInfoRevenueCat: ", customerInfo);
       const premiumEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PREMIUM];
       const trialEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.TRIAL];
 
@@ -112,7 +114,7 @@ class RevenueCatService {
     if (!this.initialized) return false;
 
     try {
-      const customerInfo = await Purchases.getCustomerInfo();
+      const { customerInfo } = await Purchases.getCustomerInfo();
       return !!customerInfo.entitlements.active[entitlementId];
     } catch (error) {
       console.error('Failed to check entitlement access:', error);
@@ -120,6 +122,10 @@ class RevenueCatService {
     }
   }
 
+  async hasFullAccess(): Promise<boolean> {
+    return this.checkEntitlementAccess(ENTITLEMENTS.FULL_ACCESS);
+  }
+  
   async restorePurchases(): Promise<void> {
     if (!this.initialized) return;
 
@@ -131,17 +137,50 @@ class RevenueCatService {
     }
   }
 
-  async getOfferings() {
-    if (!this.initialized) return null;
-
+  async getOfferings(): Promise<PurchasesOffering | null> {
     try {
       const offerings = await Purchases.getOfferings();
-      return offerings;
+      return offerings.current || null;
     } catch (error) {
       console.error('Failed to get offerings:', error);
       return null;
     }
   }
+
+async purchaseSubscription(): Promise<{ success: boolean; customerInfo?: CustomerInfo; error?: string }> {
+    try {
+      // Get current offerings
+      const offering = await this.getOfferings();
+      if (!offering) {
+        return { success: false, error: 'No subscription offerings available' };
+      }
+
+      // Get the monthly package
+      const monthlyPackage = offering.availablePackages.find(pkg =>
+        pkg.identifier === 'monthly' || pkg.identifier === '$rc_monthly'
+      );
+      if (!monthlyPackage) {
+        return { success: false, error: 'Monthly subscription package not found' };
+      }
+
+      // Make the purchase
+      const result = await Purchases.purchasePackage({ aPackage: monthlyPackage });
+
+      console.log('Purchase successful:', result);
+      return { success: true, customerInfo: result.customerInfo };
+    } catch (error: any) {
+      console.error('Purchase failed:', error);
+
+      // Handle user cancellation
+      if (error.userCancelled) {
+        return { success: false, error: 'Purchase cancelled by user' };
+      }
+
+      return { success: false, error: error.message || 'Purchase failed' };
+    }
+  }
+
+
 
   async purchasePackage(packageId: string) {
     if (!this.initialized) {
@@ -162,7 +201,7 @@ class RevenueCatService {
         throw new Error(`Package ${packageId} not found`);
       }
 
-      const { customerInfo } = await Purchases.purchasePackage(packageToPurchase);
+      const { customerInfo } = await Purchases.purchasePackage({ aPackage: packageToPurchase });
       console.log('Purchase successful:', customerInfo);
       return customerInfo;
     } catch (error) {

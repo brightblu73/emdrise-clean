@@ -19,6 +19,8 @@ import MemoryClearedDashboard from "./pages/memory-cleared-dashboard";
 import TermsOfUse from "./pages/terms-of-use";
 import PrivacyPolicy from "./pages/privacy-policy";
 import NotFound from "./pages/not-found";
+import { requestTrackingPermission } from "./lib/app-tracking";
+import { useEffect } from "react";
 
 function Router() {
   return (
@@ -46,6 +48,22 @@ function Router() {
 }
 
 function App() {
+  // Request App Tracking Transparency permission after app launch
+  useEffect(() => {
+    const requestPermission = async () => {
+      try {
+        const response = await requestTrackingPermission();
+        console.log('App Tracking Transparency:', response.message);
+      } catch (error) {
+        console.error('Failed to request tracking permission:', error);
+      }
+    };
+
+    // Small delay to ensure app is fully loaded
+    const timer = setTimeout(requestPermission, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>

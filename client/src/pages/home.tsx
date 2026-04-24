@@ -6,21 +6,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "../state/AuthProvider";
+import { useSubscription } from "../state/SubscriptionProvider";
 import { Eye, Brain, Sprout, Clock, Play, Heart, CheckCircle, Volume2, Apple, Mail } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { supabase } from '@/lib/supabase';
 import { gotoAuthOrSession } from '@/utils/gotoAuthOrSession'
 import { apiRequest } from '@/lib/queryClient'
+import { revenueCatService } from '@/lib/revenuecat';
 import mariaPortrait from "@/assets/maria-headshot.jpg";
 import alistairPortrait from "@/assets/alistair-headshot.jpg";
 import EMDRJourneyTimeline from "@/components/EMDRJourneyTimeline";
 import EndorsementCarousel from "@/components/EndorsementCarousel";
 import { Logo } from "@/components/ui/logo";
-import { SafeArea } from 'capacitor-plugin-safe-area';
-
 
 export default function Home() {
   const { user, loading, userName } = useAuth();
+  const { hasActiveSubscription, refreshSubscriptionStatus } = useSubscription();
   const [, setLocation] = useLocation();
   const [isVisualBLSActive, setIsVisualBLSActive] = useState(false);
   const [isAudioBLSActive, setIsAudioBLSActive] = useState(false);
@@ -35,6 +37,7 @@ export default function Home() {
   });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
+  const [isRestoringPurchases, setIsRestoringPurchases] = useState(false);
   const [showTrialSuccessMessage, setShowTrialSuccessMessage] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -59,32 +62,32 @@ export default function Home() {
   };
 
   const safeAreaConfig = async () => {
-    SafeArea.getSafeAreaInsets().then(({ insets }) => {
-      console.log(insets);
-      for (const [key, value] of Object.entries(insets)) {
-        document.documentElement.style.setProperty(
-          `--safe-area-inset-${key}`,
-          `${value}px`,
-        );
-      }
-    });
+    // SafeArea.getSafeAreaInsets().then(({ insets }) => {
+    //   console.log(insets);
+    //   for (const [key, value] of Object.entries(insets)) {
+    //     document.documentElement.style.setProperty(
+    //       `--safe-area-inset-${key}`,
+    //       `${value}px`,
+    //     );
+    //   }
+    // });
 
-    SafeArea.getStatusBarHeight().then(({ statusBarHeight }) => {
-      console.log(statusBarHeight, 'statusbarHeight');
-    });
+    // SafeArea.getStatusBarHeight().then(({ statusBarHeight }) => {
+    //   console.log(statusBarHeight, 'statusbarHeight');
+    // });
 
-    await SafeArea.removeAllListeners();
+    // await SafeArea.removeAllListeners();
 
-    // when safe-area changed
-    await SafeArea.addListener('safeAreaChanged', data => {
-      const { insets } = data;
-      for (const [key, value] of Object.entries(insets)) {
-        document.documentElement.style.setProperty(
-          `--safe-area-inset-${key}`,
-          `${value}px`,
-        );
-      }
-    });
+    // // when safe-area changed
+    // await SafeArea.addListener('safeAreaChanged', data => {
+    //   const { insets } = data;
+    //   for (const [key, value] of Object.entries(insets)) {
+    //     document.documentElement.style.setProperty(
+    //       `--safe-area-inset-${key}`,
+    //       `${value}px`,
+    //     );
+    //   }
+    // });
   };
 
   useEffect(() => {
@@ -164,11 +167,18 @@ export default function Home() {
 
 
 
+  // Lock orientation to portrait when home page loads
+  useEffect(() => {
+    ScreenOrientation.lock({ orientation: 'portrait' }).catch((error) => {
+      console.warn('Failed to lock orientation to portrait on home page:', error);
+    });
+  }, []);
+
   // Check URL parameters for trial success and scroll to top
   useEffect(() => {
     // Always scroll to top when homepage loads
     window.scrollTo(0, 0);
-    
+
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('trial_started') === 'true') {
       setShowTrialSuccessMessage(true);
@@ -176,11 +186,12 @@ export default function Home() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
+    refreshSubscriptionStatus();
+
     safeAreaConfig();
   }, []);
 
-  // No need to check subscription status on homepage
-  // Subscription check will happen in the EMDR session when needed
+
 
   // Handle subscription flow for authenticated users
   const handleSubscriptionFlow = async () => {
@@ -196,17 +207,36 @@ export default function Home() {
 
       setIsCreatingSubscription(true);
 
-      // Call subscription endpoint (trial setup)
-      const response = await apiRequest('POST', '/api/create-subscription');
-      const data = await response.json();
+      // Import RevenueCat service dynamically to avoid issues
+      const { revenueCatService } = await import('@/lib/revenuecat');
 
-      if (data.success) {
-        // Trial access granted, redirect to therapy selection
-        setLocation('/therapist-selection');
-      } else {
-        // Handle any subscription setup issues
-        console.error('Trial setup failed:', data);
-        alert('Unable to set up trial access. Please try again.');
+      // Initialize RevenueCat with the user's Supabase ID
+      await revenueCatService.initialize(currentUser.id);
+
+      // Attempt to purchase the subscription
+      try {
+        const customerInfo = await revenueCatService.purchaseSubscription();
+        if (customerInfo.success) {
+          console.log('Subscription purchase successful:', customerInfo);
+
+          await refreshSubscriptionStatus();
+          
+          // Navigate to EMDR session after successful purchase
+          setLocation('/emdr-session');
+        } else {
+          alert(customerInfo.error);
+        }
+        
+      } catch (error) {
+        // Handle purchase failure
+        console.error('Subscription purchase failed:', error);
+
+        // For web users, show a more helpful message
+        if (error instanceof Error && error.message?.includes('native mobile app')) {
+          alert('📱 Subscriptions are only available in the native EMDRise mobile app.\n\nPlease download the app from the App Store to access premium features and start your EMDR therapy journey.');
+        } else {
+          alert(error instanceof Error ? error.message : 'Unable to complete subscription. Please try again.');
+        }
       }
     } catch (error) {
       console.error('Subscription flow error:', error);
@@ -220,10 +250,14 @@ export default function Home() {
   const handleStartTrial = async () => {
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-      
+
       if (currentUser) {
         // User is authenticated, proceed with checkout flow
-        await handleSubscriptionFlow();
+        if (hasActiveSubscription) {
+          setLocation('/emdr-session');
+        } else {
+          await handleSubscriptionFlow();
+        }
       } else {
         // User not authenticated, redirect to auth
         setLocation('/auth');
@@ -231,6 +265,42 @@ export default function Home() {
     } catch (error) {
       console.error('Start trial error:', error);
       setLocation('/auth');
+    }
+  };
+
+  // Handle restore purchases
+  const handleRestorePurchases = async () => {
+    try {
+      setIsRestoringPurchases(true);
+
+      // Initialize RevenueCat if user is authenticated
+      if (user) {
+        await revenueCatService.initialize(user.id);
+      } else {
+        await revenueCatService.initialize();
+      }
+
+      // Attempt to restore purchases
+      await revenueCatService.restorePurchases();
+
+      // Refresh subscription status after restore
+      await refreshSubscriptionStatus();
+
+      // Check if restore was successful by checking current subscription status
+      if (hasActiveSubscription) {
+        alert('✅ Purchases restored successfully! Your subscription is now active.');
+        // Navigate to session if user is authenticated
+        if (user) {
+          setLocation('/emdr-session');
+        }
+      } else {
+        alert('No active subscriptions found. If you believe this is an error, please contact support.');
+      }
+    } catch (error) {
+      console.error('Failed to restore purchases:', error);
+      alert('Failed to restore purchases. Please try again or contact support if the issue persists.');
+    } finally {
+      setIsRestoringPurchases(false);
     }
   };
 
@@ -274,26 +344,51 @@ export default function Home() {
                     
                     {/* Action Button */}
                     <div className="flex flex-col sm:flex-row gap-4">
-                      <Button 
-                        onClick={() => setLocation('/emdr-session')}
-                        size="lg" 
+                      <Button
+                        onClick={handleStartTrial}
+                        disabled={isCreatingSubscription}
+                        size="lg"
                         className="w-full max-w-xs mx-auto py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
                       >
-                        Begin EMDR Session
+                        {!hasActiveSubscription ? (isCreatingSubscription ? 'Setting up your trial...' : 'Start Your 7-Day Free Trial') : 'Begin EMDR Session'}
                       </Button>
+
+                      {!hasActiveSubscription && (
+                        <>
+                          <Button
+                            onClick={handleRestorePurchases}
+                            disabled={isRestoringPurchases}
+                            size="lg"
+                            className="w-full max-w-xs mx-auto py-3 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
+                          >
+                            {isRestoringPurchases ? 'Restoring...' : 'Restore Purchases'}
+                          </Button>
+                          <div className="text-sm text-blue-200 text-center mt-2">
+                            ✓ 7-day free trial • £9.99/month after trial • ✓ Cancel anytime
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <Button 
+                  <Button
                     onClick={handleStartTrial}
                     disabled={isCreatingSubscription}
-                    size="lg" 
+                    size="lg"
                     className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
                   >
                     {isCreatingSubscription ? 'Setting up your trial...' : 'Start Your 7-Day Free Trial'}
                   </Button>
+                  {/* <Button
+                    onClick={handleRestorePurchases}
+                    disabled={isRestoringPurchases}
+                    size="lg"
+                    className="w-full py-3 text-lg font-semibold bg-white text-primary hover:bg-slate-50"
+                  >
+                    {isRestoringPurchases ? 'Restoring...' : 'Restore Purchases'}
+                  </Button> */}
                   <div className="text-sm text-blue-200 text-center mt-2">
                     ✓ 7-day free trial • £9.99/month after trial • ✓ Cancel anytime
                   </div>
@@ -305,7 +400,7 @@ export default function Home() {
                   <Button
                     onClick={handleStartTrial}
                     disabled={isCreatingSubscription}
-                    size="lg" 
+                    size="lg"
                     className="w-full py-4 text-lg font-semibold bg-white text-primary hover:bg-slate-50 whitespace-normal break-words text-center leading-snug"
                   >
                     {isCreatingSubscription ? 'Setting up...' : 'Choose Guide & Continue'}
@@ -443,66 +538,76 @@ export default function Home() {
       {/* EMDR Endorsements */}
       <EndorsementCarousel />
 
-      {/* Pricing & Trial - Always show regardless of user status */}
-      <section className="py-20 emdr-gradient">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="ny-subheading text-white mb-6">
-            Start Your Healing Journey Today
-          </h2>
-          <p className="text-xl text-white/90 mb-12">
-            Experience professional Self-Directed EMDR with expert therapeutic guidance
-          </p>
+      {/* Pricing & Trial - Only show if user doesn't have active subscription */}
+      {!hasActiveSubscription && (
+        <section className="py-20 emdr-gradient">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="ny-subheading text-white mb-6">
+              Start Your Healing Journey Today
+            </h2>
+            <p className="text-xl text-white/90 mb-12">
+              Experience professional Self-Directed EMDR with expert therapeutic guidance
+            </p>
 
-          <Card className="max-w-lg mx-auto shadow-2xl">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl mb-2 text-primary-blue font-bold">EMDRise Premium</CardTitle>
-              <div className="text-4xl font-bold text-primary mb-2">
-                £9.99<span className="text-lg text-slate-600">/month</span>
-              </div>
-              <p className="text-sm text-slate-600">7-day free trial • Cancel anytime</p>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <div className="space-y-3 text-left">
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Full eight-phase EMDR protocol</span>
+            <Card className="max-w-lg mx-auto shadow-2xl">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl mb-2 text-primary-blue font-bold">EMDRise Premium</CardTitle>
+                <div className="text-4xl font-bold text-primary mb-2">
+                  £9.99<span className="text-lg text-slate-600">/month</span>
                 </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Therapist-designed video guidance</span>
+                <p className="text-sm text-slate-600">7-day free trial • Cancel anytime</p>
+              </CardHeader>
+              <CardContent className="text-center space-y-4">
+                <div className="space-y-3 text-left">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
+                    <span className="text-sm">Full eight-phase EMDR protocol</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
+                    <span className="text-sm">Therapist-designed video guidance</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
+                    <span className="text-sm">Choice of bilateral stimulation</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
+                    <span className="text-sm">Guided memory processing & calm place</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
+                    <span className="text-sm">Built-in aftercare support</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
+                    <span className="text-sm">Progress tracking</span>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Choice of bilateral stimulation</span>
+                <div className="pt-4 space-y-3">
+                  <Button
+                    onClick={handleStartTrial}
+                    disabled={isCreatingSubscription}
+                    className="w-full bg-primary hover:bg-primary/90"
+                    size="lg"
+                  >
+                    {isCreatingSubscription ? 'Setting up your trial...' : 'Start Your 7-Day Free Trial'}
+                  </Button>
+                  <Button
+                    onClick={handleRestorePurchases}
+                    disabled={isRestoringPurchases}
+                    variant="outline"
+                    className="w-full border-slate-300 text-slate-700 hover:bg-slate-50"
+                    size="lg"
+                  >
+                    {isRestoringPurchases ? 'Restoring...' : 'Restore Purchases'}
+                  </Button>
                 </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Guided memory processing & calm place</span>
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Built-in aftercare support</span>
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-primary-green mr-3 flex-shrink-0" />
-                  <span className="text-sm">Progress tracking</span>
-                </div>
-              </div>
-              <div className="pt-4">
-                <Button 
-                  onClick={handleStartTrial}
-                  disabled={isCreatingSubscription}
-                  className="w-full bg-primary hover:bg-primary/90"
-                  size="lg"
-                >
-                  {isCreatingSubscription ? 'Setting up your trial...' : 'Start Your 7-Day Free Trial'}
-                </Button>
-
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
 
 
 
