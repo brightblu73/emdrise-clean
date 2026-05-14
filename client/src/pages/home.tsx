@@ -223,7 +223,7 @@ export default function Home() {
           
           // Navigate to EMDR session after successful purchase
           setLocation('/emdr-session');
-        } else {
+        } else if (customerInfo.error) {
           alert(customerInfo.error);
         }
         
@@ -364,7 +364,7 @@ export default function Home() {
                             {isRestoringPurchases ? 'Restoring...' : 'Restore Purchases'}
                           </Button>
                           <div className="text-sm text-blue-200 text-center mt-2">
-                            ✓ 7-day free trial • £9.99/month after trial • ✓ Cancel anytime
+                            ✓ 7-day free trial • ✓ Cancel anytime
                           </div>
                         </>
                       )}
@@ -390,7 +390,7 @@ export default function Home() {
                     {isRestoringPurchases ? 'Restoring...' : 'Restore Purchases'}
                   </Button> */}
                   <div className="text-sm text-blue-200 text-center mt-2">
-                    ✓ 7-day free trial • £9.99/month after trial • ✓ Cancel anytime
+                    ✓ 7-day free trial • ✓ Cancel anytime
                   </div>
 
                   {/* Login to Continue Journey CTA */}
@@ -552,9 +552,9 @@ export default function Home() {
             <Card className="max-w-lg mx-auto shadow-2xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl mb-2 text-primary-blue font-bold">EMDRise Premium</CardTitle>
-                <div className="text-4xl font-bold text-primary mb-2">
+                {/* <div className="text-4xl font-bold text-primary mb-2">
                   £9.99<span className="text-lg text-slate-600">/month</span>
-                </div>
+                </div> */}
                 <p className="text-sm text-slate-600">7-day free trial • Cancel anytime</p>
               </CardHeader>
               <CardContent className="text-center space-y-4">
