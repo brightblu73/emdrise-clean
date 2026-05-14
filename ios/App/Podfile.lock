@@ -3,6 +3,8 @@ PODS:
     - CapacitorCordova
   - CapacitorApp (8.0.0):
     - Capacitor
+  - CapacitorBrowser (8.0.3):
+    - Capacitor
   - CapacitorCommunityAppleSignIn (7.1.0):
     - Capacitor
   - CapacitorCordova (8.0.0)
@@ -14,12 +16,20 @@ PODS:
     - Capacitor
   - CapacitorSplashScreen (8.0.0):
     - Capacitor
-  - PurchasesHybridCommon (17.8.0):
-    - RevenueCat (= 5.40.0)
-  - RevenueCat (5.40.0)
-  - RevenuecatPurchasesCapacitor (11.2.3):
+  - PurchasesHybridCommon (18.4.0):
+    - RevenueCat (= 5.70.0)
+  - PurchasesHybridCommonUI (18.4.0):
+    - PurchasesHybridCommon (= 18.4.0)
+    - RevenueCatUI (= 5.70.0)
+  - RevenueCat (5.70.0)
+  - RevenuecatPurchasesCapacitor (13.1.0):
     - Capacitor
-    - PurchasesHybridCommon (= 17.8.0)
+    - PurchasesHybridCommon (= 18.4.0)
+  - RevenuecatPurchasesCapacitorUi (13.1.0):
+    - Capacitor
+    - PurchasesHybridCommonUI (= 18.4.0)
+  - RevenueCatUI (5.70.0):
+    - RevenueCat (= 5.70.0)
   - Sentry/HybridSDK (8.56.2)
   - SentryCapacitor (2.4.1):
     - Capacitor
@@ -28,6 +38,7 @@ PODS:
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorCommunityAppleSignIn (from `../../node_modules/@capacitor-community/apple-sign-in`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
@@ -35,12 +46,15 @@ DEPENDENCIES:
   - "CapacitorScreenOrientation (from `../../node_modules/@capacitor/screen-orientation`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "RevenuecatPurchasesCapacitor (from `../../node_modules/@revenuecat/purchases-capacitor`)"
+  - "RevenuecatPurchasesCapacitorUi (from `../../node_modules/@revenuecat/purchases-capacitor-ui`)"
   - "SentryCapacitor (from `../../node_modules/@sentry/capacitor`)"
 
 SPEC REPOS:
   trunk:
     - PurchasesHybridCommon
+    - PurchasesHybridCommonUI
     - RevenueCat
+    - RevenueCatUI
     - Sentry
 
 EXTERNAL SOURCES:
@@ -48,6 +62,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
     :path: "../../node_modules/@capacitor/app"
+  CapacitorBrowser:
+    :path: "../../node_modules/@capacitor/browser"
   CapacitorCommunityAppleSignIn:
     :path: "../../node_modules/@capacitor-community/apple-sign-in"
   CapacitorCordova:
@@ -62,24 +78,30 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/splash-screen"
   RevenuecatPurchasesCapacitor:
     :path: "../../node_modules/@revenuecat/purchases-capacitor"
+  RevenuecatPurchasesCapacitorUi:
+    :path: "../../node_modules/@revenuecat/purchases-capacitor-ui"
   SentryCapacitor:
     :path: "../../node_modules/@sentry/capacitor"
 
 SPEC CHECKSUMS:
-  Capacitor: 79e40e5e76f852965dce30406c65253fa154e24a
-  CapacitorApp: cfa0120a1f3a6f69d4d37d3041782aa5c5167d0b
-  CapacitorCommunityAppleSignIn: 59bc8ade5677e6ea60a14bdca8d3f4bdc91069e2
+  Capacitor: 341ff7cf652ec695d1a8ebf604db448ac7b6d635
+  CapacitorApp: 3963a84197280757b84f126afd1520a85ae3b092
+  CapacitorBrowser: c987c73d09d8bd3b5ec13f06338b1e14d5d2be69
+  CapacitorCommunityAppleSignIn: 271cb2860576fd2961508bbfa7a82117d93eadca
   CapacitorCordova: 5dc3912d25ef770a3fe0f431bb65c9fbfa2e92f9
-  CapacitorHaptics: 7a77ce744c4b516b3ffd7f8c96d3de574d77b898
-  CapacitorPluginAppTrackingTransparency: c865112679beaad5bccd65a5bbac6e6eacaeb14b
-  CapacitorScreenOrientation: 82b7c0bcc6189e97269ec66c613d0cd4f1c1c004
-  CapacitorSplashScreen: 4b78177a21f0f73ccc1c78dd93b2a94854ac4b83
-  PurchasesHybridCommon: fad1084d9781388e181c8b855caf7a5853cebcb3
-  RevenueCat: 02c8d0082d3373bcbc831faa600943d6ba6cad6e
-  RevenuecatPurchasesCapacitor: f8f54c117c338380ef8cccb69f3350d43c5e5943
+  CapacitorHaptics: 2079d9fa04c5a71e18663b4722323c304c58245c
+  CapacitorPluginAppTrackingTransparency: f0df8fe65d07d3854de3dad832caf192262bbaa5
+  CapacitorScreenOrientation: d962f79e5bcbba4e01e9dc0cd872abf465fb943f
+  CapacitorSplashScreen: 422880d7117605c30699eb4b21644b62db42e86c
+  PurchasesHybridCommon: 2cd3e4b74c60f5a61603d78e4071274217cd9f6b
+  PurchasesHybridCommonUI: 3b62fb69d17b6f8b6855b38d26a4c62c269bff49
+  RevenueCat: f30d8ee4fd36ce56afa40923d314239761eb58a2
+  RevenuecatPurchasesCapacitor: f894c0f464ec4ea2c2fb645aeebc2f1609b77388
+  RevenuecatPurchasesCapacitorUi: 85a73009da2ef5c06ef892150eab9005645d07d1
+  RevenueCatUI: f7e36aa08d5d8de905c0c864c1523d4f39708be3
   Sentry: b53951377b78e21a734f5dc8318e333dbfc682d7
-  SentryCapacitor: 5c982d1e23a6451685ff2013604a61e8736d61df
+  SentryCapacitor: 84549a1440a7f58a336ed3175db0f067d571cd5b
 
-PODFILE CHECKSUM: 018aaacbc051f2f656c437f474b7c9f10fff1ea4
+PODFILE CHECKSUM: 29885c940274c66065a5703486219f56841da83f
 
 COCOAPODS: 1.16.2

@@ -22,7 +22,23 @@ import NotFound from "./pages/not-found";
 import { requestTrackingPermission } from "./lib/app-tracking";
 import { useEffect } from "react";
 
+import revenueCatService from '@/lib/revenuecat';
+import { useAuth } from './state/AuthProvider';
+
 function Router() {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const initRevenueCat = async () => {
+      if (user) {
+        await revenueCatService.setUserId(user.id);
+      } else {
+        await revenueCatService.initialize();
+      }
+    };
+    initRevenueCat();
+  }, [user]);
+
   return (
     <Switch>
       <Route path="/" component={Home} />
