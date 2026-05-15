@@ -148,10 +148,15 @@ class RevenueCatService {
     try {
       if (!this.initialized) return false;
       await this.restorePurchases();
-      // Close remote paywall if open after restore attempts
-      try { (RevenueCatUI as any).dismissPaywall?.(); } catch {}
       const { customerInfo } = await Purchases.getCustomerInfo();
       const premiumEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PREMIUM];
+
+      if (premiumEntitlement) {
+        alert('Purchases restored successfully! Your subscription is now active.');
+      } else {
+        alert('No active subscriptions found. If you believe this is an error, please contact support.');
+      }
+
       return !!premiumEntitlement;
     } catch (error) {
       console.error('Handle restore purchases failed:', error);

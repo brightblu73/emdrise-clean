@@ -288,7 +288,7 @@ export default function Home() {
 
       // Check if restore was successful by checking current subscription status
       if (hasActiveSubscription) {
-        alert('✅ Purchases restored successfully! Your subscription is now active.');
+        alert('Purchases restored successfully! Your subscription is now active.');
         // Navigate to session if user is authenticated
         if (user) {
           setLocation('/emdr-session');
