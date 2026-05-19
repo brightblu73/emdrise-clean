@@ -144,6 +144,26 @@ class RevenueCatService {
     }
   }
 
+  async handleRestorePurchases(): Promise<boolean> {
+    try {
+      if (!this.initialized) return false;
+      await this.restorePurchases();
+      const { customerInfo } = await Purchases.getCustomerInfo();
+      const premiumEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PREMIUM];
+
+      if (premiumEntitlement) {
+        alert('Purchases restored successfully! Your subscription is now active.');
+      } else {
+        alert('No active subscriptions found. If you believe this is an error, please contact support.');
+      }
+
+      return !!premiumEntitlement;
+    } catch (error) {
+      console.error('Handle restore purchases failed:', error);
+      return false;
+    }
+  }
+
   async getOfferings(): Promise<PurchasesOffering | null> {
     try {
       const offerings = await Purchases.getOfferings();
@@ -173,10 +193,13 @@ class RevenueCatService {
        // Make the purchase
        // const result = await Purchases.purchasePackage({ aPackage: monthlyPackage });
 
-       // console.log('Purchase successful:', result);
-       // return { success: true, customerInfo: result.customerInfo };
-       this.handlePresentPaywall();
-       return { success: false, error: 'Purchase cancelled by user' };
+        const paywallPurchased = await this.handlePresentPaywall();
+        if (paywallPurchased) {
+          const { customerInfo } = await Purchases.getCustomerInfo();
+          return { success: true, customerInfo };
+        } else {
+          return { success: false };
+        }
      } catch (error: any) {
        console.error('Purchase failed:', error);
 
@@ -234,55 +257,58 @@ class RevenueCatService {
      }
    }
 
-   async handlePresentPaywall() {
-    try {
-      // Check if already purchased
-      const { customerInfo } = await Purchases.getCustomerInfo();
-      const premiumEntitlement = customerInfo.entitlements.active['premium_access'];
-      
-      if (premiumEntitlement) {
-        // toast({
-        //   title: 'Already Subscribed',
-        //   description: 'You already have premium access!',
-        // });
-        return;
-      }
-
-      // Use RevenueCat UI paywall
-      console.log('Opening paywall...');
-      const offerings = await this.getOfferings();
-      console.log('Offerings:', offerings);
-      
-       const result = await RevenueCatUI.presentPaywall({ offering: offerings?.current, presentationConfiguration: PaywallPresentationConfiguration.FULL_SCREEN });
-      
-      if (result) {
-        console.log('Paywall dismissed, checking purchase status...');
-        // Verify the purchase was successful
-        const { customerInfo: updatedInfo } = await Purchases.getCustomerInfo();
-        const updatedEntitlement = updatedInfo.entitlements.active['premium_access'];
-        
-        if (updatedEntitlement) {
-          // toast({
-          //   title: 'Success!',
-          //   description: 'You now have premium access',
-          // });
-        }
-      }
-    } catch (error: any) {
-      console.error('Paywall failed:', error);
-      if (error.message === 'User cancelled') {
-        console.log('User cancelled the purchase');
-      } else {
-        // toast({
-        //   title: 'Purchase Failed',
-        //   description: error.message || 'Unable to complete purchase. Please try again.',
-        //   variant: 'destructive',
-        // });
-      }
-    } finally {
-      // setPurchasing(null);
-    }
-  };
+    async handlePresentPaywall(): Promise<boolean> {
+     try {
+       // Check if already purchased
+       const { customerInfo } = await Purchases.getCustomerInfo();
+       const premiumEntitlement = customerInfo.entitlements.active['premium_access'];
+       
+       if (premiumEntitlement) {
+         // toast({
+         //   title: 'Already Subscribed',
+         //   description: 'You already have premium access!',
+         // });
+         return true;
+       }
+ 
+       // Use RevenueCat UI paywall
+       console.log('Opening paywall...');
+       const offerings = await this.getOfferings();
+       console.log('Offerings:', offerings);
+       
+       const result = await (RevenueCatUI.presentPaywall as any)({ offering: offerings?.current, presentationConfiguration: PaywallPresentationConfiguration.FULL_SCREEN, onRestorePurchases: async () => { await this.handleRestorePurchases?.(); } });
+       
+       if (result) {
+         console.log('Paywall dismissed, checking purchase status...');
+         // Verify the purchase was successful
+         const { customerInfo: updatedInfo } = await Purchases.getCustomerInfo();
+         const updatedEntitlement = updatedInfo.entitlements.active['premium_access'];
+         
+         if (updatedEntitlement) {
+           // toast({
+           //   title: 'Success!',
+           //   description: 'You now have premium access',
+           // });
+           return true;
+         }
+       }
+       return false;
+     } catch (error: any) {
+       console.error('Paywall failed:', error);
+       if (error.message === 'User cancelled') {
+         // Do not display cancel alert; treat as non-success
+         console.log('User cancelled the purchase');
+         return false;
+       } else {
+         // toast({
+         //   title: 'Purchase Failed',
+         //   description: error.message || 'Unable to complete purchase. Please try again.',
+         //   variant: 'destructive',
+         // });
+         return false;
+       }
+     }
+   };
  }
 
  export const revenueCatService = RevenueCatService.getInstance();
